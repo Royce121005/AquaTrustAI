@@ -1,0 +1,10 @@
+stp_id,stp_name,city,treatment_type,installed_capacity_mld,record_count,first_date,last_date,missing_ph,missing_cod_mg_l,missing_bod_mg_l,missing_tss_mg_l,missing_ammoniacal_nitrogen_mg_l,missing_total_nitrogen_mg_l
+nagasandra,Nagasandra STP,Bangaluru,Secondary -Extended aeration,20,1382,2019-11-01,2023-08-13,0,0,0,0,0,0
+madiwala,Madiwala STP,Bangaluru,Secondary: UASB + oxidation ponds+ constructed wetlands,4,1382,2019-11-01,2023-08-13,0,0,0,0,0,0
+hebbal,Hebbal STP,Bangaluru,Secondary: Activated sludge process,60,1382,2019-11-01,2023-08-13,0,0,0,0,0,0
+yelahanka,Yelahanka STP,Bangaluru,Activated sludge process +filtration+chlorination(Tertiary),10,1382,2019-11-01,2023-08-13,0,0,0,0,0,0
+jakkur,Jakkur STP,Bangaluru,Secondary – UASB +Extended aeration,10,1382,2019-11-01,2023-08-13,0,0,0,0,0,0
+rajacanal,Rajacanal STP,Bangaluru,Secondary- Extended aeration,40,1382,2019-11-01,2023-08-13,0,0,0,0,0,0
+kr-puram,K.R. Puram STP,Bangaluru,Secondary – UASB +Extended aeration,20,1382,2019-11-01,2023-08-13,0,0,0,0,0,0
+cubbon-park,Cubbon Park STP,Bangaluru,Membrane,1.5,1382,2019-11-01,2023-08-13,0,0,0,0,0,0
+lalbagh,Lalbagh STP,Bangaluru,Extended Aeration + Plate Settlers + UV disinfection,1.5,1382,2019-11-01,2023-08-13,0,0,0,0,0,0
