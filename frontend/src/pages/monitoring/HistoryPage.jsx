@@ -7,7 +7,7 @@ export default function HistoryPage() {
     <div className="space-y-4">
       <PageHeader
         title="Historical Data"
-        subtitle="Explore historical parameter measurements"
+        subtitle="Explore historical STP readings from the Bangalore dataset"
       />
       <MonitoringTabs />
       <HistoricalDataPanel />

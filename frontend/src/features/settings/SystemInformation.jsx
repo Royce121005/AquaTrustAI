@@ -5,9 +5,9 @@ import StatusBadge from '../../components/ui/StatusBadge.jsx'
 export default function SystemInformation() {
   const rows = [
     { label: 'Application', value: 'AquaTrust AI' },
-    { label: 'Environment', value: 'Demo frontend (provisional mock services)' },
-    { label: 'Data sources', value: 'Mock service layer — FastAPI integration pending' },
-    { label: 'AI models', value: 'Provisional stand-in outputs only' },
+    { label: 'Environment', value: 'Demo frontend (dataset + provisional mock services)' },
+    { label: 'Data sources', value: 'bangalore_clean.csv & indian_water_clean.csv (bundled) + mock service layer' },
+    { label: 'AI models', value: 'Provisional stand-in outputs only — model not connected yet' },
     { label: 'Frontend version', value: pkg.version },
     { label: 'Preference storage', value: 'Browser localStorage (this device only)' },
   ]

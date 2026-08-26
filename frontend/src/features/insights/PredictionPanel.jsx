@@ -8,8 +8,15 @@ import Button from '../../components/ui/Button.jsx'
 import useAsyncData from '../../hooks/useAsyncData.js'
 import { getPredictions } from '../../services/insights.js'
 import { getParameterLabel } from '../../constants/monitoring.js'
+import { getStpParameter } from '../../constants/stpParameters.js'
 import { formatTimestamp } from '../../utils/format.js'
 import PredictionChart from './PredictionChart.jsx'
+
+// Insight parameter ids may reference STP dataset parameters (cod, bod, …) or
+// legacy sensor parameters (turbidity, …).
+function resolveParameterLabel(parameterId) {
+  return getStpParameter(parameterId)?.label ?? getParameterLabel(parameterId)
+}
 
 export default function PredictionPanel() {
   const { status, data, error, reload } = useAsyncData(getPredictions)
@@ -39,6 +46,8 @@ export default function PredictionPanel() {
     )
   }
 
+  const parameterLabel = resolveParameterLabel(data.parameterId)
+
   return (
     <div className="space-y-4">
       <Card>
@@ -53,7 +62,7 @@ export default function PredictionPanel() {
           </span>
           <span className="inline-flex items-center gap-1.5">
             <Waves className="h-3.5 w-3.5" aria-hidden="true" />
-            Parameter: <span className="font-medium text-slate-700">{getParameterLabel(data.parameterId)}</span>
+            Parameter: <span className="font-medium text-slate-700">{parameterLabel}</span>
           </span>
           <span>Generated: {formatTimestamp(data.generatedAt)}</span>
           <StatusBadge tone="warning" label="provisional output — not a live model" dot={false} />
@@ -62,9 +71,9 @@ export default function PredictionPanel() {
 
       <ChartCard
         title={`${data.horizonHours}-hour prediction`}
-        subtitle="Predicted values with the service-provided interval bounds"
+        subtitle={`Placeholder demo values with stand-in interval bounds${data.unit ? ` · Unit: ${data.unit}` : ''}`}
       >
-        <PredictionChart points={data.points} />
+        <PredictionChart points={data.points} unit={data.unit} label={parameterLabel} />
       </ChartCard>
     </div>
   )

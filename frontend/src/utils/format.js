@@ -20,3 +20,16 @@ export function formatDate(isoString) {
     day: 'numeric',
   })
 }
+
+// Formats UTC-midnight timestamps (daily dataset records) without timezone drift.
+export function formatUtcDate(isoString) {
+  if (!isoString) return '\u2014'
+  const date = new Date(isoString)
+  if (Number.isNaN(date.getTime())) return isoString
+  return date.toLocaleDateString(undefined, {
+    timeZone: 'UTC',
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  })
+}

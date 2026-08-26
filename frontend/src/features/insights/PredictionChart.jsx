@@ -23,6 +23,10 @@ export default function PredictionChart({ points, unit }) {
 
   if (!points || points.length === 0) return null
 
+  // The contract allows an optional observed value per point; render it only
+  // when the backend actually supplies one.
+  const hasActualValues = points.some((point) => typeof point.actualValue === 'number')
+
   return (
     <ResponsiveContainer width="100%" height="100%">
       <LineChart data={points} margin={{ top: 6, right: 16, bottom: 4, left: 4 }}>
@@ -62,6 +66,18 @@ export default function PredictionChart({ points, unit }) {
           labelFormatter={(timestamp) => formatTimestamp(timestamp)}
         />
         <Legend verticalAlign="top" height={32} iconType="plainline" wrapperStyle={{ fontSize: 12 }} />
+        {hasActualValues && (
+          <Line
+            type="monotone"
+            dataKey="actualValue"
+            name="Observed value"
+            stroke="#0f766e"
+            strokeWidth={1.5}
+            dot={{ r: 2 }}
+            connectNulls
+            isAnimationActive={settings.chartAnimations}
+          />
+        )}
         <Line
           type="monotone"
           dataKey="predictedValue"

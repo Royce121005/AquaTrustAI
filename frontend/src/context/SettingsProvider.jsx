@@ -6,7 +6,8 @@ const STORAGE_KEY = 'aquatrust-settings-v1'
 const DEFAULT_SETTINGS = {
   reducedMotion: false,
   chartAnimations: true,
-  defaultMonitoringParameter: 'turbidity',
+  // Must be one of constants/stpParameters.js ids (Monitoring trends view).
+  defaultMonitoringParameter: 'cod',
   autoRefresh: 'off',
   notifications: {
     alerts: true,

@@ -5,25 +5,40 @@ import ChartCard from '../../components/charts/ChartCard.jsx'
 import EmptyState from '../../components/ui/EmptyState.jsx'
 import Spinner from '../../components/ui/Spinner.jsx'
 import Button from '../../components/ui/Button.jsx'
+import StatusBadge from '../../components/ui/StatusBadge.jsx'
 import useAsyncData from '../../hooks/useAsyncData.js'
-import { getHistoricalData } from '../../services/monitoring.js'
+import { getStpHistory, getStpOptions, getBangaloreDatasetInfo } from '../../services/monitoring.js'
+import { defaultStpHistoryFilters, getStpParameter } from '../../constants/stpParameters.js'
 import HistoricalFilters from './HistoricalFilters.jsx'
-import { defaultHistoryFilters } from '../../constants/monitoring.js'
 import ParameterLineChart from './ParameterLineChart.jsx'
 
 export default function HistoricalDataPanel() {
-  const [filters, setFilters] = useState(defaultHistoryFilters)
+  const [filters, setFilters] = useState(defaultStpHistoryFilters)
   const [requestSeq, setRequestSeq] = useState(0)
   const [loadedSeq, setLoadedSeq] = useState(0)
 
   const fetcher = useCallback(async () => {
     try {
-      const result = await getHistoricalData(filters)
+      const options = await getStpOptions()
+      const info = await getBangaloreDatasetInfo()
+      const activeStpId =
+        filters.stpId && options.some((option) => option.id === filters.stpId)
+          ? filters.stpId
+          : (options[0]?.id ?? null)
+      if (!activeStpId) {
+        throw new Error('No STPs were found in the Bangalore dataset.')
+      }
+      const result = await getStpHistory({
+        stpId: activeStpId,
+        parameterId: filters.parameterId,
+        from: filters.from || undefined,
+        to: filters.to || undefined,
+      })
       setLoadedSeq(requestSeq)
-      return result
-    } catch (err) {
+      return { options, info, activeStpId, result }
+    } catch (error) {
       setLoadedSeq(requestSeq)
-      throw err
+      throw error
     }
   }, [filters, requestSeq])
 
@@ -37,9 +52,17 @@ export default function HistoricalDataPanel() {
     setRequestSeq((seq) => seq + 1)
   }
 
+  const parameter = getStpParameter(filters.parameterId)
+
   return (
     <div className="space-y-4">
-      <HistoricalFilters applied={filters} onApply={applyFilters} />
+      <HistoricalFilters
+        applied={filters}
+        options={data?.options}
+        minDate={data?.info?.startDate?.slice(0, 10)}
+        maxDate={data?.info?.endDate?.slice(0, 10)}
+        onApply={applyFilters}
+      />
 
       {isLoading && (
         <Card bodyClassName="py-16">
@@ -52,16 +75,26 @@ export default function HistoricalDataPanel() {
           icon={TriangleAlert}
           title="Could not load historical data"
           description={error?.message ?? 'Something went wrong while loading historical data.'}
-          action={<Button onClick={reload}>Try again</Button>}
+          action={
+            <Button
+              onClick={() => {
+                setRequestSeq((seq) => seq + 1)
+                reload()
+              }}
+            >
+              Try again
+            </Button>
+          }
         />
       )}
 
       {!isLoading && status === 'success' && data && (
         <ChartCard
-          title={data.parameter.label}
-          subtitle={`${data.pointCount} provisional points · ${data.intervalMinutes}-min interval · Unit: ${data.parameter.unit}`}
+          title={`${parameter.label} · ${data.activeStpId ? (data.options.find((o) => o.id === data.activeStpId)?.name ?? data.activeStpId) : ''}`}
+          subtitle={`${data.result.pointCount} readings · ${data.result.from ? `${data.result.from.slice(0, 10)} \u2192 ${data.result.to.slice(0, 10)}` : 'no records in range'} · Unit: ${parameter.unit}`}
+          actions={<StatusBadge tone="info" label="dataset-derived" dot={false} />}
         >
-          <ParameterLineChart points={data.points} unit={data.parameter.unit} label={data.parameter.label} />
+          <ParameterLineChart points={data.result.points} unit={parameter.unit} label={parameter.label} />
         </ChartCard>
       )}
     </div>

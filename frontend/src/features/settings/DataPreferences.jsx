@@ -1,6 +1,6 @@
 import Card from '../../components/ui/Card.jsx'
 import { useSettings } from '../../hooks/useSettings.js'
-import { PARAMETER_OPTIONS } from '../../constants/monitoring.js'
+import { STP_PARAMETER_OPTIONS } from '../../constants/stpParameters.js'
 
 const AUTO_REFRESH_OPTIONS = [
   { value: 'off', label: 'Off' },
@@ -30,7 +30,7 @@ export default function DataPreferences() {
             onChange={(event) => updateSettings({ defaultMonitoringParameter: event.target.value })}
             className={selectClasses}
           >
-            {PARAMETER_OPTIONS.map((parameter) => (
+            {STP_PARAMETER_OPTIONS.map((parameter) => (
               <option key={parameter.id} value={parameter.id}>
                 {parameter.label}
               </option>

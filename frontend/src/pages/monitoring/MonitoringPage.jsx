@@ -7,7 +7,7 @@ export default function MonitoringPage() {
     <div className="space-y-4">
       <PageHeader
         title="Monitoring"
-        subtitle="Water treatment parameter trends and sensor status"
+        subtitle="Historical STP water-quality parameters from the Bangalore dataset"
       />
       <MonitoringTabs />
       <ParameterTrendPanel />
