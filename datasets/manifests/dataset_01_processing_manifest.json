@@ -1,0 +1,23 @@
+{
+  "dataset_id": "DATASET_01_UCI_WATER_TREATMENT",
+  "processing_version": "v2.2.1",
+  "processing_timestamp": "2026-09-27T05:48:30.501686+00:00",
+  "raw_file_hash": "af2e632b370646ea9763b11aed54b30423f0c3b8a7fb1b7d23e1c922098a7a8a",
+  "output_file": "uci_water_treatment_processed.csv",
+  "rows_before": 527,
+  "rows_after": 527,
+  "rows_removed": 0,
+  "reasons_for_removal": [],
+  "missing_values_before": 591,
+  "missing_values_after": 1645,
+  "imputation_performed": false,
+  "imputation_policy": "Explicit null preservation (No synthetic values or zero filling)",
+  "parameters_removed": [],
+  "transformations_performed": [
+    "Verified source SHA-256: af2e632b370646ea9763b11aed54b30423f0c3b8a7fb1b7d23e1c922098a7a8a",
+    "Loaded 527 raw rows with 591 missing '?' values.",
+    "Parsed date string (D-D/M/YY) into UTC ISO-8601 timestamps.",
+    "Converted 38 operational sensor measurements from string to float64, preserving missingness.",
+    "Exported processed dataset to C:\\Users\\Risa vilas dias\\aquatrust-ai\\AquaTrustAI\\datasets\\processed\\DATASET_01_UCI_WATER_TREATMENT\\uci_water_treatment_processed.csv"
+  ]
+}

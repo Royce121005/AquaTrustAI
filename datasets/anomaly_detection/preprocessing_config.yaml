@@ -1,0 +1,65 @@
+# AquaTrust AI — Anomaly Detection Preprocessing Configuration
+# Master configuration for temporal dataset partitioning, scaling, and Isolation Forest
+
+version: "2.2.1"
+
+partitioning:
+  strategy: "chronological_split"
+  preserves_ordering: true
+  random_shuffle: false
+  split_ratios:
+    train: 0.70
+    validation: 0.15
+    test: 0.15
+  stream_grouping_key: "stream_id"
+
+model_baseline:
+  algorithm: "IsolationForest"
+  framework: "scikit-learn"
+  hyperparameters:
+    n_estimators: 200
+    contamination: 0.05
+    random_state: 42
+    max_samples: "auto"
+    max_features: 1.0
+    bootstrap: false
+  threshold_method: "decision_function_offset"
+
+scaling:
+  method: "StandardScaler"
+  fit_partition: "train"
+  apply_to: ["train", "validation", "test"]
+  features_to_scale:
+    - "value_t"
+    - "delta_1"
+    - "rolling_mean_3"
+    - "rolling_std_3"
+
+evaluation_injection:
+  enabled: true
+  target_partition: "test"
+  output_filename: "test_with_injected_anomalies.csv"
+  random_seed: 42
+  anomaly_rate: 0.05
+  anomaly_types:
+    - type: "point_spike"
+      probability: 0.40
+      multiplier_range: [2.5, 4.0]
+      description: "Sudden extreme toxic shock or organic loading spike."
+    - type: "sensor_flatline"
+      probability: 0.30
+      duration_steps: 3
+      description: "Sensor failure with stuck static constant measurement."
+    - type: "process_drift"
+      probability: 0.30
+      drift_slope: 0.08
+      duration_steps: 5
+      description: "Slow progressive biological failure or sensor calibration drift."
+
+leakage_control_invariants:
+  - "Train timestamp maximum < Validation timestamp minimum"
+  - "Validation timestamp maximum < Test timestamp minimum"
+  - "Scaler fitted strictly on training partition"
+  - "Rolling windows strictly trailing (no centered or future lookaheads)"
+  - "Insufficient history flagged explicitly as NaN (no zero/mean imputation)"
+  - "Zero synthetic anomaly labels injected into training or validation sets"

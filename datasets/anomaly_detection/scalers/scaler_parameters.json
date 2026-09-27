@@ -1,0 +1,574 @@
+{
+  "DATASET_01_UCI:FAC_UCI_URBAN_ETP_01:final_effluent:ph": {
+    "value_t": {
+      "mean": 7.719891008174388,
+      "std": 0.20166065083087975,
+      "n_train_samples": 367
+    },
+    "delta_1": {
+      "mean": 0.0013698630136986301,
+      "std": 0.22531144392372732,
+      "n_train_samples": 365
+    },
+    "rolling_mean_3": {
+      "mean": 7.719834710743802,
+      "std": 0.15421306178399377,
+      "n_train_samples": 363
+    },
+    "rolling_std_3": {
+      "mean": 0.10962863035439711,
+      "std": 0.11705728605418919,
+      "n_train_samples": 363
+    }
+  },
+  "DATASET_01_UCI:FAC_UCI_URBAN_ETP_01:final_effluent:bod": {
+    "value_t": {
+      "mean": 20.433526011560694,
+      "std": 19.328089946439277,
+      "n_train_samples": 346
+    },
+    "delta_1": {
+      "mean": -0.042042042042042045,
+      "std": 19.25219159252654,
+      "n_train_samples": 333
+    },
+    "rolling_mean_3": {
+      "mean": 20.505208333333336,
+      "std": 15.462700661985044,
+      "n_train_samples": 320
+    },
+    "rolling_std_3": {
+      "mean": 6.123827674992755,
+      "std": 14.314975594588281,
+      "n_train_samples": 320
+    }
+  },
+  "DATASET_01_UCI:FAC_UCI_URBAN_ETP_01:final_effluent:cod": {
+    "value_t": {
+      "mean": 89.55337078651685,
+      "std": 38.58377671660008,
+      "n_train_samples": 356
+    },
+    "delta_1": {
+      "mean": -0.07848837209302326,
+      "std": 42.861556500224744,
+      "n_train_samples": 344
+    },
+    "rolling_mean_3": {
+      "mean": 89.74899598393574,
+      "std": 29.691326710956254,
+      "n_train_samples": 332
+    },
+    "rolling_std_3": {
+      "mean": 25.033875130408603,
+      "std": 19.53376943050039,
+      "n_train_samples": 332
+    }
+  },
+  "DATASET_01_UCI:FAC_UCI_URBAN_ETP_01:final_effluent:tss": {
+    "value_t": {
+      "mean": 23.008219178082193,
+      "std": 17.85903519019333,
+      "n_train_samples": 365
+    },
+    "delta_1": {
+      "mean": 0.060941828254847646,
+      "std": 15.36793972567984,
+      "n_train_samples": 361
+    },
+    "rolling_mean_3": {
+      "mean": 23.01307189542484,
+      "std": 15.148435097227848,
+      "n_train_samples": 357
+    },
+    "rolling_std_3": {
+      "mean": 6.587080941374068,
+      "std": 9.979937885076755,
+      "n_train_samples": 357
+    }
+  },
+  "DATASET_01_UCI:FAC_UCI_URBAN_ETP_01:inlet:ph": {
+    "value_t": {
+      "mean": 7.87445652173913,
+      "std": 0.23933723765229703,
+      "n_train_samples": 368
+    },
+    "delta_1": {
+      "mean": 0.0008174386920980946,
+      "std": 0.2462235463786107,
+      "n_train_samples": 367
+    },
+    "rolling_mean_3": {
+      "mean": 7.8749544626593835,
+      "std": 0.19110751826276015,
+      "n_train_samples": 366
+    },
+    "rolling_std_3": {
+      "mean": 0.15272372632104284,
+      "std": 0.08982708968659915,
+      "n_train_samples": 366
+    }
+  },
+  "DATASET_01_UCI:FAC_UCI_URBAN_ETP_01:inlet:bod": {
+    "value_t": {
+      "mean": 196.2398843930636,
+      "std": 65.36171232561861,
+      "n_train_samples": 346
+    },
+    "delta_1": {
+      "mean": 0.09580838323353294,
+      "std": 65.20944914565258,
+      "n_train_samples": 334
+    },
+    "rolling_mean_3": {
+      "mean": 196.3312629399586,
+      "std": 52.14060325495636,
+      "n_train_samples": 322
+    },
+    "rolling_std_3": {
+      "mean": 39.73149796032096,
+      "std": 26.67692987259502,
+      "n_train_samples": 322
+    }
+  },
+  "DATASET_01_UCI:FAC_UCI_URBAN_ETP_01:inlet:cod": {
+    "value_t": {
+      "mean": 412.3901098901099,
+      "std": 123.7328809825895,
+      "n_train_samples": 364
+    },
+    "delta_1": {
+      "mean": 0.5487465181058496,
+      "std": 133.69177223602745,
+      "n_train_samples": 359
+    },
+    "rolling_mean_3": {
+      "mean": 413.1035781544257,
+      "std": 95.94110098653653,
+      "n_train_samples": 354
+    },
+    "rolling_std_3": {
+      "mean": 81.84104727772156,
+      "std": 53.88868387508703,
+      "n_train_samples": 354
+    }
+  },
+  "DATASET_01_UCI:FAC_UCI_URBAN_ETP_01:inlet:tss": {
+    "value_t": {
+      "mean": 224.45108695652175,
+      "std": 106.90539701933669,
+      "n_train_samples": 368
+    },
+    "delta_1": {
+      "mean": 0.1362397820163488,
+      "std": 135.5370907338923,
+      "n_train_samples": 367
+    },
+    "rolling_mean_3": {
+      "mean": 224.7686703096539,
+      "std": 70.54480877115323,
+      "n_train_samples": 366
+    },
+    "rolling_std_3": {
+      "mean": 63.73333034482997,
+      "std": 75.35369386266832,
+      "n_train_samples": 366
+    }
+  },
+  "DATASET_01_UCI:FAC_UCI_URBAN_ETP_01:primary_settler:ph": {
+    "value_t": {
+      "mean": 7.884239130434784,
+      "std": 0.22846716867957476,
+      "n_train_samples": 368
+    },
+    "delta_1": {
+      "mean": 0.0013623978201634877,
+      "std": 0.21426840740456626,
+      "n_train_samples": 367
+    },
+    "rolling_mean_3": {
+      "mean": 7.884699453551912,
+      "std": 0.18966052539589648,
+      "n_train_samples": 366
+    },
+    "rolling_std_3": {
+      "mean": 0.13603464404991025,
+      "std": 0.07629300739288172,
+      "n_train_samples": 366
+    }
+  },
+  "DATASET_01_UCI:FAC_UCI_URBAN_ETP_01:primary_settler:bod": {
+    "value_t": {
+      "mean": 215.54819277108433,
+      "std": 76.7679226143124,
+      "n_train_samples": 332
+    },
+    "delta_1": {
+      "mean": 0.310126582278481,
+      "std": 87.19430520095706,
+      "n_train_samples": 316
+    },
+    "rolling_mean_3": {
+      "mean": 216.47019867549668,
+      "std": 58.32055705589625,
+      "n_train_samples": 302
+    },
+    "rolling_std_3": {
+      "mean": 51.6223730737002,
+      "std": 34.24222768364538,
+      "n_train_samples": 302
+    }
+  },
+  "DATASET_01_UCI:FAC_UCI_URBAN_ETP_01:primary_settler:tss": {
+    "value_t": {
+      "mean": 253.4891304347826,
+      "std": 127.33761992070505,
+      "n_train_samples": 368
+    },
+    "delta_1": {
+      "mean": 0.027247956403269755,
+      "std": 149.27512159716568,
+      "n_train_samples": 367
+    },
+    "rolling_mean_3": {
+      "mean": 253.82695810564664,
+      "std": 91.84351109409494,
+      "n_train_samples": 366
+    },
+    "rolling_std_3": {
+      "mean": 68.26132278919786,
+      "std": 84.32715699403835,
+      "n_train_samples": 366
+    }
+  },
+  "DATASET_01_UCI:FAC_UCI_URBAN_ETP_01:secondary_settler:ph": {
+    "value_t": {
+      "mean": 7.853532608695652,
+      "std": 0.20199687637958097,
+      "n_train_samples": 368
+    },
+    "delta_1": {
+      "mean": 0.001089918256130791,
+      "std": 0.19050745394170343,
+      "n_train_samples": 367
+    },
+    "rolling_mean_3": {
+      "mean": 7.853642987249545,
+      "std": 0.16758515959764006,
+      "n_train_samples": 366
+    },
+    "rolling_std_3": {
+      "mean": 0.11792871805280992,
+      "std": 0.0725536894937131,
+      "n_train_samples": 366
+    }
+  },
+  "DATASET_01_UCI:FAC_UCI_URBAN_ETP_01:secondary_settler:bod": {
+    "value_t": {
+      "mean": 128.9913043478261,
+      "std": 38.36850209965383,
+      "n_train_samples": 345
+    },
+    "delta_1": {
+      "mean": -0.5029940119760479,
+      "std": 35.27070237641593,
+      "n_train_samples": 334
+    },
+    "rolling_mean_3": {
+      "mean": 128.6246153846154,
+      "std": 30.857964258605982,
+      "n_train_samples": 325
+    },
+    "rolling_std_3": {
+      "mean": 21.91183462151141,
+      "std": 14.062633372369733,
+      "n_train_samples": 325
+    }
+  },
+  "DATASET_01_UCI:FAC_UCI_URBAN_ETP_01:secondary_settler:cod": {
+    "value_t": {
+      "mean": 282.3333333333333,
+      "std": 76.39624438837588,
+      "n_train_samples": 366
+    },
+    "delta_1": {
+      "mean": -0.02203856749311295,
+      "std": 70.91650745385772,
+      "n_train_samples": 363
+    },
+    "rolling_mean_3": {
+      "mean": 282.5287037037037,
+      "std": 63.828095062497916,
+      "n_train_samples": 360
+    },
+    "rolling_std_3": {
+      "mean": 45.533948278200356,
+      "std": 25.13972653977091,
+      "n_train_samples": 360
+    }
+  },
+  "DATASET_01_UCI:FAC_UCI_URBAN_ETP_01:secondary_settler:tss": {
+    "value_t": {
+      "mean": 97.38692098092643,
+      "std": 25.04029761581477,
+      "n_train_samples": 367
+    },
+    "delta_1": {
+      "mean": 0.1643835616438356,
+      "std": 30.14031737505959,
+      "n_train_samples": 365
+    },
+    "rolling_mean_3": {
+      "mean": 97.55280073461893,
+      "std": 17.699180381789066,
+      "n_train_samples": 363
+    },
+    "rolling_std_3": {
+      "mean": 15.814653144896754,
+      "std": 14.926497485137917,
+      "n_train_samples": 363
+    }
+  },
+  "DATASET_02_MELBOURNE_INLET:MWC_ETP_MELBOURNE:inlet:nh4_n": {
+    "value_t": {
+      "mean": 39.07556935817805,
+      "std": 7.80212607304459,
+      "n_train_samples": 966
+    },
+    "delta_1": {
+      "mean": 0.024896265560165973,
+      "std": 7.7874648244296285,
+      "n_train_samples": 964
+    },
+    "rolling_mean_3": {
+      "mean": 39.06029106029106,
+      "std": 6.178436708809451,
+      "n_train_samples": 962
+    },
+    "rolling_std_3": {
+      "mean": 4.736122342532492,
+      "std": 3.356273432244566,
+      "n_train_samples": 962
+    }
+  },
+  "DATASET_02_MELBOURNE_INLET:MWC_ETP_MELBOURNE:inlet:bod": {
+    "value_t": {
+      "mean": 383.2332155477032,
+      "std": 94.78992222853307,
+      "n_train_samples": 566
+    },
+    "delta_1": {
+      "mean": 3.0242825607064017,
+      "std": 110.48914655968471,
+      "n_train_samples": 453
+    },
+    "rolling_mean_3": {
+      "mean": 384.2048929663609,
+      "std": 69.40481507261418,
+      "n_train_samples": 436
+    },
+    "rolling_std_3": {
+      "mean": 64.4050887983435,
+      "std": 48.47597669664848,
+      "n_train_samples": 436
+    }
+  },
+  "DATASET_02_MELBOURNE_INLET:MWC_ETP_MELBOURNE:inlet:cod": {
+    "value_t": {
+      "mean": 825.6310782241014,
+      "std": 143.51622638957528,
+      "n_train_samples": 946
+    },
+    "delta_1": {
+      "mean": 2.300215982721382,
+      "std": 165.4708333677501,
+      "n_train_samples": 926
+    },
+    "rolling_mean_3": {
+      "mean": 826.4504405286343,
+      "std": 105.12330296507335,
+      "n_train_samples": 908
+    },
+    "rolling_std_3": {
+      "mean": 98.01232131221455,
+      "std": 69.23849000382891,
+      "n_train_samples": 908
+    }
+  },
+  "DATASET_02_MELBOURNE_INLET:MWC_ETP_MELBOURNE:inlet:tn": {
+    "value_t": {
+      "mean": 62.28125,
+      "std": 8.698303384616642,
+      "n_train_samples": 96
+    },
+    "delta_1": {
+      "mean": 0.0,
+      "std": 1.0,
+      "n_train_samples": 0
+    },
+    "rolling_mean_3": {
+      "mean": 0.0,
+      "std": 1.0,
+      "n_train_samples": 0
+    },
+    "rolling_std_3": {
+      "mean": 0.0,
+      "std": 1.0,
+      "n_train_samples": 0
+    }
+  },
+  "DATASET_02_MELBOURNE_INLET:MWC_ETP_MELBOURNE:inlet:nox_n": {
+    "value_t": {
+      "mean": 0.019583333333333338,
+      "std": 0.038185857620619476,
+      "n_train_samples": 96
+    },
+    "delta_1": {
+      "mean": 0.0,
+      "std": 1.0,
+      "n_train_samples": 0
+    },
+    "rolling_mean_3": {
+      "mean": 0.0,
+      "std": 1.0,
+      "n_train_samples": 0
+    },
+    "rolling_std_3": {
+      "mean": 0.0,
+      "std": 1.0,
+      "n_train_samples": 0
+    }
+  },
+  "DATASET_03_MELBOURNE_OUTLET:MWC_ETP_MELBOURNE:final_effluent:cod": {
+    "value_t": {
+      "mean": 24.88102261553589,
+      "std": 6.803796422482371,
+      "n_train_samples": 1017
+    },
+    "delta_1": {
+      "mean": -0.27697841726618705,
+      "std": 6.147762649473254,
+      "n_train_samples": 834
+    },
+    "rolling_mean_3": {
+      "mean": 24.647779479326186,
+      "std": 5.797749757433674,
+      "n_train_samples": 653
+    },
+    "rolling_std_3": {
+      "mean": 3.669350480626962,
+      "std": 2.6045042414708757,
+      "n_train_samples": 653
+    }
+  },
+  "DATASET_03_MELBOURNE_OUTLET:MWC_ETP_MELBOURNE:final_effluent:bod": {
+    "value_t": {
+      "mean": 2.4782608695652173,
+      "std": 0.7474664903320363,
+      "n_train_samples": 207
+    },
+    "delta_1": {
+      "mean": 0.5,
+      "std": 2.5,
+      "n_train_samples": 2
+    },
+    "rolling_mean_3": {
+      "mean": 3.3333333333333335,
+      "std": 1.0,
+      "n_train_samples": 1
+    },
+    "rolling_std_3": {
+      "mean": 1.5275252316519468,
+      "std": 1.0,
+      "n_train_samples": 1
+    }
+  },
+  "DATASET_03_MELBOURNE_OUTLET:MWC_ETP_MELBOURNE:final_effluent:nh4_n": {
+    "value_t": {
+      "mean": 0.35626666666666656,
+      "std": 9.115883851583211,
+      "n_train_samples": 1200
+    },
+    "delta_1": {
+      "mean": -8.347245408992374e-06,
+      "std": 12.907826031961493,
+      "n_train_samples": 1198
+    },
+    "rolling_mean_3": {
+      "mean": 0.3571794871794871,
+      "std": 5.267464940360005,
+      "n_train_samples": 1196
+    },
+    "rolling_std_3": {
+      "mean": 0.48641675827262915,
+      "std": 9.121931601351035,
+      "n_train_samples": 1196
+    }
+  },
+  "DATASET_03_MELBOURNE_OUTLET:MWC_ETP_MELBOURNE:final_effluent:tn": {
+    "value_t": {
+      "mean": 15.330097087378642,
+      "std": 3.2631759784452625,
+      "n_train_samples": 103
+    },
+    "delta_1": {
+      "mean": 0.0,
+      "std": 1.0,
+      "n_train_samples": 0
+    },
+    "rolling_mean_3": {
+      "mean": 0.0,
+      "std": 1.0,
+      "n_train_samples": 0
+    },
+    "rolling_std_3": {
+      "mean": 0.0,
+      "std": 1.0,
+      "n_train_samples": 0
+    }
+  },
+  "DATASET_03_MELBOURNE_OUTLET:MWC_ETP_MELBOURNE:final_effluent:nox_n": {
+    "value_t": {
+      "mean": 13.74757281553398,
+      "std": 3.293767125308931,
+      "n_train_samples": 103
+    },
+    "delta_1": {
+      "mean": 0.0,
+      "std": 1.0,
+      "n_train_samples": 0
+    },
+    "rolling_mean_3": {
+      "mean": 0.0,
+      "std": 1.0,
+      "n_train_samples": 0
+    },
+    "rolling_std_3": {
+      "mean": 0.0,
+      "std": 1.0,
+      "n_train_samples": 0
+    }
+  },
+  "DATASET_03_MELBOURNE_OUTLET:MWC_ETP_MELBOURNE:final_effluent:tkn": {
+    "value_t": {
+      "mean": 2.2775565610859725,
+      "std": 1.1572488059345936,
+      "n_train_samples": 1105
+    },
+    "delta_1": {
+      "mean": -0.01170634920634921,
+      "std": 1.5970961574030018,
+      "n_train_samples": 1008
+    },
+    "rolling_mean_3": {
+      "mean": 2.2663373582144164,
+      "std": 0.7356737683969714,
+      "n_train_samples": 911
+    },
+    "rolling_std_3": {
+      "mean": 0.7195187148428314,
+      "std": 0.8975382591093471,
+      "n_train_samples": 911
+    }
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "dataset_id": "DATASET_02_MELBOURNE_ETP_INLET",
+  "processing_version": "v2.2.1",
+  "processing_timestamp": "2026-09-27T05:48:30.661951+00:00",
+  "raw_file_hash": "1e60bff7f04397d81586dd79adf34393bb36d194331369edf54f993861987461",
+  "output_file": "melbourne_inlet_processed.csv",
+  "rows_before": 1382,
+  "rows_after": 1382,
+  "rows_removed": 0,
+  "reasons_for_removal": [],
+  "missing_values_before": 2951,
+  "missing_values_after": 2951,
+  "imputation_performed": false,
+  "imputation_policy": "Explicit null preservation (No synthetic filling of missing days)",
+  "parameters_removed": [
+    "recorddate"
+  ],
+  "transformations_performed": [
+    "Verified source SHA-256: 1e60bff7f04397d81586dd79adf34393bb36d194331369edf54f993861987461",
+    "Loaded 1382 raw rows with 2951 empty cells.",
+    "Parsed mixed date strings into UTC ISO-8601 timestamps.",
+    "Normalized column names to lowercase canonical parameter slugs with mg_l units.",
+    "Ensured strict float64 types for all numerical measurement columns.",
+    "Exported processed dataset to C:\\Users\\Risa vilas dias\\aquatrust-ai\\AquaTrustAI\\datasets\\processed\\DATASET_02_MELBOURNE_ETP_INLET\\melbourne_inlet_processed.csv"
+  ]
+}

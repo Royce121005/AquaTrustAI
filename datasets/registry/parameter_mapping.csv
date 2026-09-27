@@ -1,37 +1,37 @@
-dataset_id,source_column,source_definition,canonical_parameter,source_unit,canonical_unit,conversion_factor,treatment_stage,is_canonical_core
-DATASET_01_UCI_WATER_TREATMENT,PH-E,Input pH,pH,pH units,pH units,1.0,inlet,True
-DATASET_01_UCI_WATER_TREATMENT,PH-P,Primary Settler pH,pH,pH units,pH units,1.0,primary_settler,True
-DATASET_01_UCI_WATER_TREATMENT,PH-D,Secondary Settler pH,pH,pH units,pH units,1.0,secondary_aeration,True
-DATASET_01_UCI_WATER_TREATMENT,PH-S,Output / Final Effluent pH,pH,pH units,pH units,1.0,final_effluent,True
-DATASET_01_UCI_WATER_TREATMENT,DBO-E,Input Biological Demand of Oxygen,BOD,mg/L,mg/L,1.0,inlet,True
-DATASET_01_UCI_WATER_TREATMENT,DBO-P,Primary Settler Biological Demand of Oxygen,BOD,mg/L,mg/L,1.0,primary_settler,True
-DATASET_01_UCI_WATER_TREATMENT,DBO-D,Secondary Settler Biological Demand of Oxygen,BOD,mg/L,mg/L,1.0,secondary_aeration,True
-DATASET_01_UCI_WATER_TREATMENT,DBO-S,Output Biological Demand of Oxygen,BOD,mg/L,mg/L,1.0,final_effluent,True
-DATASET_01_UCI_WATER_TREATMENT,DQO-E,Input Chemical Demand of Oxygen,COD,mg/L,mg/L,1.0,inlet,True
-DATASET_01_UCI_WATER_TREATMENT,DQO-D,Secondary Settler Chemical Demand of Oxygen,COD,mg/L,mg/L,1.0,secondary_aeration,True
-DATASET_01_UCI_WATER_TREATMENT,DQO-S,Output Chemical Demand of Oxygen,COD,mg/L,mg/L,1.0,final_effluent,True
-DATASET_01_UCI_WATER_TREATMENT,SS-E,Input Suspended Solids,TSS,mg/L,mg/L,1.0,inlet,True
-DATASET_01_UCI_WATER_TREATMENT,SS-P,Primary Settler Suspended Solids,TSS,mg/L,mg/L,1.0,primary_settler,True
-DATASET_01_UCI_WATER_TREATMENT,SS-D,Secondary Settler Suspended Solids,TSS,mg/L,mg/L,1.0,secondary_aeration,True
-DATASET_01_UCI_WATER_TREATMENT,SS-S,Output Suspended Solids,TSS,mg/L,mg/L,1.0,final_effluent,True
-DATASET_01_UCI_WATER_TREATMENT,COND-E,Input Conductivity,COND,µS/cm,µS/cm,1.0,inlet,False
-DATASET_01_UCI_WATER_TREATMENT,Q-E,Input Flow Rate,FLOW_RATE,m3/day,m3/day,1.0,inlet,False
-DATASET_02_MELBOURNE_ETP_INLET,Ammonia_mg.L-1,Raw Influent Ammonia as N,NH4_N,mg/L,mg/L,1.0,inlet,True
-DATASET_02_MELBOURNE_ETP_INLET,BOD_mg.L-1,Raw Influent Biochemical Oxygen Demand,BOD,mg/L,mg/L,1.0,inlet,True
-DATASET_02_MELBOURNE_ETP_INLET,COD_mg.L-1,Raw Influent Chemical Oxygen Demand,COD,mg/L,mg/L,1.0,inlet,True
-DATASET_02_MELBOURNE_ETP_INLET,Nitrogentotal_mg.L-1,Raw Influent Total Nitrogen,TN,mg/L,mg/L,1.0,inlet,True
-DATASET_02_MELBOURNE_ETP_INLET,NitrateplusNitrite_mg.L-1,Raw Influent Nitrate + Nitrite as N,NOx_N,mg/L,mg/L,1.0,inlet,False
-DATASET_03_MELBOURNE_ETP_OUTLET,COD_mg.L-1,Final Effluent Chemical Oxygen Demand,COD,mg/L,mg/L,1.0,final_effluent,True
-DATASET_03_MELBOURNE_ETP_OUTLET,BOD_mg.L-1,Final Effluent Biochemical Oxygen Demand,BOD,mg/L,mg/L,1.0,final_effluent,True
-DATASET_03_MELBOURNE_ETP_OUTLET,Ammonia_mg.L-1,Final Effluent Ammonia as N,NH4_N,mg/L,mg/L,1.0,final_effluent,True
-DATASET_03_MELBOURNE_ETP_OUTLET,Nitrogentotal_mg.L-1,Final Effluent Total Nitrogen,TN,mg/L,mg/L,1.0,final_effluent,True
-DATASET_03_MELBOURNE_ETP_OUTLET,Total_KjeldahlNitrogen_mg.L-1,Final Effluent TKN as N,TKN,mg/L,mg/L,1.0,final_effluent,False
-DATASET_03_MELBOURNE_ETP_OUTLET,NitrateplusNitrite_mg.L-1,Final Effluent Nitrate + Nitrite as N,NOx_N,mg/L,mg/L,1.0,final_effluent,False
-DATASET_04_CPCB_UP_STP,ph,Treated Effluent pH,pH,pH units,pH units,1.0,final_effluent,True
-DATASET_04_CPCB_UP_STP,bod_mg_l,Treated Effluent BOD,BOD,mg/L,mg/L,1.0,final_effluent,True
-DATASET_04_CPCB_UP_STP,cod_mg_l,Treated Effluent COD,COD,mg/L,mg/L,1.0,final_effluent,True
-DATASET_04_CPCB_UP_STP,tss_mg_l,Treated Effluent TSS,TSS,mg/L,mg/L,1.0,final_effluent,True
-DATASET_04_CPCB_UP_STP,total_coliform_mpn_100ml,Total Coliform Count,TOTAL_COLIFORM,MPN/100mL,MPN/100mL,1.0,final_effluent,False
-DATASET_04_CPCB_UP_STP,fecal_coliform_mpn_100ml,Fecal Coliform Count,FECAL_COLIFORM,MPN/100mL,MPN/100mL,1.0,final_effluent,False
-DATASET_04_CPCB_UP_STP,installed_capacity_mld,Plant Installed Capacity,INSTALLED_CAPACITY,MLD,MLD,1.0,facility_metadata,False
-DATASET_04_CPCB_UP_STP,utilized_capacity_mld,Plant Utilized Capacity,UTILIZED_CAPACITY,MLD,MLD,1.0,facility_metadata,False
+dataset_id,original_column_name,source_definition,canonical_parameter_name,source_unit,canonical_unit,conversion_required,conversion_formula,conversion_scientifically_valid,treatment_stage,is_canonical_core,notes_limitations
+DATASET_01_UCI_WATER_TREATMENT,PH-E,Input pH to plant,pH,pH units,pH units,None,value,True,inlet,True,Raw influent pH
+DATASET_01_UCI_WATER_TREATMENT,PH-P,pH in primary settler,pH,pH units,pH units,None,value,True,primary_settler,True,Primary settler pH
+DATASET_01_UCI_WATER_TREATMENT,PH-D,pH in secondary settler,pH,pH units,pH units,None,value,True,secondary_aeration,True,Secondary aeration basin pH
+DATASET_01_UCI_WATER_TREATMENT,PH-S,Output pH from plant,pH,pH units,pH units,None,value,True,final_effluent,True,Final effluent discharge pH
+DATASET_01_UCI_WATER_TREATMENT,DBO-E,Input Biological demand of oxygen (BOD) to plant,BOD,mg/L,mg/L,None,value,True,inlet,True,Standard 5-day BOD at inlet
+DATASET_01_UCI_WATER_TREATMENT,DBO-P,Primary settler Biological demand of oxygen,BOD,mg/L,mg/L,None,value,True,primary_settler,True,Post-primary clarification BOD
+DATASET_01_UCI_WATER_TREATMENT,DBO-D,Secondary settler Biological demand of oxygen,BOD,mg/L,mg/L,None,value,True,secondary_aeration,True,Biological treatment stage BOD
+DATASET_01_UCI_WATER_TREATMENT,DBO-S,Output Biological demand of oxygen,BOD,mg/L,mg/L,None,value,True,final_effluent,True,Final effluent BOD
+DATASET_01_UCI_WATER_TREATMENT,DQO-E,Input Chemical demand of oxygen (COD) to plant,COD,mg/L,mg/L,None,value,True,inlet,True,Raw influent COD
+DATASET_01_UCI_WATER_TREATMENT,DQO-D,Secondary settler Chemical demand of oxygen,COD,mg/L,mg/L,None,value,True,secondary_aeration,True,Biological stage COD (DQO-P unmonitored in UCI)
+DATASET_01_UCI_WATER_TREATMENT,DQO-S,Output Chemical demand of oxygen,COD,mg/L,mg/L,None,value,True,final_effluent,True,Final effluent COD
+DATASET_01_UCI_WATER_TREATMENT,SS-E,Input suspended solids to plant,TSS,mg/L,mg/L,None,value,True,inlet,True,Raw influent TSS
+DATASET_01_UCI_WATER_TREATMENT,SS-P,Primary settler suspended solids,TSS,mg/L,mg/L,None,value,True,primary_settler,True,Primary settler TSS
+DATASET_01_UCI_WATER_TREATMENT,SS-D,Secondary settler suspended solids,TSS,mg/L,mg/L,None,value,True,secondary_aeration,True,Aeration basin mixed liquor / settler TSS
+DATASET_01_UCI_WATER_TREATMENT,SS-S,Output suspended solids,TSS,mg/L,mg/L,None,value,True,final_effluent,True,Final effluent TSS
+DATASET_01_UCI_WATER_TREATMENT,COND-E,Input electrical conductivity to plant,COND,µS/cm,µS/cm,None,value,True,inlet,False,Supplementary physical indicator
+DATASET_01_UCI_WATER_TREATMENT,Q-E,Input volumetric flow to plant,FLOW_RATE,m3/day,m3/day,None,value,True,inlet,False,Hydraulic load rate
+DATASET_02_MELBOURNE_ETP_INLET,Ammonia_mg.L-1,Raw influent Ammonia concentration as N,NH4_N,mg.L-1,mg/L,Unit formatting,value * 1.0,True,inlet,True,Expressed as elemental N (mg/L as N)
+DATASET_02_MELBOURNE_ETP_INLET,BOD_mg.L-1,Raw influent Biochemical Oxygen Demand,BOD,mg.L-1,mg/L,Unit formatting,value * 1.0,True,inlet,True,Daily composite grab sample
+DATASET_02_MELBOURNE_ETP_INLET,COD_mg.L-1,Raw influent Chemical Oxygen Demand,COD,mg.L-1,mg/L,Unit formatting,value * 1.0,True,inlet,True,Daily composite grab sample
+DATASET_02_MELBOURNE_ETP_INLET,Nitrogentotal_mg.L-1,Raw influent Total Nitrogen concentration as N,TN,mg.L-1,mg/L,Unit formatting,value * 1.0,True,inlet,True,"Sum of organic N, ammonia, nitrate, nitrite"
+DATASET_02_MELBOURNE_ETP_INLET,NitrateplusNitrite_mg.L-1,Raw influent Oxidized Nitrogen (NOx) as N,NOx_N,mg.L-1,mg/L,Unit formatting,value * 1.0,True,inlet,False,Supplementary oxidized nitrogen fraction
+DATASET_03_MELBOURNE_ETP_OUTLET,COD_mg.L-1,Treated effluent Chemical Oxygen Demand,COD,mg.L-1,mg/L,Unit formatting,value * 1.0,True,final_effluent,True,Treated final discharge COD
+DATASET_03_MELBOURNE_ETP_OUTLET,BOD_mg.L-1,Treated effluent Biochemical Oxygen Demand,BOD,mg.L-1,mg/L,Unit formatting,value * 1.0,True,final_effluent,True,Treated final discharge BOD
+DATASET_03_MELBOURNE_ETP_OUTLET,Ammonia_mg.L-1,Treated effluent Ammonia concentration as N,NH4_N,mg.L-1,mg/L,Unit formatting,value * 1.0,True,final_effluent,True,Nitrification efficiency indicator
+DATASET_03_MELBOURNE_ETP_OUTLET,Nitrogentotal_mg.L-1,Treated effluent Total Nitrogen as N,TN,mg.L-1,mg/L,Unit formatting,value * 1.0,True,final_effluent,True,Total effluent nitrogen
+DATASET_03_MELBOURNE_ETP_OUTLET,Total_KjeldahlNitrogen_mg.L-1,Treated effluent Total Kjeldahl Nitrogen as N,TKN,mg.L-1,mg/L,Unit formatting,value * 1.0,True,final_effluent,False,Organic N + Ammonia
+DATASET_03_MELBOURNE_ETP_OUTLET,NitrateplusNitrite_mg.L-1,Treated effluent Nitrate + Nitrite as N,NOx_N,mg.L-1,mg/L,Unit formatting,value * 1.0,True,final_effluent,False,Denitrification efficiency indicator
+DATASET_04_CPCB_UP_STP,ph,Treated effluent pH,pH,pH units,pH units,None,value,True,final_effluent,True,Electrometric field reading
+DATASET_04_CPCB_UP_STP,bod_mg_l,Treated effluent Biochemical Oxygen Demand,BOD,mg/l,mg/L,Unit formatting,value * 1.0,True,final_effluent,True,CPCB standard 3-day 27°C / 5-day 20°C
+DATASET_04_CPCB_UP_STP,cod_mg_l,Treated effluent Chemical Oxygen Demand,COD,mg/l,mg/L,Unit formatting,value * 1.0,True,final_effluent,True,Dichromate closed reflux method
+DATASET_04_CPCB_UP_STP,tss_mg_l,Treated effluent Total Suspended Solids,TSS,mg/l,mg/L,Unit formatting,value * 1.0,True,final_effluent,True,Gravimetric non-filterable residue
+DATASET_04_CPCB_UP_STP,total_coliform_mpn_100ml,Total coliform bacterial density,TOTAL_COLIFORM,MPN/100ml,MPN/100mL,Unit formatting,value * 1.0,True,final_effluent,False,Microbiological compliance parameter
+DATASET_04_CPCB_UP_STP,fecal_coliform_mpn_100ml,Fecal coliform bacterial density,FECAL_COLIFORM,MPN/100ml,MPN/100mL,Unit formatting,value * 1.0,True,final_effluent,False,Microbiological compliance parameter
+DATASET_04_CPCB_UP_STP,installed_capacity_mld,Plant nominal installed capacity,INSTALLED_CAPACITY,MLD,MLD,None,value,True,facility_metadata,False,Million Liters per Day
+DATASET_04_CPCB_UP_STP,utilized_capacity_mld,Plant actual utilized capacity,UTILIZED_CAPACITY,MLD,MLD,None,value,True,facility_metadata,False,Million Liters per Day
