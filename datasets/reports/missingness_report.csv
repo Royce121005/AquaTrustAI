@@ -1,0 +1,5 @@
+dataset_id,dataset_name,total_records,total_columns,missing_cell_count,missing_percentage,missing_encoding,affected_columns,missing_core_parameters
+DATASET_01_UCI_WATER_TREATMENT,UCI Water Treatment Plant,527,39,591,2.87%,Literal '?',38 out of 39 columns,"NH4-N, TN"
+DATASET_02_MELBOURNE_ETP_INLET,Melbourne ETP Raw Influent,1382,7,612,6.33%,Empty string,5 out of 7 columns,"pH, TSS"
+DATASET_03_MELBOURNE_ETP_OUTLET,Melbourne ETP Final Effluent,1716,8,847,7.04%,Literal 'NULL' & blank cells,6 out of 8 columns,"pH, TSS"
+DATASET_04_CPCB_UP_STP,CPCB / UPPCB STP Bulletin,125,21,28,1.07%,Blank cells in optional metadata,2 out of 21 columns,"NH4-N, TN"

@@ -1,0 +1,31 @@
+version: 2.2.1
+standard_units:
+  concentration_mass_volume: mg/L
+  acidity_alkalinity: pH units
+  electrical_conductivity: "\xB5S/cm"
+  volumetric_flow_daily: m3/day
+  volumetric_capacity_mld: MLD
+  bacterial_count: MPN/100mL
+  dimensionless_ratio_percentage: '%'
+  settleable_solids: mL/L
+source_unit_conversions:
+- source_unit: mg.L-1
+  canonical_unit: mg/L
+  factor: 1.0
+  verified: true
+- source_unit: mg/l
+  canonical_unit: mg/L
+  factor: 1.0
+  verified: true
+- source_unit: MLD
+  canonical_unit: MLD
+  factor: 1.0
+  verified: true
+- source_unit: "\xB5S/cm"
+  canonical_unit: "\xB5S/cm"
+  factor: 1.0
+  verified: true
+- source_unit: MPN/100ml
+  canonical_unit: MPN/100mL
+  factor: 1.0
+  verified: true

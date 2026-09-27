@@ -1,0 +1,78 @@
+{
+  "dataset_id": "DATASET_01_UCI_WATER_TREATMENT",
+  "dataset_name": "UCI Water Treatment Plant Historical Sensor Dataset",
+  "source": "UCI Machine Learning Repository",
+  "source_url": "https://archive.ics.uci.edu/dataset/106/water+treatment+plant",
+  "license": "CC BY 4.0",
+  "download_date": "2026-09-27",
+  "source_version": "1.0",
+  "original_filename": "water-treatment.data",
+  "file_format": "CSV (comma-delimited text without header)",
+  "file_size_bytes": 92549,
+  "file_sha256": "af2e632b370646ea9763b11aed54b30423f0c3b8a7fb1b7d23e1c922098a7a8a",
+  "facility_information": {
+    "facility_id": "UCI_URBAN_ETP_01",
+    "facility_type": "Urban Wastewater Treatment Plant",
+    "country": "Spain (Catalonia)",
+    "capacity": "UNKNOWN",
+    "capacity_unit": "UNKNOWN",
+    "operational_stages": [
+      "Inlet / Plant Input (E)",
+      "Primary Settler (P)",
+      "Secondary / Aeration Basin (D)",
+      "Final Effluent / Plant Output (S)"
+    ]
+  },
+  "measurement_stage": "multi_stage (inlet, primary, secondary, final_effluent)",
+  "parameters_available": [
+    "pH (PH-E, PH-P, PH-D, PH-S)",
+    "BOD (DBO-E, DBO-P, DBO-D, DBO-S)",
+    "COD (DQO-E, DQO-D, DQO-S)",
+    "TSS / Suspended Solids (SS-E, SS-P, SS-D, SS-S)",
+    "Volatile Suspended Solids (SSV-E, SSV-P, SSV-D, SSV-S)",
+    "Sediments (SED-E, SED-P, SED-D, SED-S)",
+    "Conductivity (COND-E, COND-P, COND-D, COND-S)",
+    "Influent Flow (Q-E)",
+    "Zinc Concentration (ZN-E)",
+    "Process Removal Efficiencies (RD-DBO-P, RD-SS-P, RD-SED-P, RD-DBO-S, RD-DQO-S, RD-SS-S, RD-SED-S, RD-DBO-G, RD-DQO-G, RD-SS-G, RD-SED-G)"
+  ],
+  "parameters_missing": [
+    "Ammoniacal Nitrogen (NH4-N)",
+    "Total Nitrogen (TN)"
+  ],
+  "units": {
+    "pH": "pH units (dimensionless)",
+    "BOD": "mg/L",
+    "COD": "mg/L",
+    "TSS": "mg/L",
+    "SSV": "%",
+    "SED": "mL/L",
+    "COND": "\u00b5S/cm",
+    "Q-E": "m3/day",
+    "ZN-E": "mg/L",
+    "RD": "%"
+  },
+  "timestamp_availability": true,
+  "timestamp_format": "Day index string: D-D/M/YY (1990-03-01 to 1991-08-29)",
+  "sampling_frequency": "Daily",
+  "record_count": 527,
+  "column_count": 39,
+  "missingness_summary": {
+    "representation": "Literal question mark (?)",
+    "total_missing_cells": 591,
+    "missingness_percentage": 2.87,
+    "affected_columns": 38
+  },
+  "known_limitations": [
+    "Historical benchmark data from 1990-1991; not representative of modern dynamic online telemetry.",
+    "Ammoniacal Nitrogen and Total Nitrogen were not monitored.",
+    "Missing values are encoded as literal ? characters."
+  ],
+  "provenance": {
+    "data_origin": "observed",
+    "source_classification": "measurement",
+    "acquisition_method": "Official UCI Repository Download"
+  },
+  "preprocessing_version": "v0.0.0-unprocessed",
+  "assigned_role": "Primary Benchmark ML Training & Multi-Stage Anomaly Evaluation"
+}

@@ -1,0 +1,166 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aquatrust.ai/schemas/canonical_reading.v2.2.1.json",
+  "title": "AquaTrustAICanonicalReading",
+  "description": "Authoritative contract for observed and simulated wastewater telemetry observations across all AquaTrust AI layers.",
+  "type": "object",
+  "required": [
+    "dataset_id",
+    "source_record_id",
+    "facility_id",
+    "sensor_id",
+    "timestamp",
+    "measurement_stage",
+    "parameter",
+    "unit",
+    "data_origin",
+    "quality_status",
+    "provenance_id"
+  ],
+  "properties": {
+    "reading_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Unique UUID identifying this canonical reading instance."
+    },
+    "dataset_id": {
+      "type": "string",
+      "enum": [
+        "DATASET_01_UCI_WATER_TREATMENT",
+        "DATASET_02_MELBOURNE_ETP_INLET",
+        "DATASET_03_MELBOURNE_ETP_OUTLET",
+        "DATASET_04_CPCB_UP_STP",
+        "SIMULATION_MULTI_STP_GRID"
+      ],
+      "description": "Registered identifier of the source dataset or simulation generator."
+    },
+    "source_record_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Original record row identifier, line index, or simulation step key."
+    },
+    "facility_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Standardized unique identifier of the physical or simulated wastewater treatment facility."
+    },
+    "sensor_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Standardized hardware telemetry sensor identifier or analytical laboratory assay ID."
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "UTC ISO 8601 timestamp with microsecond resolution (YYYY-MM-DDTHH:MM:SS.ffffffZ)."
+    },
+    "measurement_stage": {
+      "type": "string",
+      "enum": [
+        "inlet",
+        "primary_settler",
+        "secondary_aeration",
+        "final_effluent",
+        "sludge_line",
+        "facility_metadata",
+        "unspecified"
+      ],
+      "description": "Wastewater treatment process stage where the measurement was sampled."
+    },
+    "parameter": {
+      "type": "string",
+      "enum": [
+        "BOD",
+        "COD",
+        "TSS",
+        "pH",
+        "NH4_N",
+        "TN",
+        "COND",
+        "FLOW_RATE",
+        "TOTAL_COLIFORM",
+        "FECAL_COLIFORM",
+        "NOx_N",
+        "TKN",
+        "ZN",
+        "INSTALLED_CAPACITY",
+        "UTILIZED_CAPACITY"
+      ],
+      "description": "Canonical parameter symbol as defined in the AquaTrust Parameter Dictionary."
+    },
+    "value": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "description": "Numerical measurement value. Null indicates an unmonitored parameter or missing value."
+    },
+    "unit": {
+      "type": "string",
+      "enum": [
+        "mg/L",
+        "pH units",
+        "\u00b5S/cm",
+        "m3/day",
+        "MLD",
+        "MPN/100mL",
+        "%",
+        "mL/L",
+        "dimensionless"
+      ],
+      "description": "Standardized scientific unit of measurement."
+    },
+    "data_origin": {
+      "type": "string",
+      "enum": [
+        "observed",
+        "simulated"
+      ],
+      "description": "Strict origin classification. Real empirical source vs simulated data."
+    },
+    "quality_status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "valid",
+        "invalid",
+        "suspect",
+        "insufficient_data"
+      ],
+      "default": "pending",
+      "description": "Deterministic validation outcome. Evaluated strictly by the validation service."
+    },
+    "anomaly_status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "normal",
+        "anomalous",
+        "insufficient_data"
+      ],
+      "default": "pending",
+      "description": "AI Isolation Forest anomaly status. Kept strictly independent of quality_status."
+    },
+    "compliance_status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "compliant",
+        "non_compliant",
+        "not_applicable"
+      ],
+      "default": "pending",
+      "description": "Regulatory compliance evaluation outcome. Evaluated strictly by QA/compliance engine."
+    },
+    "provenance_id": {
+      "type": "string",
+      "description": "Cryptographic hash or structured provenance identifier linking to raw acquisition manifests."
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Optional domain metadata, facility contextual tags, or source file hashes."
+    }
+  },
+  "additionalProperties": false
+}

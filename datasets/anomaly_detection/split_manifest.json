@@ -1,0 +1,92 @@
+{
+  "manifest_version": "2.2.1",
+  "created_at": "2026-09-27T06:06:07.906189+00:00",
+  "algorithm_target": "IsolationForest",
+  "partition_strategy": "chronological_70_15_15",
+  "leakage_status": "PASSED",
+  "total_streams_processed": 26,
+  "total_rows": {
+    "train": 17561,
+    "validation": 3762,
+    "test": 3788,
+    "test_with_injected_anomalies": 3788
+  },
+  "feature_list": [
+    "value_t",
+    "delta_1",
+    "rolling_mean_3",
+    "rolling_std_3"
+  ],
+  "scaled_feature_list": [
+    "value_t_scaled",
+    "delta_1_scaled",
+    "rolling_mean_3_scaled",
+    "rolling_std_3_scaled"
+  ],
+  "scaler_file": "scalers\\scaler_parameters.json",
+  "dataset_breakdown": {
+    "dataset_01_uci": {
+      "stream_count": 15,
+      "train_rows": 5520,
+      "val_rows": 1185,
+      "test_rows": 1200,
+      "eval_test_rows": 1200,
+      "injected_anomalies_count": 26,
+      "streams": [
+        "DATASET_01_UCI:FAC_UCI_URBAN_ETP_01:final_effluent:ph",
+        "DATASET_01_UCI:FAC_UCI_URBAN_ETP_01:final_effluent:bod",
+        "DATASET_01_UCI:FAC_UCI_URBAN_ETP_01:final_effluent:cod",
+        "DATASET_01_UCI:FAC_UCI_URBAN_ETP_01:final_effluent:tss",
+        "DATASET_01_UCI:FAC_UCI_URBAN_ETP_01:inlet:ph",
+        "DATASET_01_UCI:FAC_UCI_URBAN_ETP_01:inlet:bod",
+        "DATASET_01_UCI:FAC_UCI_URBAN_ETP_01:inlet:cod",
+        "DATASET_01_UCI:FAC_UCI_URBAN_ETP_01:inlet:tss",
+        "DATASET_01_UCI:FAC_UCI_URBAN_ETP_01:primary_settler:ph",
+        "DATASET_01_UCI:FAC_UCI_URBAN_ETP_01:primary_settler:bod",
+        "DATASET_01_UCI:FAC_UCI_URBAN_ETP_01:primary_settler:tss",
+        "DATASET_01_UCI:FAC_UCI_URBAN_ETP_01:secondary_settler:ph",
+        "DATASET_01_UCI:FAC_UCI_URBAN_ETP_01:secondary_settler:bod",
+        "DATASET_01_UCI:FAC_UCI_URBAN_ETP_01:secondary_settler:cod",
+        "DATASET_01_UCI:FAC_UCI_URBAN_ETP_01:secondary_settler:tss"
+      ]
+    },
+    "dataset_02_melbourne_inlet": {
+      "stream_count": 5,
+      "train_rows": 4835,
+      "val_rows": 1035,
+      "test_rows": 1040,
+      "eval_test_rows": 1040,
+      "injected_anomalies_count": 11,
+      "streams": [
+        "DATASET_02_MELBOURNE_INLET:MWC_ETP_MELBOURNE:inlet:nh4_n",
+        "DATASET_02_MELBOURNE_INLET:MWC_ETP_MELBOURNE:inlet:bod",
+        "DATASET_02_MELBOURNE_INLET:MWC_ETP_MELBOURNE:inlet:cod",
+        "DATASET_02_MELBOURNE_INLET:MWC_ETP_MELBOURNE:inlet:tn",
+        "DATASET_02_MELBOURNE_INLET:MWC_ETP_MELBOURNE:inlet:nox_n"
+      ]
+    },
+    "dataset_03_melbourne_outlet": {
+      "stream_count": 6,
+      "train_rows": 7206,
+      "val_rows": 1542,
+      "test_rows": 1548,
+      "eval_test_rows": 1548,
+      "injected_anomalies_count": 17,
+      "streams": [
+        "DATASET_03_MELBOURNE_OUTLET:MWC_ETP_MELBOURNE:final_effluent:cod",
+        "DATASET_03_MELBOURNE_OUTLET:MWC_ETP_MELBOURNE:final_effluent:bod",
+        "DATASET_03_MELBOURNE_OUTLET:MWC_ETP_MELBOURNE:final_effluent:nh4_n",
+        "DATASET_03_MELBOURNE_OUTLET:MWC_ETP_MELBOURNE:final_effluent:tn",
+        "DATASET_03_MELBOURNE_OUTLET:MWC_ETP_MELBOURNE:final_effluent:nox_n",
+        "DATASET_03_MELBOURNE_OUTLET:MWC_ETP_MELBOURNE:final_effluent:tkn"
+      ]
+    }
+  },
+  "file_checksums": {
+    "train.csv": "099b6d58d45adf1092c68cb8e4311eba80f18658209796099892edc2864cb444",
+    "validation.csv": "5abdd51a953b08de523fc71afeb48260c24aa18e69cab8cf4b532c47db0b5350",
+    "test.csv": "e0563e069b71c14eb5f6bc6a7dca1fcace49c37e09ada010c6c1d2a1bef630ab",
+    "test_with_injected_anomalies.csv": "491131ecc4a5a23bbe6d87244d5c1452e2e5b92abb4165ac7d62ddcfcf39a934",
+    "scaler_parameters.json": "8c13bbb230e773bb3d87d1e96e850bbde84cfba204e837be620e3f125f2ad211"
+  }
+}
