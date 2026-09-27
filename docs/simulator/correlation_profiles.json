@@ -1,0 +1,206 @@
+{
+  "metadata": {
+    "version": "v2.2.1",
+    "data_origin": "observed",
+    "method": "Pearson correlation coefficient (r)",
+    "disclaimer": "Correlations reflect empirical observed co-movements. Simulator should preserve stoichiometric consistency."
+  },
+  "empirical_correlation_matrices": {
+    "FAC_UCI_inlet": {
+      "bod": {
+        "bod": 1.0,
+        "cod": 0.5647,
+        "tss": 0.1371,
+        "ph": 0.2094
+      },
+      "cod": {
+        "bod": 0.5647,
+        "cod": 1.0,
+        "tss": 0.2836,
+        "ph": 0.203
+      },
+      "tss": {
+        "bod": 0.1371,
+        "cod": 0.2836,
+        "tss": 1.0,
+        "ph": -0.0429
+      },
+      "ph": {
+        "bod": 0.2094,
+        "cod": 0.203,
+        "tss": -0.0429,
+        "ph": 1.0
+      }
+    },
+    "FAC_UCI_final_effluent": {
+      "bod": {
+        "bod": 1.0,
+        "cod": 0.6439,
+        "tss": 0.8681,
+        "ph": -0.187
+      },
+      "cod": {
+        "bod": 0.6439,
+        "cod": 1.0,
+        "tss": 0.6732,
+        "ph": -0.2154
+      },
+      "tss": {
+        "bod": 0.8681,
+        "cod": 0.6732,
+        "tss": 1.0,
+        "ph": -0.2356
+      },
+      "ph": {
+        "bod": -0.187,
+        "cod": -0.2154,
+        "tss": -0.2356,
+        "ph": 1.0
+      }
+    },
+    "MWC_MELBOURNE_inlet": {
+      "bod_mg_l": {
+        "bod_mg_l": 1.0,
+        "cod_mg_l": 0.4109,
+        "nh4_n_mg_l": 0.1673,
+        "tn_mg_l": 0.3684
+      },
+      "cod_mg_l": {
+        "bod_mg_l": 0.4109,
+        "cod_mg_l": 1.0,
+        "nh4_n_mg_l": 0.2888,
+        "tn_mg_l": 0.6582
+      },
+      "nh4_n_mg_l": {
+        "bod_mg_l": 0.1673,
+        "cod_mg_l": 0.2888,
+        "nh4_n_mg_l": 1.0,
+        "tn_mg_l": 0.467
+      },
+      "tn_mg_l": {
+        "bod_mg_l": 0.3684,
+        "cod_mg_l": 0.6582,
+        "nh4_n_mg_l": 0.467,
+        "tn_mg_l": 1.0
+      }
+    },
+    "MWC_MELBOURNE_final_effluent": {
+      "bod_mg_l": {
+        "bod_mg_l": 1.0,
+        "cod_mg_l": -0.0163,
+        "nh4_n_mg_l": -0.2784,
+        "tkn_mg_l": 0.2328,
+        "tn_mg_l": -0.0665
+      },
+      "cod_mg_l": {
+        "bod_mg_l": -0.0163,
+        "cod_mg_l": 1.0,
+        "nh4_n_mg_l": -0.0802,
+        "tkn_mg_l": 0.4824,
+        "tn_mg_l": -0.511
+      },
+      "nh4_n_mg_l": {
+        "bod_mg_l": -0.2784,
+        "cod_mg_l": -0.0802,
+        "nh4_n_mg_l": 1.0,
+        "tkn_mg_l": 0.0153,
+        "tn_mg_l": 0.1975
+      },
+      "tkn_mg_l": {
+        "bod_mg_l": 0.2328,
+        "cod_mg_l": 0.4824,
+        "nh4_n_mg_l": 0.0153,
+        "tkn_mg_l": 1.0,
+        "tn_mg_l": -0.668
+      },
+      "tn_mg_l": {
+        "bod_mg_l": -0.0665,
+        "cod_mg_l": -0.511,
+        "nh4_n_mg_l": 0.1975,
+        "tkn_mg_l": -0.668,
+        "tn_mg_l": 1.0
+      }
+    }
+  },
+  "stoichiometric_ratios_and_relationships": {
+    "cod_to_bod_ratio": {
+      "inlet_raw_sewage": {
+        "min": 1.6,
+        "typical_median": 2.15,
+        "max": 2.8
+      },
+      "final_effluent": {
+        "min": 2.8,
+        "typical_median": 4.6,
+        "max": 8.5
+      },
+      "physical_rule": "COD must strictly exceed BOD (COD >= BOD) for any biological wastewater sample."
+    },
+    "bod_to_tss_ratio": {
+      "inlet_raw_sewage": {
+        "min": 0.6,
+        "typical_median": 0.95,
+        "max": 1.4
+      },
+      "final_effluent": {
+        "min": 0.5,
+        "typical_median": 0.85,
+        "max": 1.5
+      }
+    },
+    "nitrogen_fractions": {
+      "nh4_to_tkn_ratio_inlet": {
+        "min": 0.6,
+        "typical_median": 0.75,
+        "max": 0.88
+      },
+      "tkn_to_tn_ratio": {
+        "min": 0.8,
+        "typical_median": 0.95,
+        "max": 1.0
+      },
+      "physical_rule": "TN >= TKN >= NH4-N. Total Nitrogen must strictly equal or exceed TKN and Ammonia."
+    },
+    "stage_removal_efficiencies": {
+      "primary_settling": {
+        "tss_removal_percent": {
+          "min": 40.0,
+          "median": 58.0,
+          "max": 75.0
+        },
+        "bod_removal_percent": {
+          "min": 25.0,
+          "median": 35.0,
+          "max": 45.0
+        },
+        "cod_removal_percent": {
+          "min": 20.0,
+          "median": 30.0,
+          "max": 40.0
+        }
+      },
+      "secondary_biological_treatment": {
+        "bod_removal_percent": {
+          "min": 85.0,
+          "median": 92.5,
+          "max": 98.0
+        },
+        "cod_removal_percent": {
+          "min": 75.0,
+          "median": 84.0,
+          "max": 93.0
+        },
+        "tss_removal_percent": {
+          "min": 85.0,
+          "median": 91.0,
+          "max": 97.0
+        },
+        "nitrification_efficiency_percent": {
+          "min": 70.0,
+          "median": 88.0,
+          "max": 99.0
+        }
+      }
+    }
+  }
+}

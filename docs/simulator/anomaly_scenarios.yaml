@@ -1,0 +1,185 @@
+metadata:
+  version: v2.2.1
+  date: '2026-09-27'
+  data_origin: simulated_injected
+  target_system: AquaTrust AI Anomaly Detection Engine (Phase 15+)
+  purpose: Provides Member 2 with exact injection recipes for realistic synthetic
+    anomalies.
+scenarios:
+  SCENARIO_01_SENSOR_SPIKE:
+    scenario_name: Sensor Electrical Spike / Optical Glitch
+    category: sensor_malfunction
+    target_parameters:
+    - pH
+    - COD
+    - TSS
+    - NH4-N
+    severity: high
+    duration_steps: 1
+    injection_formula: value_t_injected = value_t_nominal * multiplier (multiplier
+      = 3.5 to 8.0) or pH_injected = 13.5
+    expected_statuses:
+      quality_status: valid
+      anomaly_status: anomalous
+      compliance_status: non_compliant (if effluent limit exceeded)
+    generation_logic: Instantly replaces nominal measurement with a transient 1-step
+      extreme pulse, returning to baseline immediately on next step.
+    example:
+      parameter: COD
+      nominal: 45.0
+      injected: 320.0
+      unit: mg/L
+  SCENARIO_02_SENSOR_DROP:
+    scenario_name: Sensor Disconnection / Sample Line Blockage
+    category: sensor_malfunction
+    target_parameters:
+    - COD
+    - BOD
+    - TSS
+    - NH4-N
+    severity: critical
+    duration_steps: 3
+    injection_formula: value_t_injected = 0.0 or near_zero_noise (0.01 to 0.05)
+    expected_statuses:
+      quality_status: valid
+      anomaly_status: anomalous
+      compliance_status: compliant
+    generation_logic: Forces 3 consecutive measurements to 0.0 mg/L in active raw
+      influent or operating plant line.
+    example:
+      parameter: TSS
+      nominal: 220.0
+      injected: 0.0
+      unit: mg/L
+  SCENARIO_03_STUCK_SENSOR:
+    scenario_name: ADC Freeze / Frozen Telemetry Register
+    category: sensor_malfunction
+    target_parameters:
+    - pH
+    - COD
+    - TSS
+    - BOD
+    severity: medium
+    duration_steps: 8
+    injection_formula: value_{t+k} = value_t (exact bit-level repeat for k = 1..8)
+    expected_statuses:
+      quality_status: range_violation_or_stuck
+      anomaly_status: anomalous
+      compliance_status: compliant
+    generation_logic: Locks the exact floating-point reading across 8 consecutive
+      time-steps with zero physical sensor noise.
+    example:
+      parameter: pH
+      nominal: 7.74
+      injected:
+      - 7.74
+      - 7.74
+      - 7.74
+      - 7.74
+      - 7.74
+      - 7.74
+      - 7.74
+      - 7.74
+      unit: pH_units
+  SCENARIO_04_SENSOR_DRIFT:
+    scenario_name: Biofouling / Calibration Decay Drift
+    category: sensor_malfunction
+    target_parameters:
+    - pH
+    - COD
+    - NH4-N
+    severity: medium
+    duration_steps: 24
+    injection_formula: value_{t+k} = value_{t+k}_nominal + (drift_rate * k) where
+      drift_rate = 0.05 * std_nominal
+    expected_statuses:
+      quality_status: valid
+      anomaly_status: anomalous (after k >= 6 steps)
+      compliance_status: compliant_until_threshold_breach
+    generation_logic: Applies a monotonic linear ramp upward or downward over 24 hours
+      simulating biofilm accumulation on optical sensor face.
+    example:
+      parameter: pH
+      drift_rate: +0.08 pH_units/hour
+      max_drift: '+1.92'
+  SCENARIO_05_MISSING_READING:
+    scenario_name: Telemetry Packet Loss / Power Outage
+    category: communication_error
+    target_parameters:
+    - ALL
+    severity: high
+    duration_steps: 4
+    injection_formula: value_t = null (NaN / None)
+    expected_statuses:
+      quality_status: missing
+      anomaly_status: insufficient_data
+      compliance_status: unknown
+    generation_logic: Drops network telemetry packet, emitting explicit null measurement
+      payloads.
+    example:
+      parameter: BOD
+      value: null
+      quality_status: missing
+  SCENARIO_06_DUPLICATE_READING:
+    scenario_name: Replay / Retry Loop Telemetry Collision
+    category: communication_error
+    target_parameters:
+    - ALL
+    severity: low
+    duration_steps: 1
+    injection_formula: reading_{t} transmitted twice with identical or delta-zero
+      timestamp
+    expected_statuses:
+      quality_status: duplicate_rejected
+      anomaly_status: insufficient_data_or_ignored
+      compliance_status: compliant
+    generation_logic: Re-emits previous reading buffer immediately with duplicate
+      sequence ID.
+    example:
+      facility_id: STP_001
+      timestamp: '2026-01-01T10:00:00Z'
+      retry: true
+  SCENARIO_07_PARAMETER_INCONSISTENCY:
+    scenario_name: Multivariate Stoichiometric Violation
+    category: physical_inconsistency
+    target_parameters:
+    - COD
+    - BOD
+    - NH4-N
+    - TN
+    severity: critical
+    duration_steps: 2
+    injection_formula: bod_val > cod_val (e.g. BOD=120, COD=40) or nh4_val > tn_val
+    expected_statuses:
+      quality_status: multivariate_inconsistency
+      anomaly_status: anomalous
+      compliance_status: non_compliant
+    generation_logic: Simulates sensor miscalibration where biological oxygen demand
+      physically exceeds chemical oxygen demand.
+    example:
+      BOD: 140.0
+      COD: 45.0
+      violation: BOD > COD is physically impossible in aqueous solutions
+  SCENARIO_08_SUDDEN_PROCESS_CHANGE:
+    scenario_name: Industrial Toxic Shock Load / Heavy Rain Washout
+    category: process_upset
+    target_parameters:
+    - COD
+    - BOD
+    - TSS
+    - pH
+    severity: critical
+    duration_steps: 16
+    injection_formula: influent_cod = 3.0 * mean_inlet; effluent_cod = 2.5 * mean_effluent;
+      effluent_ph = 5.8
+    expected_statuses:
+      quality_status: valid
+      anomaly_status: anomalous
+      compliance_status: non_compliant
+    generation_logic: Simulates an actual biological treatment failure resulting from
+      acidic toxic industrial discharge into municipal sewer.
+    example:
+      COD_inlet: 1800.0
+      COD_effluent: 380.0
+      pH_effluent: 5.8
+      duration_hours: 16

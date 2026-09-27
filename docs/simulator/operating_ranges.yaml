@@ -1,0 +1,311 @@
+metadata:
+  version: v2.2.1
+  date: '2026-09-27'
+  data_origin: observed
+  standards_referenced:
+  - CPCB_General_Effluent_Standards_1986
+  - CPCB_Strict_STP_Standards_2015
+  - EPA_Victoria_Standards
+  - EU_UWWTD_91_271_EEC
+  disclaimer: Observed statistical ranges represent historical empirical operational
+    data. Regulatory boundaries represent legal discharge mandates.
+parameters:
+  bod:
+    parameter_name: "Biochemical Oxygen Demand (5-day at 20\xB0C)"
+    canonical_slug: bod
+    unit: mg/L
+    physical_boundaries:
+      theoretical_min: 0.0
+      sensor_detection_limit_min: 1.0
+      sensor_saturation_limit_max: 2000.0
+      physical_absolute_max: 5000.0
+    observed_statistical_ranges:
+      inlet:
+        p05_nominal_min: 78.0
+        p50_median: 200.0
+        p95_nominal_max: 360.0
+        p01: 45.0
+        p99: 480.0
+        source_datasets:
+        - DATASET_01_UCI
+        - DATASET_02_MELBOURNE_INLET
+      final_effluent:
+        p05_nominal_min: 5.0
+        p50_median: 16.0
+        p95_nominal_max: 42.0
+        p01: 2.0
+        p99: 85.0
+        source_datasets:
+        - DATASET_01_UCI
+        - DATASET_03_MELBOURNE_OUTLET
+        - DATASET_04_CPCB
+    regulatory_discharge_standards:
+      CPCB_India_General_Effluent:
+        max_permissible: 30.0
+        unit: mg/L
+      CPCB_India_Strict_New_STPs:
+        max_permissible: 10.0
+        unit: mg/L
+      EPA_Victoria_Australia:
+        max_permissible: 20.0
+        unit: mg/L
+      EU_Urban_Wastewater_Directive:
+        max_permissible: 25.0
+        unit: mg/L
+    simulator_generation_recommendation:
+      distribution: lognormal
+      inlet_mu_log: 5.25
+      inlet_sigma_log: 0.38
+      effluent_mu_log: 2.7
+      effluent_sigma_log: 0.55
+  cod:
+    parameter_name: Chemical Oxygen Demand
+    canonical_slug: cod
+    unit: mg/L
+    physical_boundaries:
+      theoretical_min: 0.0
+      sensor_detection_limit_min: 5.0
+      sensor_saturation_limit_max: 5000.0
+      physical_absolute_max: 10000.0
+    observed_statistical_ranges:
+      inlet:
+        p05_nominal_min: 180.0
+        p50_median: 425.0
+        p95_nominal_max: 850.0
+        p01: 110.0
+        p99: 1150.0
+        source_datasets:
+        - DATASET_01_UCI
+        - DATASET_02_MELBOURNE_INLET
+      final_effluent:
+        p05_nominal_min: 35.0
+        p50_median: 78.0
+        p95_nominal_max: 160.0
+        p01: 18.0
+        p99: 280.0
+        source_datasets:
+        - DATASET_01_UCI
+        - DATASET_03_MELBOURNE_OUTLET
+        - DATASET_04_CPCB
+    regulatory_discharge_standards:
+      CPCB_India_General_Effluent:
+        max_permissible: 250.0
+        unit: mg/L
+      CPCB_India_Strict_New_STPs:
+        max_permissible: 50.0
+        unit: mg/L
+      EU_Urban_Wastewater_Directive:
+        max_permissible: 125.0
+        unit: mg/L
+    simulator_generation_recommendation:
+      distribution: lognormal
+      inlet_mu_log: 6.05
+      inlet_sigma_log: 0.35
+      effluent_mu_log: 4.35
+      effluent_sigma_log: 0.42
+  tss:
+    parameter_name: Total Suspended Solids
+    canonical_slug: tss
+    unit: mg/L
+    physical_boundaries:
+      theoretical_min: 0.0
+      sensor_detection_limit_min: 1.0
+      sensor_saturation_limit_max: 3000.0
+      physical_absolute_max: 8000.0
+    observed_statistical_ranges:
+      inlet:
+        p05_nominal_min: 85.0
+        p50_median: 220.0
+        p95_nominal_max: 520.0
+        p01: 50.0
+        p99: 750.0
+        source_datasets:
+        - DATASET_01_UCI
+      final_effluent:
+        p05_nominal_min: 6.0
+        p50_median: 18.0
+        p95_nominal_max: 48.0
+        p01: 2.0
+        p99: 110.0
+        source_datasets:
+        - DATASET_01_UCI
+        - DATASET_04_CPCB
+    regulatory_discharge_standards:
+      CPCB_India_General_Effluent:
+        max_permissible: 100.0
+        unit: mg/L
+      CPCB_India_Strict_New_STPs:
+        max_permissible: 20.0
+        unit: mg/L
+      EPA_Victoria_Australia:
+        max_permissible: 30.0
+        unit: mg/L
+      EU_Urban_Wastewater_Directive:
+        max_permissible: 35.0
+        unit: mg/L
+    simulator_generation_recommendation:
+      distribution: lognormal
+      inlet_mu_log: 5.4
+      inlet_sigma_log: 0.45
+      effluent_mu_log: 2.85
+      effluent_sigma_log: 0.6
+  ph:
+    parameter_name: pH (Hydrogen Ion Potential)
+    canonical_slug: ph
+    unit: pH_units
+    physical_boundaries:
+      theoretical_min: 0.0
+      sensor_detection_limit_min: 1.0
+      sensor_saturation_limit_max: 14.0
+      physical_absolute_max: 14.0
+    observed_statistical_ranges:
+      inlet:
+        p05_nominal_min: 7.3
+        p50_median: 7.8
+        p95_nominal_max: 8.2
+        p01: 6.9
+        p99: 8.5
+        source_datasets:
+        - DATASET_01_UCI
+      final_effluent:
+        p05_nominal_min: 7.35
+        p50_median: 7.72
+        p95_nominal_max: 8.05
+        p01: 7.1
+        p99: 8.3
+        source_datasets:
+        - DATASET_01_UCI
+        - DATASET_04_CPCB
+    regulatory_discharge_standards:
+      CPCB_India_General_Effluent:
+        min_permissible: 6.5
+        max_permissible: 9.0
+        unit: pH_units
+      CPCB_India_Strict_New_STPs:
+        min_permissible: 6.5
+        max_permissible: 9.0
+        unit: pH_units
+      EPA_Victoria_Australia:
+        min_permissible: 6.0
+        max_permissible: 9.0
+        unit: pH_units
+      EU_Urban_Wastewater_Directive:
+        min_permissible: 6.5
+        max_permissible: 9.0
+        unit: pH_units
+    simulator_generation_recommendation:
+      distribution: normal
+      inlet_loc: 7.8
+      inlet_scale: 0.25
+      effluent_loc: 7.72
+      effluent_scale: 0.2
+  nh4_n:
+    parameter_name: Ammonia Nitrogen (NH4-N)
+    canonical_slug: nh4_n
+    unit: mg/L
+    physical_boundaries:
+      theoretical_min: 0.0
+      sensor_detection_limit_min: 0.1
+      sensor_saturation_limit_max: 200.0
+      physical_absolute_max: 500.0
+    observed_statistical_ranges:
+      inlet:
+        p05_nominal_min: 18.0
+        p50_median: 34.5
+        p95_nominal_max: 54.0
+        p01: 12.0
+        p99: 65.0
+        source_datasets:
+        - DATASET_02_MELBOURNE_INLET
+      final_effluent:
+        p05_nominal_min: 0.5
+        p50_median: 3.8
+        p95_nominal_max: 18.5
+        p01: 0.1
+        p99: 32.0
+        source_datasets:
+        - DATASET_03_MELBOURNE_OUTLET
+    regulatory_discharge_standards:
+      CPCB_India_General_Effluent:
+        max_permissible: 50.0
+        unit: mg/L
+      CPCB_India_Strict_New_STPs:
+        max_permissible: 5.0
+        unit: mg/L
+      EPA_Victoria_Australia:
+        max_permissible: 5.0
+        unit: mg/L
+    simulator_generation_recommendation:
+      distribution: lognormal
+      inlet_mu_log: 3.52
+      inlet_sigma_log: 0.3
+      effluent_mu_log: 1.15
+      effluent_sigma_log: 0.85
+  tkn:
+    parameter_name: Total Kjeldahl Nitrogen
+    canonical_slug: tkn
+    unit: mg/L
+    physical_boundaries:
+      theoretical_min: 0.0
+      sensor_detection_limit_min: 0.2
+      sensor_saturation_limit_max: 250.0
+      physical_absolute_max: 600.0
+    observed_statistical_ranges:
+      final_effluent:
+        p05_nominal_min: 0.8
+        p50_median: 2.1
+        p95_nominal_max: 4.5
+        p01: 0.4
+        p99: 6.8
+        source_datasets:
+        - DATASET_03_MELBOURNE_OUTLET
+    regulatory_discharge_standards:
+      CPCB_India_General_Effluent:
+        max_permissible: 100.0
+        unit: mg/L
+    simulator_generation_recommendation:
+      distribution: lognormal
+      effluent_mu_log: 0.75
+      effluent_sigma_log: 0.45
+  tn:
+    parameter_name: Total Nitrogen
+    canonical_slug: tn
+    unit: mg/L
+    physical_boundaries:
+      theoretical_min: 0.0
+      sensor_detection_limit_min: 0.5
+      sensor_saturation_limit_max: 300.0
+      physical_absolute_max: 700.0
+    observed_statistical_ranges:
+      inlet:
+        p05_nominal_min: 25.0
+        p50_median: 45.0
+        p95_nominal_max: 72.0
+        p01: 18.0
+        p99: 88.0
+        source_datasets:
+        - DATASET_02_MELBOURNE_INLET
+      final_effluent:
+        p05_nominal_min: 4.0
+        p50_median: 12.5
+        p95_nominal_max: 28.0
+        p01: 2.0
+        p99: 38.0
+        source_datasets:
+        - DATASET_03_MELBOURNE_OUTLET
+    regulatory_discharge_standards:
+      CPCB_India_General_Effluent:
+        max_permissible: 100.0
+        unit: mg/L
+      CPCB_India_Strict_New_STPs:
+        max_permissible: 10.0
+        unit: mg/L
+      EU_Urban_Wastewater_Directive:
+        max_permissible: 15.0
+        unit: mg/L
+    simulator_generation_recommendation:
+      distribution: lognormal
+      inlet_mu_log: 3.8
+      inlet_sigma_log: 0.32
+      effluent_mu_log: 2.45
+      effluent_sigma_log: 0.5
