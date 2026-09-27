@@ -75,6 +75,7 @@ class MelbourneOutletPreprocessor(BaseDatasetPreprocessor):
             "parameters_removed": ["recorddate"],
             "transformations_performed": self.transformations_log
         }
-        manifest_path = os.path.join(r"AquaTrustAI\datasets\manifests", "dataset_03_processing_manifest.json")
+        datasets_root = os.path.dirname(os.path.dirname(os.path.abspath(self.output_dir)))
+        manifest_path = os.path.join(datasets_root, "manifests", "dataset_03_processing_manifest.json")
         self.write_manifest(manifest, manifest_path)
         return df

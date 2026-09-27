@@ -1,8 +1,8 @@
 {
   "dataset_id": "DATASET_04_CPCB_UP_STP",
   "processing_version": "v2.2.1",
-  "processing_timestamp": "2026-09-27T05:48:30.887065+00:00",
-  "raw_file_hash": "3c925b13cbc12cdc055b38d6bc9606fe84f37df17af1d04ed338d75e68375228",
+  "processing_timestamp": "2026-09-27T06:14:48.881353+00:00",
+  "raw_file_hash": "2f80de49e34984efec3e1abef70496db91bbc7d984eee01dadab3013f2765ec5",
   "output_file": "cpcb_up_stp_processed.csv",
   "rows_before": 125,
   "rows_after": 125,
@@ -14,7 +14,7 @@
   "imputation_policy": "Explicit null preservation (No synthesis of missing optional metadata)",
   "parameters_removed": [],
   "transformations_performed": [
-    "Verified source SHA-256: 3c925b13cbc12cdc055b38d6bc9606fe84f37df17af1d04ed338d75e68375228",
+    "Verified source SHA-256: 2f80de49e34984efec3e1abef70496db91bbc7d984eee01dadab3013f2765ec5",
     "Loaded 125 raw facility records with 255 missing metadata values.",
     "Parsed DD.MM.YYYY dates to UTC ISO-8601 timestamps.",
     "Generated standardized unique facility IDs from town name and serial number.",
