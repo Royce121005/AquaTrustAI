@@ -1,0 +1,188 @@
+# ---------------------------------------------------------------------------
+# AquaTrust AI — Hyperledger Fabric Channel & Policy Configuration (configtx)
+# Reference: FABRIC_ARCHITECTURE.md (Fabric 2.5 LTS)
+# ---------------------------------------------------------------------------
+
+Organizations:
+  - &OrdererOrg
+    Name: OrdererMSP
+    ID: OrdererMSP
+    MSPDir: crypto-config/ordererOrganizations/orderer.aquatrust.com/msp
+    Policies:
+      Readers:
+        Type: Signature
+        Rule: "OR('OrdererMSP.member')"
+      Writers:
+        Type: Signature
+        Rule: "OR('OrdererMSP.member')"
+      Admins:
+        Type: Signature
+        Rule: "OR('OrdererMSP.admin')"
+    OrdererEndpoints:
+      - orderer.aquatrust.com:7050
+
+  - &FacilityOrg
+    Name: FacilityMSP
+    ID: FacilityMSP
+    MSPDir: crypto-config/peerOrganizations/facility.aquatrust.com/msp
+    Policies:
+      Readers:
+        Type: Signature
+        Rule: "OR('FacilityMSP.admin', 'FacilityMSP.peer', 'FacilityMSP.client')"
+      Writers:
+        Type: Signature
+        Rule: "OR('FacilityMSP.admin', 'FacilityMSP.client')"
+      Admins:
+        Type: Signature
+        Rule: "OR('FacilityMSP.admin')"
+      Endorsement:
+        Type: Signature
+        Rule: "OR('FacilityMSP.peer')"
+    AnchorPeers:
+      - Host: peer0.facility.aquatrust.com
+        Port: 7051
+
+  - &AuditorOrg
+    Name: AuditorMSP
+    ID: AuditorMSP
+    MSPDir: crypto-config/peerOrganizations/auditor.aquatrust.com/msp
+    Policies:
+      Readers:
+        Type: Signature
+        Rule: "OR('AuditorMSP.admin', 'AuditorMSP.peer', 'AuditorMSP.client')"
+      Writers:
+        Type: Signature
+        Rule: "OR('AuditorMSP.admin', 'AuditorMSP.client')"
+      Admins:
+        Type: Signature
+        Rule: "OR('AuditorMSP.admin')"
+      Endorsement:
+        Type: Signature
+        Rule: "OR('AuditorMSP.peer')"
+    AnchorPeers:
+      - Host: peer0.auditor.aquatrust.com
+        Port: 8051
+
+  - &RegulatorOrg
+    Name: RegulatorMSP
+    ID: RegulatorMSP
+    MSPDir: crypto-config/peerOrganizations/regulator.aquatrust.com/msp
+    Policies:
+      Readers:
+        Type: Signature
+        Rule: "OR('RegulatorMSP.admin', 'RegulatorMSP.peer', 'RegulatorMSP.client')"
+      Writers:
+        Type: Signature
+        Rule: "OR('RegulatorMSP.admin', 'RegulatorMSP.client')"
+      Admins:
+        Type: Signature
+        Rule: "OR('RegulatorMSP.admin')"
+      Endorsement:
+        Type: Signature
+        Rule: "OR('RegulatorMSP.peer')"
+    AnchorPeers:
+      - Host: peer0.regulator.aquatrust.com
+        Port: 9051
+
+Capabilities:
+  Channel: &ChannelCapabilities
+    V2_0: true
+  Orderer: &OrdererCapabilities
+    V2_0: true
+  Application: &ApplicationCapabilities
+    V2_5: true
+
+Application: &ApplicationDefaults
+  Organizations:
+  Policies:
+    LifecycleEndorsement:
+      Type: ImplicitMeta
+      Rule: "MAJORITY Endorsement"
+    Endorsement:
+      Type: ImplicitMeta
+      # Requires endorsement from at least 2 distinct MSPs per FABRIC_ARCHITECTURE.md
+      Rule: "MAJORITY Endorsement"
+    Read:
+      Type: ImplicitMeta
+      Rule: "ANY Readers"
+    Write:
+      Type: ImplicitMeta
+      Rule: "ANY Writers"
+    Admin:
+      Type: ImplicitMeta
+      Rule: "MAJORITY Admins"
+  Capabilities:
+    <<: *ApplicationCapabilities
+
+Orderer: &OrdererDefaults
+  OrdererType: etcdraft
+  Addresses:
+    - orderer.aquatrust.com:7050
+  BatchTimeout: 2s
+  BatchSize:
+    MaxMessageCount: 100
+    AbsoluteMaxBytes: 99 MB
+    PreferredMaxBytes: 2 MB
+  EtcdRaft:
+    Consenters:
+      - Host: orderer.aquatrust.com
+        Port: 7050
+        ClientTLSCert: crypto-config/ordererOrganizations/orderer.aquatrust.com/orderers/orderer.aquatrust.com/tls/server.crt
+        ServerTLSCert: crypto-config/ordererOrganizations/orderer.aquatrust.com/orderers/orderer.aquatrust.com/tls/server.crt
+  Organizations:
+  Policies:
+    Readers:
+      Type: ImplicitMeta
+      Rule: "ANY Readers"
+    Writers:
+      Type: ImplicitMeta
+      Rule: "ANY Writers"
+    Admins:
+      Type: ImplicitMeta
+      Rule: "MAJORITY Admins"
+    BlockValidation:
+      Type: ImplicitMeta
+      Rule: "ANY Writers"
+  Capabilities:
+    <<: *OrdererCapabilities
+
+Channel: &ChannelDefaults
+  Policies:
+    Readers:
+      Type: ImplicitMeta
+      Rule: "ANY Readers"
+    Writers:
+      Type: ImplicitMeta
+      Rule: "ANY Writers"
+    Admins:
+      Type: ImplicitMeta
+      Rule: "MAJORITY Admins"
+  Capabilities:
+    <<: *ChannelCapabilities
+
+Profiles:
+  AquaTrustGenesisProfile:
+    <<: *ChannelDefaults
+    Orderer:
+      <<: *OrdererDefaults
+      Organizations:
+        - *OrdererOrg
+      Capabilities: *OrdererCapabilities
+    Application:
+      <<: *ApplicationDefaults
+      Organizations:
+        - *FacilityOrg
+        - *AuditorOrg
+        - *RegulatorOrg
+      Capabilities: *ApplicationCapabilities
+
+  AquaTrustChannelProfile:
+    Consortium: SampleConsortium
+    <<: *ChannelDefaults
+    Application:
+      <<: *ApplicationDefaults
+      Organizations:
+        - *FacilityOrg
+        - *AuditorOrg
+        - *RegulatorOrg
+      Capabilities: *ApplicationCapabilities

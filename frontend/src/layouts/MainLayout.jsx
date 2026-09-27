@@ -17,6 +17,8 @@ function resolveTitle(pathname) {
   return match ? `${match[1]} · AquaTrust AI` : 'AquaTrust AI'
 }
 
+import RoleSwitcher from '../components/layout/RoleSwitcher.jsx'
+
 export default function MainLayout() {
   const location = useLocation()
 
@@ -55,8 +57,12 @@ export default function MainLayout() {
         </nav>
       </aside>
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="border-b border-slate-200 bg-white px-6 py-4">
-          <h1 className="text-sm font-medium text-slate-500">Water Treatment Intelligence Platform</h1>
+        <header className="flex items-center justify-between border-b border-slate-200 bg-white px-6 py-3.5">
+          <div>
+            <h1 className="text-sm font-medium text-slate-800">AquaTrust AI Research Platform</h1>
+            <p className="text-xs text-slate-500">Decentralized Wastewater Quality Assurance & DLT Traceability</p>
+          </div>
+          <RoleSwitcher />
         </header>
         <main className="flex-1 overflow-y-auto p-6">
           <Outlet />

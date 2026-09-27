@@ -21,6 +21,8 @@ htmlcov/
 # Environment configuration files
 .env
 !.env.example
+!environment/*.env
+!**/fabric-version.env
 
 # Node / Frontend
 node_modules/

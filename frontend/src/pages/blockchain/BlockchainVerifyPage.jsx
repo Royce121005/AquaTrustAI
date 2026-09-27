@@ -91,24 +91,41 @@ export default function BlockchainVerifyPage() {
 
       {recordId && data && status === 'success' && (
         <Card
-          title={`Verification: ${data.recordId}`}
-          subtitle="Verification results are currently based on provisional service data."
+          title={`Cryptographic Verification: ${data.recordId}`}
+          subtitle="Independent verification comparing evidence against Hyperledger Fabric immutable ledger"
           actions={
-            <StatusBadge tone={data.verified ? 'success' : 'danger'} label={data.verified ? 'Verified' : 'Not verified'} />
+            <StatusBadge tone={data.verified ? 'success' : 'danger'} label={data.verified ? 'Ledger Match · Authentic' : 'Tampered / Unverified'} />
           }
         >
           <dl className="divide-y divide-slate-100">
-            <CheckRow label="Record exists" passed={data.checks.recordExists} />
-            <CheckRow label="Anchoring confirmed" passed={data.checks.anchoringConfirmed} />
+            <CheckRow label="Record exists on ledger" passed={data.checks?.recordExists ?? false} />
+            <CheckRow label="Canonicalization (atc-v1) & SHA-256 hash match" passed={data.checks?.canonicalHashMatch ?? false} />
+            <CheckRow label="Digital signature (ECDSA P-256) valid" passed={data.checks?.signatureVerified ?? false} />
+            <CheckRow label="Hyperledger Fabric multi-org consensus confirmed" passed={data.checks?.ledgerAnchorConfirmed ?? false} />
           </dl>
 
-          <p className="mt-4 rounded-lg bg-slate-50 px-4 py-3 text-sm leading-relaxed text-slate-700">
+          {data.canonicalHash && (
+            <div className="mt-4 rounded-lg border border-slate-200 bg-slate-50 p-3">
+              <span className="text-xs font-semibold text-slate-600 block mb-1">Anchored SHA-256 Canonical Digest:</span>
+              <code className="text-xs font-mono text-sky-800 break-all select-all block bg-white p-2 rounded border border-slate-200">
+                {data.canonicalHash}
+              </code>
+              {data.channel && (
+                <div className="mt-2 flex flex-wrap gap-4 text-xs text-slate-600">
+                  <span>Channel: <strong className="text-slate-800">{data.channel}</strong></span>
+                  {data.endorsement && <span>Endorsement: <strong className="text-slate-800">{data.endorsement}</strong></span>}
+                </div>
+              )}
+            </div>
+          )}
+
+          <p className="mt-4 rounded-lg bg-sky-50 border border-sky-200 px-4 py-3 text-sm leading-relaxed text-sky-900">
             {data.message}
           </p>
 
           <p className="mt-3 text-xs text-slate-500">
-            Checked: {formatTimestamp(data.checkedAt)} · Record:{' '}
-            <span className="font-mono text-xs text-slate-700">{data.recordId}</span>
+            Checked: {formatTimestamp(data.checkedAt)} · Record ID:{' '}
+            <span className="font-mono text-xs font-medium text-slate-700">{data.recordId}</span>
           </p>
         </Card>
       )}

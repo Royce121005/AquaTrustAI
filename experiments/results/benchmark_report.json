@@ -1,0 +1,179 @@
+{
+  "metadata": {
+    "title": "AquaTrust AI Architecture Comparison Benchmark",
+    "date": "2026-09-27",
+    "spec_baseline": "v2.2.1",
+    "dlt_platform": "Hyperledger Fabric 2.5 LTS",
+    "scales_tested": [8, 50, 100, 500]
+  },
+  "benchmarks": [
+    {
+      "stp_count": 8,
+      "variant_a_centralized": {
+        "variant": "Variant A: Centralized",
+        "record_count": 8,
+        "throughput_tps": 18500.0,
+        "mean_latency_ms": 0.05,
+        "median_latency_ms": 0.05,
+        "p95_latency_ms": 0.08,
+        "db_storage_bytes_per_rec": 1052.0,
+        "ledger_storage_bytes_per_rec": 0,
+        "total_storage_bytes_per_rec": 1052.0,
+        "verification_time_ms": 0.0012,
+        "tamper_detection_rate": "0% (Vulnerable to DB Alteration)"
+      },
+      "variant_b_blockchain_centric": {
+        "variant": "Variant B: Blockchain-Centric",
+        "record_count": 8,
+        "throughput_tps": 455.2,
+        "mean_latency_ms": 2.18,
+        "median_latency_ms": 2.15,
+        "p95_latency_ms": 2.35,
+        "db_storage_bytes_per_rec": 0,
+        "ledger_storage_bytes_per_rec": 1184.0,
+        "total_storage_bytes_per_rec": 1184.0,
+        "verification_time_ms": 0.0385,
+        "tamper_detection_rate": "100% (Cryptographically Sealed)"
+      },
+      "variant_c_hybrid": {
+        "variant": "Variant C: Hybrid (AquaTrust AI)",
+        "record_count": 8,
+        "throughput_tps": 1582.4,
+        "mean_latency_ms": 0.62,
+        "median_latency_ms": 0.60,
+        "p95_latency_ms": 0.72,
+        "db_storage_bytes_per_rec": 1052.0,
+        "ledger_storage_bytes_per_rec": 282.0,
+        "total_storage_bytes_per_rec": 1334.0,
+        "verification_time_ms": 0.0125,
+        "tamper_detection_rate": "100% (Cryptographically Sealed via DLT)"
+      }
+    },
+    {
+      "stp_count": 50,
+      "variant_a_centralized": {
+        "variant": "Variant A: Centralized",
+        "record_count": 50,
+        "throughput_tps": 19200.0,
+        "mean_latency_ms": 0.05,
+        "median_latency_ms": 0.05,
+        "p95_latency_ms": 0.08,
+        "db_storage_bytes_per_rec": 1052.0,
+        "ledger_storage_bytes_per_rec": 0,
+        "total_storage_bytes_per_rec": 1052.0,
+        "verification_time_ms": 0.0011,
+        "tamper_detection_rate": "0% (Vulnerable to DB Alteration)"
+      },
+      "variant_b_blockchain_centric": {
+        "variant": "Variant B: Blockchain-Centric",
+        "record_count": 50,
+        "throughput_tps": 462.8,
+        "mean_latency_ms": 2.15,
+        "median_latency_ms": 2.12,
+        "p95_latency_ms": 2.38,
+        "db_storage_bytes_per_rec": 0,
+        "ledger_storage_bytes_per_rec": 1184.0,
+        "total_storage_bytes_per_rec": 1184.0,
+        "verification_time_ms": 0.0382,
+        "tamper_detection_rate": "100% (Cryptographically Sealed)"
+      },
+      "variant_c_hybrid": {
+        "variant": "Variant C: Hybrid (AquaTrust AI)",
+        "record_count": 50,
+        "throughput_tps": 1545.0,
+        "mean_latency_ms": 0.64,
+        "median_latency_ms": 0.62,
+        "p95_latency_ms": 0.75,
+        "db_storage_bytes_per_rec": 1052.0,
+        "ledger_storage_bytes_per_rec": 282.0,
+        "total_storage_bytes_per_rec": 1334.0,
+        "verification_time_ms": 0.0121,
+        "tamper_detection_rate": "100% (Cryptographically Sealed via DLT)"
+      }
+    },
+    {
+      "stp_count": 100,
+      "variant_a_centralized": {
+        "variant": "Variant A: Centralized",
+        "record_count": 100,
+        "throughput_tps": 19450.0,
+        "mean_latency_ms": 0.05,
+        "median_latency_ms": 0.05,
+        "p95_latency_ms": 0.09,
+        "db_storage_bytes_per_rec": 1052.0,
+        "ledger_storage_bytes_per_rec": 0,
+        "total_storage_bytes_per_rec": 1052.0,
+        "verification_time_ms": 0.0011,
+        "tamper_detection_rate": "0% (Vulnerable to DB Alteration)"
+      },
+      "variant_b_blockchain_centric": {
+        "variant": "Variant B: Blockchain-Centric",
+        "record_count": 100,
+        "throughput_tps": 458.1,
+        "mean_latency_ms": 2.18,
+        "median_latency_ms": 2.14,
+        "p95_latency_ms": 2.42,
+        "db_storage_bytes_per_rec": 0,
+        "ledger_storage_bytes_per_rec": 1184.0,
+        "total_storage_bytes_per_rec": 1184.0,
+        "verification_time_ms": 0.0388,
+        "tamper_detection_rate": "100% (Cryptographically Sealed)"
+      },
+      "variant_c_hybrid": {
+        "variant": "Variant C: Hybrid (AquaTrust AI)",
+        "record_count": 100,
+        "throughput_tps": 1528.6,
+        "mean_latency_ms": 0.65,
+        "median_latency_ms": 0.63,
+        "p95_latency_ms": 0.77,
+        "db_storage_bytes_per_rec": 1052.0,
+        "ledger_storage_bytes_per_rec": 282.0,
+        "total_storage_bytes_per_rec": 1334.0,
+        "verification_time_ms": 0.0123,
+        "tamper_detection_rate": "100% (Cryptographically Sealed via DLT)"
+      }
+    },
+    {
+      "stp_count": 500,
+      "variant_a_centralized": {
+        "variant": "Variant A: Centralized",
+        "record_count": 500,
+        "throughput_tps": 19600.0,
+        "mean_latency_ms": 0.05,
+        "median_latency_ms": 0.05,
+        "p95_latency_ms": 0.09,
+        "db_storage_bytes_per_rec": 1052.0,
+        "ledger_storage_bytes_per_rec": 0,
+        "total_storage_bytes_per_rec": 1052.0,
+        "verification_time_ms": 0.0011,
+        "tamper_detection_rate": "0% (Vulnerable to DB Alteration)"
+      },
+      "variant_b_blockchain_centric": {
+        "variant": "Variant B: Blockchain-Centric",
+        "record_count": 500,
+        "throughput_tps": 448.9,
+        "mean_latency_ms": 2.22,
+        "median_latency_ms": 2.18,
+        "p95_latency_ms": 2.49,
+        "db_storage_bytes_per_rec": 0,
+        "ledger_storage_bytes_per_rec": 1184.0,
+        "total_storage_bytes_per_rec": 1184.0,
+        "verification_time_ms": 0.0391,
+        "tamper_detection_rate": "100% (Cryptographically Sealed)"
+      },
+      "variant_c_hybrid": {
+        "variant": "Variant C: Hybrid (AquaTrust AI)",
+        "record_count": 500,
+        "throughput_tps": 1512.4,
+        "mean_latency_ms": 0.66,
+        "median_latency_ms": 0.64,
+        "p95_latency_ms": 0.79,
+        "db_storage_bytes_per_rec": 1052.0,
+        "ledger_storage_bytes_per_rec": 282.0,
+        "total_storage_bytes_per_rec": 1334.0,
+        "verification_time_ms": 0.0124,
+        "tamper_detection_rate": "100% (Cryptographically Sealed via DLT)"
+      }
+    }
+  ]
+}

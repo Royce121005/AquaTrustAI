@@ -1,0 +1,8 @@
+{
+  "test_vector_id": "vector_atc_v1_001",
+  "canonicalization_version": "atc-v1",
+  "hash_algorithm": "SHA-256",
+  "raw_record_ref": "sample_treatment_record.json",
+  "canonical_payload_json": "{\"anomaly_status\":\"NORMAL\",\"canonicalization_version\":\"atc-v1\",\"compliance_status\":\"COMPLIANT\",\"evidence_snapshot\":{\"parameters\":[{\"compliance\":\"PASS\",\"parameter\":\"BOD\",\"threshold_max\":20.0,\"unit\":\"mg/L\",\"value\":18.5},{\"compliance\":\"PASS\",\"parameter\":\"COD\",\"threshold_max\":250.0,\"unit\":\"mg/L\",\"value\":85.0},{\"compliance\":\"PASS\",\"parameter\":\"pH\",\"threshold_max\":9.0,\"threshold_min\":6.5,\"unit\":\"pH\",\"value\":7.4},{\"compliance\":\"PASS\",\"parameter\":\"TSS\",\"threshold_max\":30.0,\"unit\":\"mg/L\",\"value\":24.0}]},\"facility_id\":\"STP-KORAMANGALA-01\",\"finalized_at\":\"2026-09-27T06:05:00Z\",\"period_end\":\"2026-09-27T06:00:00Z\",\"period_start\":\"2026-09-27T00:00:00Z\",\"provenance\":{\"model_version\":\"isolation_forest_v1.0.0\",\"rule_version\":\"CPCB_STP_2023_v1\",\"source_dataset_ids\":[\"bangalore_clean_v1\",\"uci_etp_v1\"]},\"quality_status\":\"VALID\",\"record_id\":\"rec_stp_001_20260927_001\",\"record_state\":\"finalized\",\"record_version\":1}",
+  "canonical_hash_expected": "e963fc23cf0eb966c4c5cf2339678e0c4cbca476a6e542bf82aa7aeb354f3b17"
+}

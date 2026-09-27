@@ -1,0 +1,35 @@
+{
+  "name": "aquatrust-records",
+  "version": "1.0.0",
+  "description": "Hyperledger Fabric smart contract for AquaTrust AI decentralized wastewater treatment record anchoring and verification",
+  "main": "dist/index.js",
+  "typings": "dist/index.d.ts",
+  "engines": {
+    "node": ">=18",
+    "npm": ">=9"
+  },
+  "scripts": {
+    "build": "tsc",
+    "build:watch": "tsc -w",
+    "prestart": "npm run build",
+    "start": "fabric-chaincode-node start",
+    "test": "mocha -r ts-node/register test/**/*.spec.ts --exit"
+  },
+  "dependencies": {
+    "fabric-contract-api": "^2.5.0",
+    "fabric-shim": "^2.5.0"
+  },
+  "devDependencies": {
+    "@types/chai": "^4.3.5",
+    "@types/mocha": "^10.0.1",
+    "@types/node": "^18.16.19",
+    "@types/sinon": "^10.0.15",
+    "@types/sinon-chai": "^3.2.9",
+    "chai": "^4.3.7",
+    "mocha": "^10.2.0",
+    "sinon": "^15.2.0",
+    "sinon-chai": "^3.7.0",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.1.6"
+  }
+}

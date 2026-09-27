@@ -1,0 +1,69 @@
+{
+  "name": "aquatrust-network-facility",
+  "version": "1.0.0",
+  "client": {
+    "organization": "FacilityOrg",
+    "connection": {
+      "timeout": {
+        "peer": {
+          "endorser": "300"
+        },
+        "orderer": "300"
+      }
+    }
+  },
+  "channels": {
+    "aquatrust-channel": {
+      "orderers": ["orderer.aquatrust.com"],
+      "peers": {
+        "peer0.facility.aquatrust.com": {
+          "endorsingPeer": true,
+          "chaincodeQuery": true,
+          "ledgerQuery": true,
+          "eventSource": true
+        },
+        "peer0.auditor.aquatrust.com": {
+          "endorsingPeer": true,
+          "chaincodeQuery": false,
+          "ledgerQuery": false,
+          "eventSource": false
+        },
+        "peer0.regulator.aquatrust.com": {
+          "endorsingPeer": true,
+          "chaincodeQuery": false,
+          "ledgerQuery": false,
+          "eventSource": false
+        }
+      }
+    }
+  },
+  "organizations": {
+    "FacilityOrg": {
+      "mspid": "FacilityMSP",
+      "peers": ["peer0.facility.aquatrust.com"],
+      "certificateAuthorities": ["ca.facility.aquatrust.com"]
+    }
+  },
+  "orderers": {
+    "orderer.aquatrust.com": {
+      "url": "grpcs://localhost:7050",
+      "grpcOptions": {
+        "ssl-target-name-override": "orderer.aquatrust.com"
+      },
+      "tlsCACerts": {
+        "path": "crypto-config/ordererOrganizations/orderer.aquatrust.com/tlsca/tlsca.orderer.aquatrust.com-cert.pem"
+      }
+    }
+  },
+  "peers": {
+    "peer0.facility.aquatrust.com": {
+      "url": "grpcs://localhost:7051",
+      "grpcOptions": {
+        "ssl-target-name-override": "peer0.facility.aquatrust.com"
+      },
+      "tlsCACerts": {
+        "path": "crypto-config/peerOrganizations/facility.aquatrust.com/tlsca/tlsca.facility.aquatrust.com-cert.pem"
+      }
+    }
+  }
+}

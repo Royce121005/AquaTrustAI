@@ -1,0 +1,40 @@
+# ---------------------------------------------------------------------------
+# AquaTrust AI — Hyperledger Fabric Cryptographic Network Topology Configuration
+# Reference: FABRIC_ARCHITECTURE.md (LTS 2.5)
+# ---------------------------------------------------------------------------
+
+OrdererOrgs:
+  - Name: OrdererOrg
+    Domain: orderer.aquatrust.com
+    EnableNodeOUs: true
+    Specs:
+      - Hostname: orderer
+        CommonName: orderer.aquatrust.com
+
+PeerOrgs:
+  # 1. Facility Organization (Plant Operators / Treatment Authorities)
+  - Name: FacilityOrg
+    Domain: facility.aquatrust.com
+    EnableNodeOUs: true
+    Template:
+      Count: 1
+    Users:
+      Count: 1
+
+  # 2. Auditor Organization (Independent Verification & Traceability Auditors)
+  - Name: AuditorOrg
+    Domain: auditor.aquatrust.com
+    EnableNodeOUs: true
+    Template:
+      Count: 1
+    Users:
+      Count: 1
+
+  # 3. Regulator Organization (Environmental Regulators / CPCB / SPCB Authorities)
+  - Name: RegulatorOrg
+    Domain: regulator.aquatrust.com
+    EnableNodeOUs: true
+    Template:
+      Count: 1
+    Users:
+      Count: 1
