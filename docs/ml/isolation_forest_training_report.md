@@ -1,9 +1,9 @@
 # AquaTrust AI — Isolation Forest Model Training Report (Phase 11)
 
-**Execution Status:** `TRAINED_AND_FROZEN`  
-**Framework:** `scikit-learn v1.7.2`  
-**Model Architecture:** Parameter-Specific & Stream-Specific Isolation Forest Baseline  
-**Execution Timestamp:** `2026-09-27T10:03:34.031534+00:00`  
+**Execution Status:** `TRAINED_AND_FROZEN`
+**Framework:** `scikit-learn v1.9.1`
+**Model Architecture:** Parameter-Specific & Stream-Specific Isolation Forest Baseline
+**Execution Timestamp:** `2026-09-27T16:02:42.758007+00:00`
 
 ---
 
@@ -13,7 +13,7 @@ The Isolation Forest models were fitted **strictly and exclusively** on the chro
 
 | Artifact Property | Value / Verification |
 | :--- | :--- |
-| **Training File Path** | `C:\Users\Risa vilas dias\aquatrust-ai\AquaTrustAI\datasets\anomaly_detection\splits\train.csv` |
+| **Training File Path** | `datasets/anomaly_detection/splits/train.csv` |
 | **Training SHA-256 Checksum** | `099b6d58d45adf1092c68cb8e4311eba80f18658209796099892edc2864cb444` |
 | **Feature Set Version** | `v2.2.1` |
 | **Preprocessing Version** | `v2.2.1` |
@@ -75,9 +75,9 @@ Per strict project instructions:
 
 ## 6. Generated Working Artifacts
 
-All Phase 11 artifacts have been stored in the dedicated working directory `C:\Users\Risa vilas dias\aquatrust-ai\AquaTrustAI\datasets\anomaly_detection\trained_models`:
+All Phase 11 artifacts have been stored in the dedicated working directory `datasets/anomaly_detection/trained_models`:
 - `models/isolation_forest_param_*.joblib` (6 parameter-level model binaries)
-- `models/iforest_stream_*.joblib` (20 stream-specific model binaries)
+- `models/iforest_stream_*.joblib` (21 stream-specific model binaries)
 - `frozen_thresholds.json`
 - `model_metadata.json`
 
