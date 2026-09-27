@@ -52,6 +52,8 @@ def canonicalize_parameter_name(name: str) -> str:
     return CANONICAL_PARAM_MAP.get(norm, norm)
 
 
+from decimal import Decimal
+
 @dataclass
 class CanonicalReadingInput:
     """
@@ -61,7 +63,7 @@ class CanonicalReadingInput:
     facility_id: str
     timestamp: Union[str, datetime]
     parameter: str
-    value: float
+    value: Union[float, int, Decimal]
     unit: str
     measurement_stage: str = "final_effluent"
     sensor_id: Optional[str] = None
@@ -80,9 +82,13 @@ class CanonicalReadingInput:
         elif not isinstance(self.timestamp, str):
             raise ValueError("timestamp must be an ISO-8601 string or datetime object.")
             
-        if self.value is None or not isinstance(self.value, (int, float)):
-            raise ValueError("value must be a numeric float or integer.")
-        self.value = float(self.value)
+        if self.value is None or not isinstance(self.value, (int, float, Decimal)):
+            try:
+                self.value = float(self.value)
+            except (ValueError, TypeError) as e:
+                raise ValueError(f"value must be a numeric float or integer, got {type(self.value).__name__}") from e
+        else:
+            self.value = float(self.value)
         
         self.parameter_slug = canonicalize_parameter_name(self.parameter)
         self.unit = str(self.unit).strip()

@@ -167,15 +167,43 @@ class AquaTrustAnomalyInferenceEngine:
         start_time = time.perf_counter()
 
         # 1. Parse and validate input
-        if isinstance(reading, dict):
+        if isinstance(reading, CanonicalReadingInput):
+            inp = reading
+        elif hasattr(reading, "to_canonical_dict"):
+            d = reading.to_canonical_dict()
+            try:
+                inp = CanonicalReadingInput(
+                    facility_id=str(d["facility_id"]),
+                    timestamp=d["timestamp"],
+                    parameter=str(d["parameter"]),
+                    value=float(d["value"]) if d["value"] is not None else None,
+                    unit=str(d["unit"]),
+                    measurement_stage=str(d.get("measurement_stage", "final_effluent")),
+                    sensor_id=str(d.get("sensor_id", "")),
+                    dataset_source=str(d.get("dataset_id", "CANONICAL")),
+                    quality_status=str(d.get("quality_status", "valid")),
+                    compliance_status=str(d.get("compliance_status", "")) if d.get("compliance_status") else None,
+                    metadata=getattr(reading, "metadata", {})
+                )
+            except Exception as e:
+                raise InvalidReadingError(f"Failed to parse CanonicalReading domain model: {str(e)}") from e
+        elif hasattr(reading, "model_dump"):
+            try:
+                inp = CanonicalReadingInput(**reading.model_dump())
+            except Exception as e:
+                raise InvalidReadingError(f"Failed to parse model payload: {str(e)}") from e
+        elif hasattr(reading, "dict"):
+            try:
+                inp = CanonicalReadingInput(**reading.dict())
+            except Exception as e:
+                raise InvalidReadingError(f"Failed to parse model payload: {str(e)}") from e
+        elif isinstance(reading, dict):
             try:
                 inp = CanonicalReadingInput(**reading)
             except Exception as e:
                 raise InvalidReadingError(f"Failed to parse measurement payload: {str(e)}") from e
-        elif isinstance(reading, CanonicalReadingInput):
-            inp = reading
         else:
-            raise InvalidReadingError(f"Expected CanonicalReadingInput or dict, got {type(reading).__name__}")
+            raise InvalidReadingError(f"Expected CanonicalReadingInput, CanonicalReading, or dict, got {type(reading).__name__}")
 
         param_slug = inp.parameter_slug
 
