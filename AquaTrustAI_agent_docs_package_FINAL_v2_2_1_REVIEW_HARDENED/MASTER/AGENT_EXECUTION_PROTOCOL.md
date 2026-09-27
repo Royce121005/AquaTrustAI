@@ -4,19 +4,20 @@
 
 Implement exactly one assigned phase of AquaTrust AI while preserving the master architecture and all previously frozen functionality.
 
-## Mandatory reading order
+## Mandatory reading order & Source of Truth
 
-1. `MASTER/MASTER_PROJECT_SPECIFICATION.md`
-2. `MASTER/ARCHITECTURE_FREEZE.md`
-3. `MASTER/DATA_CONTRACTS.md`
-4. `MASTER/API_CONTRACT.md`
-5. `MASTER/INTEGRATION_RULES.md`
-6. `MASTER/SECURITY_RULES.md`
-7. `MASTER/CODING_RULES.md`
-8. `MASTER/DEPENDENCY_GRAPH.md`
-9. `MASTER/DEFINITION_OF_DONE.md`
-10. Assigned `PHASES/PHASE_XX_*.md`
-11. Previous phase completion report, if applicable
+1. **Current Implementation (Tier 1 Authority):** Use the current repository implementation (`datasets/canonical/models.py`, `datasets/canonical/canonical_reading_schema.json`, `datasets/src/`, `backend/app/`) and active contracts as the source of truth. Do not rely on historical documentation when it conflicts with current implementation.
+2. `MASTER/MASTER_PROJECT_SPECIFICATION.md`
+3. `MASTER/ARCHITECTURE_FREEZE.md`
+4. `MASTER/DATA_CONTRACTS.md`
+5. `MASTER/API_CONTRACT.md`
+6. `MASTER/INTEGRATION_RULES.md`
+7. `MASTER/SECURITY_RULES.md`
+8. `MASTER/CODING_RULES.md`
+9. `MASTER/DEPENDENCY_GRAPH.md`
+10. `MASTER/DEFINITION_OF_DONE.md`
+11. Assigned `PHASES/PHASE_XX_*.md`
+12. Previous phase completion report, if applicable
 
 ## Required execution sequence
 

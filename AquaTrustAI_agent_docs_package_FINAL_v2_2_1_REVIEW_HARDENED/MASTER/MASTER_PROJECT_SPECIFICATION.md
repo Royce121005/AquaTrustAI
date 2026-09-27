@@ -697,7 +697,7 @@ validation_version
 validated_at
 ```
 
-A reading-level `quality_status` is `valid` or `invalid`. Record/window-level incompleteness is represented by `quality_status = incomplete` on the treatment record, not by inventing a reading-level value.
+A reading-level `quality_status` uses the canonical status values (`pending`, `valid`, `invalid`, `suspect`, `insufficient_data`) defined in `datasets/canonical/models.py`.
 
 ## 9.4 Rule versioning
 
@@ -831,9 +831,10 @@ measurement
 Aggregate parameter-level results into:
 
 ```text
+pending
 compliant
 non_compliant
-not_evaluable
+not_applicable
 ```
 
 The aggregation logic must be deterministic and documented.

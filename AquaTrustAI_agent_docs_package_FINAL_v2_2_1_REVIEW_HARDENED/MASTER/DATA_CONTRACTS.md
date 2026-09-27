@@ -31,14 +31,14 @@ If an API DTO intentionally exposes a convenience object such as `signature` or 
 
 ### Status representation
 
-Canonical API enum values MUST use lower_snake_case. Examples:
+Canonical API enum values MUST use lower_snake_case exactly as defined in `datasets/canonical/models.py`:
 
-- `quality_status`: `valid`, `invalid`, `incomplete`
-- `anomaly_status`: `normal`, `anomalous`, `insufficient_data`
-- `compliance_status`: `compliant`, `non_compliant`, `not_evaluable`
+- `quality_status`: `pending`, `valid`, `invalid`, `suspect`, `insufficient_data`
+- `anomaly_status`: `pending`, `normal`, `anomalous`, `insufficient_data`
+- `compliance_status`: `pending`, `compliant`, `non_compliant`, `not_applicable`
 - `record_state`: `draft`, `processing`, `eligible_for_finalization`, `finalized`, `superseded_by_correction`
 
-If an implementation uses uppercase/internal enum constants, it MUST serialize them to the canonical API values above. Agents MUST NOT introduce alternate spellings, casing, or synonymous enum values.
+If an implementation uses uppercase/internal enum constants, it MUST serialize them to the canonical API values above. Agents MUST NOT introduce alternate spellings, casing, legacy synonyms (`incomplete`, `not_evaluable`), or undocumented enum values.
 
 
 ## 1. Facility
@@ -65,7 +65,7 @@ Required semantic fields:
 ## Contract-to-schema naming rule
 
 The logical names below use the same field names as the authoritative API/database contracts wherever practical. Do not introduce alternate aliases. In particular:
-- `TreatmentReading.timestamp` is represented as `observed_at`.
+- `TreatmentReading.timestamp` is represented as `timestamp` in the canonical Pydantic model (`observed_at` in physical DB table).
 - `TreatmentRecord.treatment_period` is represented as `period_start` and `period_end`.
 - API and persisted object names use lower_snake_case.
 - Measurement values use the frozen `NUMERIC(20,6)` database precision and canonical six-decimal representation.
@@ -74,33 +74,37 @@ The logical names below use the same field names as the authoritative API/databa
 
 ```text
 reading_id
+dataset_id
+source_record_id
 facility_id
 sensor_id
-observed_at
-treatment_stage
+timestamp
+measurement_stage
 parameter
 value
 unit
-source
-provenance
+data_origin
 quality_status
+anomaly_status
+compliance_status
+provenance_id
+metadata
 ```
 
-`treatment_stage` is optional when the source has no reliable stage/sample-point semantics. When the source distinguishes inlet, intermediate treatment or final-effluent measurements, the normalized stage MUST be preserved rather than discarded.
-
-Baseline normalized stage values are:
+`measurement_stage` is specified per reading. Canonical normalized stage values defined in `datasets/canonical/models.py` are:
 - `inlet`
-- `primary_treatment`
-- `secondary_treatment`
+- `primary_settler`
+- `secondary_aeration`
 - `final_effluent`
-- `other`
-- `unknown`
+- `sludge_line`
+- `facility_metadata`
+- `unspecified`
 
-For `source = dataset`, `provenance` MUST identify the immutable `dataset_id` and `source_row_reference` when available. For simulator-generated records it MUST additionally preserve `scenario_id`, `simulation_seed` and, when source-derived, `source_dataset_ids[]` as required by `DATA_PROVENANCE_SPECIFICATION.md`. Provenance may also carry the explicit `data_origin` value (`observed` or `simulated`). These values belong inside the existing provenance object and do not create a second source of truth.
+For `source = dataset`, `provenance_id` MUST identify the immutable cryptographic hash or dataset manifest ID. `data_origin` MUST be explicitly `observed` or `simulated`.
 
 Dataset-specific source columns must never leak into the canonical reading contract.
 
-A reading-level `quality_status` is `valid` or `invalid`. `incomplete` is a treatment-window/record-level status used when required evidence is missing; it is not a substitute for a reading-level validation result.
+`quality_status` uses the canonical values (`pending`, `valid`, `invalid`, `suspect`, `insufficient_data`). `suspect` indicates flagged empirical anomalies/ranges without explicit invalidation, while `insufficient_data` indicates missing required parameter windows.
 
 ## 4. ValidationResult
 

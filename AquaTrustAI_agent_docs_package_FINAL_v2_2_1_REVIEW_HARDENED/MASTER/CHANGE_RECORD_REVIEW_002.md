@@ -14,11 +14,11 @@ A full consistency review of the v2.2.0 agent package identified several places 
 ### A. Status-enum contradiction
 Older finalization text used `VALID/INVALID/INCOMPLETE`, `NORMAL/ANOMALOUS/INSUFFICIENT_DATA` and `COMPLIANT/NON_COMPLIANT/NOT_EVALUABLE`, while the newer contract listed only the first two values for some statuses.
 
-Resolution:
-- `quality_status`: `valid | invalid | incomplete`
-- `anomaly_status`: `normal | anomalous | insufficient_data`
-- `compliance_status`: `compliant | non_compliant | not_evaluable`
-- individual reading validation may still return only `valid | invalid`; `incomplete` is a record/window-level state.
+Resolution (Reconciled with Merged Implementation Baseline):
+- `quality_status`: `pending | valid | invalid | suspect | insufficient_data`
+- `anomaly_status`: `pending | normal | anomalous | insufficient_data`
+- `compliance_status`: `pending | compliant | non_compliant | not_applicable`
+- canonical model in `datasets/canonical/models.py` and schema in `datasets/canonical/canonical_reading_schema.json` are authoritative.
 
 ### B. Treatment-stage loss
 Source datasets can contain inlet, intermediate-stage and final-effluent measurements. The previous canonical reading did not expose stage explicitly.
