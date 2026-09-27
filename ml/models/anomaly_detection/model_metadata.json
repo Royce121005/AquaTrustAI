@@ -1,0 +1,230 @@
+{
+  "model_version": "iforest_v2.2.1",
+  "algorithm": "IsolationForest",
+  "framework": "scikit-learn",
+  "parameters": {
+    "n_estimators": 200,
+    "contamination": 0.05,
+    "random_state": 42,
+    "bootstrap": false,
+    "max_samples": "auto",
+    "max_features": 1.0
+  },
+  "training_dataset": "train.csv",
+  "training_dataset_hash": "099b6d58d45adf1092c68cb8e4311eba80f18658209796099892edc2864cb444",
+  "feature_set_version": "v2.2.1",
+  "preprocessing_version": "v2.2.1",
+  "training_timestamp": "2026-09-27T10:03:34.028491+00:00",
+  "target_parameters": [
+    "bod",
+    "cod",
+    "tss",
+    "ph",
+    "nh4_n",
+    "tkn"
+  ],
+  "unavailable_parameters": [
+    "tn",
+    "nox_n"
+  ],
+  "thresholds": {
+    "parameter_thresholds": {
+      "bod": {
+        "threshold": 0.0,
+        "model_offset": -0.5730172327986107,
+        "train_score_p05": 5.551115123125783e-17,
+        "train_score_mean": 0.14118521926030542,
+        "train_score_std": 0.06678332932153325,
+        "method": "decision_function_zero_boundary",
+        "contamination": 0.05,
+        "n_training_samples": 1706
+      },
+      "cod": {
+        "threshold": 0.0,
+        "model_offset": -0.5747022797125877,
+        "train_score_p05": -1.6886448836461732e-17,
+        "train_score_mean": 0.13127896190931274,
+        "train_score_std": 0.06093833697112292,
+        "method": "decision_function_zero_boundary",
+        "contamination": 0.05,
+        "n_training_samples": 2607
+      },
+      "tss": {
+        "threshold": 0.0,
+        "model_offset": -0.5757592947885086,
+        "train_score_p05": -9.64939933512099e-18,
+        "train_score_mean": 0.1594553267210443,
+        "train_score_std": 0.07507972707787453,
+        "method": "decision_function_zero_boundary",
+        "contamination": 0.05,
+        "n_training_samples": 1452
+      },
+      "ph": {
+        "threshold": 0.0,
+        "model_offset": -0.5711679248738514,
+        "train_score_p05": 0.0,
+        "train_score_mean": 0.12149176985092433,
+        "train_score_std": 0.05732568841423089,
+        "method": "decision_function_zero_boundary",
+        "contamination": 0.05,
+        "n_training_samples": 1461
+      },
+      "nh4_n": {
+        "threshold": 0.0,
+        "model_offset": -0.5823342173511565,
+        "train_score_p05": -4.141652298894627e-17,
+        "train_score_mean": 0.1899616177539128,
+        "train_score_std": 0.1022075983697983,
+        "method": "decision_function_zero_boundary",
+        "contamination": 0.05,
+        "n_training_samples": 2158
+      },
+      "tn": {
+        "status": "NOT_AVAILABLE",
+        "threshold": null
+      },
+      "tkn": {
+        "threshold": 0.0,
+        "model_offset": -0.5506062155693557,
+        "train_score_p05": 0.0,
+        "train_score_mean": 0.12397841869877418,
+        "train_score_std": 0.06253351039092558,
+        "method": "decision_function_zero_boundary",
+        "contamination": 0.05,
+        "n_training_samples": 911
+      },
+      "nox_n": {
+        "status": "NOT_AVAILABLE",
+        "threshold": null
+      }
+    }
+  },
+  "trained_models": {
+    "bod": {
+      "status": "TRAINED",
+      "parameter": "bod",
+      "n_training_samples": 1706,
+      "n_streams_covered": 6,
+      "streams": [
+        "DATASET_01_UCI:FAC_UCI_URBAN_ETP_01:final_effluent:bod",
+        "DATASET_01_UCI:FAC_UCI_URBAN_ETP_01:inlet:bod",
+        "DATASET_01_UCI:FAC_UCI_URBAN_ETP_01:primary_settler:bod",
+        "DATASET_01_UCI:FAC_UCI_URBAN_ETP_01:secondary_settler:bod",
+        "DATASET_02_MELBOURNE_INLET:MWC_ETP_MELBOURNE:inlet:bod",
+        "DATASET_03_MELBOURNE_OUTLET:MWC_ETP_MELBOURNE:final_effluent:bod"
+      ],
+      "model_artifact": "isolation_forest_param_bod.joblib",
+      "model_path": "C:\\Users\\Risa vilas dias\\aquatrust-ai\\AquaTrustAI\\datasets\\anomaly_detection\\trained_models\\models\\isolation_forest_param_bod.joblib",
+      "threshold_offset": -0.5730172327986107,
+      "train_score_p05": 5.551115123125783e-17
+    },
+    "cod": {
+      "status": "TRAINED",
+      "parameter": "cod",
+      "n_training_samples": 2607,
+      "n_streams_covered": 5,
+      "streams": [
+        "DATASET_01_UCI:FAC_UCI_URBAN_ETP_01:final_effluent:cod",
+        "DATASET_01_UCI:FAC_UCI_URBAN_ETP_01:inlet:cod",
+        "DATASET_01_UCI:FAC_UCI_URBAN_ETP_01:secondary_settler:cod",
+        "DATASET_02_MELBOURNE_INLET:MWC_ETP_MELBOURNE:inlet:cod",
+        "DATASET_03_MELBOURNE_OUTLET:MWC_ETP_MELBOURNE:final_effluent:cod"
+      ],
+      "model_artifact": "isolation_forest_param_cod.joblib",
+      "model_path": "C:\\Users\\Risa vilas dias\\aquatrust-ai\\AquaTrustAI\\datasets\\anomaly_detection\\trained_models\\models\\isolation_forest_param_cod.joblib",
+      "threshold_offset": -0.5747022797125877,
+      "train_score_p05": -1.6886448836461732e-17
+    },
+    "tss": {
+      "status": "TRAINED",
+      "parameter": "tss",
+      "n_training_samples": 1452,
+      "n_streams_covered": 4,
+      "streams": [
+        "DATASET_01_UCI:FAC_UCI_URBAN_ETP_01:final_effluent:tss",
+        "DATASET_01_UCI:FAC_UCI_URBAN_ETP_01:inlet:tss",
+        "DATASET_01_UCI:FAC_UCI_URBAN_ETP_01:primary_settler:tss",
+        "DATASET_01_UCI:FAC_UCI_URBAN_ETP_01:secondary_settler:tss"
+      ],
+      "model_artifact": "isolation_forest_param_tss.joblib",
+      "model_path": "C:\\Users\\Risa vilas dias\\aquatrust-ai\\AquaTrustAI\\datasets\\anomaly_detection\\trained_models\\models\\isolation_forest_param_tss.joblib",
+      "threshold_offset": -0.5757592947885086,
+      "train_score_p05": -9.64939933512099e-18
+    },
+    "ph": {
+      "status": "TRAINED",
+      "parameter": "ph",
+      "n_training_samples": 1461,
+      "n_streams_covered": 4,
+      "streams": [
+        "DATASET_01_UCI:FAC_UCI_URBAN_ETP_01:final_effluent:ph",
+        "DATASET_01_UCI:FAC_UCI_URBAN_ETP_01:inlet:ph",
+        "DATASET_01_UCI:FAC_UCI_URBAN_ETP_01:primary_settler:ph",
+        "DATASET_01_UCI:FAC_UCI_URBAN_ETP_01:secondary_settler:ph"
+      ],
+      "model_artifact": "isolation_forest_param_ph.joblib",
+      "model_path": "C:\\Users\\Risa vilas dias\\aquatrust-ai\\AquaTrustAI\\datasets\\anomaly_detection\\trained_models\\models\\isolation_forest_param_ph.joblib",
+      "threshold_offset": -0.5711679248738514,
+      "train_score_p05": 0.0
+    },
+    "nh4_n": {
+      "status": "TRAINED",
+      "parameter": "nh4_n",
+      "n_training_samples": 2158,
+      "n_streams_covered": 2,
+      "streams": [
+        "DATASET_02_MELBOURNE_INLET:MWC_ETP_MELBOURNE:inlet:nh4_n",
+        "DATASET_03_MELBOURNE_OUTLET:MWC_ETP_MELBOURNE:final_effluent:nh4_n"
+      ],
+      "model_artifact": "isolation_forest_param_nh4_n.joblib",
+      "model_path": "C:\\Users\\Risa vilas dias\\aquatrust-ai\\AquaTrustAI\\datasets\\anomaly_detection\\trained_models\\models\\isolation_forest_param_nh4_n.joblib",
+      "threshold_offset": -0.5823342173511565,
+      "train_score_p05": -4.141652298894627e-17
+    },
+    "tn": {
+      "status": "NOT_AVAILABLE",
+      "reason": "Insufficient contiguous training observations in historical window (valid samples < 10)",
+      "valid_training_samples": 0,
+      "model_artifact": null
+    },
+    "tkn": {
+      "status": "TRAINED",
+      "parameter": "tkn",
+      "n_training_samples": 911,
+      "n_streams_covered": 1,
+      "streams": [
+        "DATASET_03_MELBOURNE_OUTLET:MWC_ETP_MELBOURNE:final_effluent:tkn"
+      ],
+      "model_artifact": "isolation_forest_param_tkn.joblib",
+      "model_path": "C:\\Users\\Risa vilas dias\\aquatrust-ai\\AquaTrustAI\\datasets\\anomaly_detection\\trained_models\\models\\isolation_forest_param_tkn.joblib",
+      "threshold_offset": -0.5506062155693557,
+      "train_score_p05": 0.0
+    },
+    "nox_n": {
+      "status": "NOT_AVAILABLE",
+      "reason": "Insufficient contiguous training observations in historical window (valid samples < 10)",
+      "valid_training_samples": 0,
+      "model_artifact": null
+    }
+  },
+  "environment": {
+    "python": "3.13.7",
+    "scikit-learn": "1.7.2",
+    "joblib": "1.5.2",
+    "pandas": "2.2.3"
+  },
+  "invariants_checked": [
+    "Strict zero-leakage training partition only",
+    "Reproducible random_state=42",
+    "Explicit null preservation",
+    "Separated quality_status and anomaly_status"
+  ],
+  "production_artifacts_sha256": {
+    "isolation_forest.joblib": "90e88c5aa26621ef420ece60ad3c2058f21c51d1f06da37a726f489b53e4b1d3",
+    "scaler.joblib": "99a3728fa2f4189c596250c92b6dbb4c5cd521ad0f809450724188ccca78a862",
+    "feature_config.yaml": "0177a4cf6c94fa3b8289ba0562a0d9230ff4404920aab7313d7c73c19ea8351c",
+    "evaluation.json": "6c85eefa660865a8e0de585d08e41743ab8689606e987e74c0b48f14f6bd06b7"
+  },
+  "packaging_timestamp": "2026-09-27T10:42:34.187010+00:00",
+  "package_directory": "ml/models/anomaly_detection"
+}

@@ -1,0 +1,49 @@
+feature_set_version: v2.2.1
+preprocessing_version: v2.2.1
+model_version: iforest_v2.2.1
+input_features:
+- name: value_t
+  type: float64
+  description: Current raw sensor measurement at timestamp t
+  units:
+    bod: mg/L
+    cod: mg/L
+    tss: mg/L
+    ph: pH_units
+    nh4_n: mg/L
+    tkn: mg/L
+- name: delta_1
+  type: float64
+  description: 'First difference: x_t - x_{t-1}'
+  formula: x_t - x_{t-1}
+- name: rolling_mean_3
+  type: float64
+  description: 'Trailing 3-period moving average: mean(x_t, x_{t-1}, x_{t-2})'
+  formula: mean(x_t, x_{t-1}, x_{t-2})
+- name: rolling_std_3
+  type: float64
+  description: 'Trailing 3-period sample standard deviation: std(x_t, x_{t-1}, x_{t-2},
+    ddof=1)'
+  formula: std(x_t, x_{t-1}, x_{t-2})
+feature_ordering:
+- value_t_scaled
+- delta_1_scaled
+- rolling_mean_3_scaled
+- rolling_std_3_scaled
+transformations:
+  scaling_method: StandardScaler
+  formula: z = (x - mean_train) / std_train
+  fitted_scope: train.csv exclusively
+parameter_models_mapping:
+  bod: isolation_forest_bod.joblib
+  cod: isolation_forest_cod.joblib
+  tss: isolation_forest_tss.joblib
+  ph: isolation_forest_ph.joblib
+  nh4_n: isolation_forest_nh4_n.joblib
+  tkn: isolation_forest_tkn.joblib
+  tn: NOT_AVAILABLE (insufficient historical training samples)
+  nox_n: NOT_AVAILABLE (insufficient historical training samples)
+insufficient_data_policy:
+  min_history_required: 3
+  first_observations_flag: true
+  action: Return status 'insufficient_data' without artificial imputation
