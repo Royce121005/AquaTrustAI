@@ -40,7 +40,7 @@ The implementation must not interpret free-form natural-language rules as execut
 
 A rule is evaluated only after the measurement is normalized to the rule's declared unit and its treatment stage/sample-point semantics match the rule's scope when `stage_scope` is specified. Unit conversion must be deterministic and versioned.
 
-If conversion is impossible or the unit is unknown, the result is `not_evaluable`, not compliant by default.
+If conversion is impossible or the unit is unknown, the result is `not_applicable` or `pending`, not compliant by default.
 
 ## 5. Effective dating
 
@@ -63,13 +63,14 @@ reason
 ```
 
 Minimum result states:
-`compliant`, `non_compliant`, `not_evaluable`.
+`pending`, `compliant`, `non_compliant`, `not_applicable`.
 
 ## 7. Aggregate compliance
 
 Aggregate status is derived from parameter results using the frozen policy:
 - `non_compliant` if any required evaluated parameter is non-compliant;
-- `not_evaluable` if no non-compliance exists but a required parameter cannot be evaluated;
+- `not_applicable` if evaluation is not applicable for the stage or parameter;
+- `pending` if evaluation is pending;
 - `compliant` only when all required parameters are evaluable and compliant.
 
 This prevents missing evidence from being silently treated as compliant.

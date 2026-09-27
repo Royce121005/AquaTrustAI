@@ -1,0 +1,33 @@
+# Python virtual environments and build artifacts
+.venv/
+venv/
+ENV/
+env/
+
+# Python compiled files and caches
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Pytest / Coverage
+.pytest_cache/
+.coverage
+htmlcov/
+.nox/
+.tox/
+
+# Environment configuration files
+.env
+!.env.example
+
+# Node / Frontend
+node_modules/
+dist/
+.DS_Store
+
+# Local database files
+*.sqlite
+*.sqlite3
+*.db

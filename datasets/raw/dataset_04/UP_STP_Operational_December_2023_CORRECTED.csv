@@ -1,0 +1,126 @@
+﻿sl_no,stp_name,year_of_commissioning,city_town_district,installed_capacity_mld,utilized_capacity_mld,rural_urban_other,technology_process,om_authority,measurement_date,ph,bod_mg_l,cod_mg_l,tss_mg_l,total_coliform_mpn_100ml,fecal_coliform_mpn_100ml,compliance_status,mode_of_disposal_treated_sewage_sludge,receiving_water_body,river_catchment,ganga_phase
+1,10.445 MLD STP near Tixi Tempel (Karanpur),2001,Etawah,10.445,8,R,WSP,"Yamuna Pollution Control Unit, UP Jal Nigam, Agra",05.12.2023,7.8,24,170,33,28000,810,Achieving,Jharana Nala,River Yamuna,,Phase-II
+2,Etawah 21 MLD,2022,Etawah,21,21,R,SBR,UP Jal Nigam,05.12.2023,7.6,9,50,9,24000,560,Achieving,,River Yamuna,,Phase-II
+3,13.5 MLD STP at Mauja Umrain,2013,Etawah,13.5,8,R,WSP,UP Jal Nigam,05.12.2023,7.7,20,160,38,24000,600,Achieving,On Land,River Yamuna,,Phase-II
+4,03 MLD STP Firozabad,2014,Firozabad,3,3,O,UASB,Jal Kal,05.12.2023,7.7,26,180,54,35000,930,Achieving,,,,Phase-II
+5,"67 MLD Mohammadpur, Biharipur",2020,Firozabad,67,52,U,ASP+ extended aeration,U.P. Jal Nigam,05.12.2023,7.8,10,60,9,22000,600,Achieving,,River Yamuna,,Phase-II
+6,1.65 MLD Saifai (Paramedicals),2013,Etawah,1.65,0.9,U,SBR,U.P. Jal Nigam,05.12.2023,7.6,23,170,41,28000,910,Achieving,River Sengar,,,Phase-II
+7,"23 MLD STP at Mauja Odenya, Padaria",2014,Mainpuri,23,11,U,UASB,U.P. Jal Nigam,05.12.2023,7.7,28,180,48,28000,830,Achieving,Through Drain,Kharja Drain,,Phase-II
+8,26 MLD Jhansi Laxmi Taal,2021,Jhansi,26,22,U,SBR,U.P. Jal Nigam,02.12.2023,7.3,8,22,16,780,560,Achieving,,,,
+9,3.42 MLD Near Divyang kendra,2000,Chitrakoot,3.42,3.42,O,Oxidation Pond,Nagar Palika Parishad,02.11.2023,7.6,28,192,86,2100,1300,Not Achieving,,Lowland area,,Phase-II
+10,"42 MLD, Sajari Kanpur",2016-17,Kanpur,42,21,R,ASP,U.P. Jal Nigam,05.12.2023,8.15,21,140,48,390,330,Achieving,Disposal Channel,River Pandu,,Phase-I
+11,"210 MLD, Bingawan Kanpur",2015-16,Kanpur,210,135,R,UASB,U.P. Jal Nigam,05.12.2023,8.16,45,190,68,140000,110000,Not Achieving,Disposal Channel,River Pandu,,Phase-I
+12,"5 MLD, Jajmau Kanpur",1989-90,Kanpur,5,5,U,UASB,U.P. Jal Nigam,05.12.2023,8.14,39,170,60,120000,94000,Not Achieving,Irrigation,Irrigation Channel,,Phase-I
+13,"43 MLD Jajmau, Kanpur",2020,Kanpur,43,37,R,ASP,U.P. Jal Nigam,05.12.2023,8.08,27,140,58,70000,49000,Not Achieving,Irrigation,Irrigation Channel,,Phase-I
+14,"130 MLD Jajmau, Kanpur",1998-99,Kanpur,130,120,R,ASP,U.P. Jal Nigam,05.12.2023,8.18,21,120,56,110000,79000,Not Achieving,Irrigation,Irrigation Channel,,Phase-I
+15,"30 MLD Pankha, Kanpur",,Kanpur,30,,,,U.P. Jal Nigam,29.12.2023,7.85,18,90,34,430,220,Achieving,,,,
+16,2.7 MLD Fatehgarh STP,1992-93,Farrukhabad,2.7,2.35,U,WSP,U.P. Jal Nigam,05.12.2023,8.06,24,110,44,58000,43000,Not Achieving,Irrigation/river ganga,Irrigation/river ganga,,Phase-I
+17,"13 MLD Jalalpur, Amrapur, Kannauj",2017,Kanpur Dehat,13,13,U,SBR,U.P. Jal Nigam,05.12.2023,7.8,24,120,68,4600,3100,Not Achieving,Disposal Channel,River Kali (East),,Phase-I
+18,50 MLD STP Numayadahi,2013,Prayagraj,50,50,R,Bio-tower,"Ganga Pollution control unit, U.P. Jal Nigam",05.12.2023,7.24,18,40,20,15000,450,Achieving,,River Yamuna,,Phase-II
+19,10 MLD STP Ponghat,2013,Prayagraj,10,10,R,Bio-tower,"Ganga Pollution control unit, U.P. Jal Nigam",05.12.2023,7.31,20,36,18,7900,400,Achieving,,River Ganga,,Phase-II
+20,25 MLD STP Kodra,2013,Prayagraj,25,25,R,Bio-tower,"Ganga Pollution control unit, U.P. Jal Nigam",05.12.2023,7.28,20,44,28,14000,450,Achieving,,River Ganga,,Phase-II
+21,60 MLD STP Rajapur,2013,Prayagraj,60,60,R,UASB,"Ganga Pollution control unit, U.P. Jal Nigam",05.12.2023,7.37,28,60,32,24000,680,Achieving,,River Ganga,,Phase-II
+22,29 MLD STP Salori-1,2007,Prayagraj,29,29,R,FAB,"Ganga Pollution control unit, U.P. Jal Nigam",05.12.2023,7.26,26,52,28,35000,920,Achieving,,River Ganga,,Phase-II
+23,14 MLD STP Salori-2 Expansion,2016,Prayagraj,14,14,U,SBR,"Ganga Pollution control unit, U.P. Jal Nigam",05.12.2023,7.09,12,24,8,8400,400,Achieving,,River Ganga,,Phase-II
+24,20 MLD STP Naini,2013,Prayagraj,80,80,R,ASP,"Ganga Pollution control unit, U.P. Jal Nigam",05.12.2023,7.21,22,98,22,22000,680,Achieving,,River Yamuna,,Phase-II
+25,,1999,,,,,,,05.12.2023,7.21,22,98,22,22000,680,Achieving,,River Yamuna,,Phase-II
+26,42 MLD STP Naini,2023,Prayagraj,42,36,R,FCR,U.P. Jal Nigam,19.12.2023,7.39,22,36,30,22000,680,Achieving,,River Ganga,,
+27,14 MLD STP Phaphamau,2023,Prayagraj,14,14,R,FCR,U.P. Jal Nigam,19.12.2023,7.21,20,36,24,8400,400,Achieving,,River Ganga,,
+28,16 MLD STP Jhunsi,2023,Prayagraj,16,15,R,FCR,U.P. Jal Nigam,19.12.2023,7.19,20,28,20,11000,680,Achieving,,River Ganga,,
+29,80 MLD Dinapur STP,1994,Varanasi,80,67.77,U,ASP,U.P. Jal Nigam,05.12.2023,7.55,27,144,90,280,140,Achieving,,River Varuna,,Phase-II
+30,10 MLD Ramnagar,15.03.21,Varanasi,10,9.5,R,Anaerobic Anoxic Oxic,U.P. Jal Nigam,05.12.2023,7.61,7,38,8,280,140,Achieving,,,,Phase-II
+31,9.8 MLD Bhagwanpur STP,1989,Varanasi,9.8,9.8,R,ASP,U.P. Jal Nigam,05.12.2023,7.46,30,144,80,350,170,Achieving,,River Ganga,,Phase-II
+32,140 MLD Dinapur STP,11.11.2018,Varanasi,140,99.5,U,ASP,U.P. Jal Nigam,05.12.2023,7.68,19,46,22,350,130,Achieving,,River Varuna,,Phase-II
+33,120 MLD Goithaha STP,19.02.2019,Varanasi,120,40,U,SBR,U.P. Jal Nigam,05.12.2023,7.66,9,44,8,430,170,Achieving,Irrigation / Landfill,Chandpur irrigation canal,,Phase-II
+34,12 MLD BLW STP,06.04.1989,Varanasi,12,12,O,ASP,BLW,05.12.2023,7.39,72,276,138,310000,170000,Not Achieving,Irrigation (Lohata Form),,,Phase-II
+35,50 MLD Ramana,31.03.21,Varanasi,50,50,R,SBR,U.P. Jal Nigam,05.12.2023,7.59,8,40,8,350,110,Achieving,,River Ganga,,Phase-II
+36,30 MLD STP Pachhahatiya Jaunpur,2023,Varanasi,30,30,R,A2O,U.P. Jal Nigam,19.12.2023,7.68,8.2,42,14,430,220,Achieving,,River Gomti,,Phase-II
+37,07 MLD Vindyachal Mirzapur,2022,Mirzapur,7,3.23,U,SBR,M/s Ayyappa Infratech Pvt. Ltd under UPJN,04.12.2023,7.63,7,38,8,280,130,Achieving,Drain,River Ganga,,Phase-II
+38,14 MLD Pakka Pokhra,1994,Mirzapur,14,14,U,UASB,U.P. Jal Nigam,04.12.2023,7.52,28,164,94,34000,17000,Not Achieving,,River Ganga,,Phase-II
+39,"15 MLD S.T.P. Jharkhandi, Maherwa ki Bari",01.06.2015,Gorakhpur,15,11.89,U,SBR,U.P. Jal Nigam,05.12.2023,7.23,8,26,30,2200,920,Achieving,,Ramgarh Taal,,
+40,"5 MLD S.T.P. Jharkhandi, Maherwa ki Bari",2023,Gorakhpur,5,4.5,U,SBR,U.P. Jal Nigam,05.12.2023,7.23,8,26,30,2200,920,Achieving,,Ramgarh Taal,,
+41,"30 MLD S.T.P. Opp. Manyavar Kanshiram Shahri Garib Awas Yojna, Deoria bypass Road",01.02.2015,Gorakhpur,30,19.83,U,SBR,U.P. Jal Nigam,05.12.2023,7.42,7,24,28,1700,780,Achieving,,Ramgarh Taal,,
+42,"38 MLD STP, Mahilpur Road",1998,Saharanpur,38,38,U,UASB,UPJN,05.12.2023,7.3,28,204,54,940,790,Achieving,Treated Sewage discharge in to Dhamola river sludge sale to farmers,Dhomala river,,Phase-II
+43,6.5 MLD Awas vikas Parishad STP,2018,Lucknow,6.5,6.5,O,SBR,Jal Kal,05.12.2023,7.23,14.6,86.4,42,2600,610,Achieving,Public drain,River Gomti,,Phase-II
+44,37.5 MLD Awas vikas Parishad STP,2017,Lucknow,37.5,37.5,O,SBR,U.P. Awas vikas Parishad,05.12.2023,7.29,15.2,94.8,41.6,3200,780,Achieving,Public drain,River Gomti,,Phase-II
+45,"345 MLD STP, Bharwara",2011,Lucknow,345,345,U,UASB,U.P. Jal Nigam,05.12.2023,7.49,15.4,95.6,42,35000,7900,Not Achieving,Gomti River Fertilizer Manure,River Gomti,,Phase-II
+46,"56 MLD STP, Daulatganj",2002,Lucknow,56,42+14,U,FAB,U.P. Jal Nigam,05.12.2023,7.21,16.2,96.4,45.8,2800,700,Achieving,River Gomti,River Gomti,,Phase-II
+47,,2011,,,,,,,05.12.2023,7.21,16.2,96.4,45.8,2800,700,Achieving,,,,
+48,"56 MLD Trans Hindon (Indirapuram), Ghaziabad",2000,Ghaziabad,56,56,U,UASB,U.P. Jal Nigam,06.12.2023,7.08,25,76,37,170000,110000,Not Achieving,,River Hindon,,Phase-II
+49,"30 MLD, Sadullabad (Loni), Ghaziabad",2012,Ghaziabad,30,20,U,MBBR,U.P. Jal Nigam,05.12.2023,7.3,9,48,10,2800,790,Achieving,,River Hindon,,Phase-II
+50,"74 MLD S.B.R., Indirapuram, Ghaziabad",2013,Ghaziabad,74,74,U,SBR,U.P. Jal Nigam,06.12.2023,7.2,8,44,10,2100,790,Achieving,,River Hindon,,Phase-II
+51,"56 MLD S.B.R., Bapudham, Ghaziabad",2014,Ghaziabad,56,2,O,SBR,GDA,06.12.2023,7.2,8,40,14,1500,200,Achieving,,River Hindon,,Phase-II
+52,"6 MLD STP Garh Zone, Garhmukeshwar Hapur",2011,Hapur / Garhmukteswar,6,3.5,R,UASB followed by extended aeration,U.P. Jal Nigam (NGRBA),07.12.2023,7.04,8,29,9,1600,350,Achieving,,Garh Sub-distibutaory of River Ganga,,Phase-I
+53,"3 MLD STP Brijghat Zone, Garhmukeshwar Hapur",2011,Hapur / Garhmukteswar,3,2,R,UASB followed by extended aeration,U.P. Jal Nigam (NGRBA),07.12.2023,7.52,7,36,9,2100,680,Achieving,,Brijghat Sub-distibutaory of River Ganga,,Phase-I
+54,"56 MLD, Indirapuram, (GDA), Ghaziabad",2012,Ghaziabad,56,56,U,SBR,U.P. Jal Nigam,06.12.2023,7.3,9,53,10,1600,350,Achieving,,River Hindon,,Phase-II
+55,"56 MLD S.B.R., Dudahaida Vijay Nagar, Ghaziabad",2013,Ghaziabad,56,56,U,SBR,U.P. Jal Nigam,06.12.2023,7.3,7,38,8,1600,220,Achieving,Dasna drain,River Hindon,,Phase-II
+56,"70 MLD U.A.S.B.R. Dudahaida Vijay Nagar, Ghaziabad",2000,Ghaziabad,70,70,U,UASB,U.P. Jal Nigam,06.12.2023,7.23,26,86,49,200000,140000,Not Achieving,Dasna drain,River Hindon,,Phase-II
+57,3 MLD Pilkhaun,2015,Ghaziabad,3,3,U,MBBR,U.P. Jal Nigam,07.12.2023,7.24,24,70,40,1700,780,Achieving,Kadrabad drain,River kali/ River Ganga,,Phase-II
+58,"5 MLD Trans Delhi Signature City (Tronica City), Loni",17.12.2019,Ghaziabad,5,3.5,O,MBBR,UPSIDC,05.12.2023,7.43,10,48,16,2400,610,Achieving,,Green belt development,,Phase-II
+59,"56 MLD S.B.R. Govindpuram, Ghaziabad",2014,Ghaziabad,56,14,O,SBR,GDA,06.12.2023,7.3,10,48,15,1300,200,Achieving,Dasna drain,River Hindon,,Phase-II
+60,20 MLD Modinagar,2023,"Modinagar, Ghaziabad",20,12,U,SBR,U.P. Jal Nigam,06.12.2023,7.42,22,70,43,3500,790,Achieving,Kadrabad Drain,Kali (East),,
+61,"56 MLD S.B.R., Morty, Ghaziabad",2018,Ghaziabad,56,25,O,SBR,GDA,06.12.2023,7.06,13,44,18,2200,400,Achieving,,River Hindon,,Phase-II
+62,30 MLD Hapur,2022,"Hapur, Ghaziabad",30,7,U,SBR,UPJN,07.12.2023,7.26,8,50,16,2600,680,Achieving,Hapur Drain,Kali (East),,
+63,"78 MLD Dhadhupura, Agra",2013,Agra,78,78,U,UASB,U.P. Jal Nigam,08.12.2023,7.93,26,130,44,4300,910,Achieving,Agriculture (on land),On Land,,Phase-II
+64,"2.25 MLD Budi ka Nagla, Agra",2000,Agra,2.25,2.25,U,WSP,U.P. Jal Nigam,08.12.2023,7.87,27,160,42,3800,820,Achieving,,River Yamuna,,Phase-II
+65,"10 MLD Peelakhar, Agra",2000,Agra,10,10,U,WSP,U.P. Jal Nigam,08.12.2023,7.96,26,180,44,2100,780,Achieving,,River Yamuna,,Phase-II
+66,"12 MLD Devri Road, (Bhimnagri), Agra",2011,Agra,12,8,U,UASB,U.P. Jal Nigam,07.12.2023,7.8,24,170,40,2400,930,Achieving,,River Yamuna,,Phase-II
+67,"14 MLD Jaganpur, Sikandarpur, Agra",2011,Agra,14,14,U,UASB,U.P. Jal Nigam,08.12.2023,7.94,25,150,46,3800,820,Achieving,Agriculture (on land),Onland,,Phase-II
+68,"40 MLD Sadarban, Bichhpuri, Agra",2013,Agra,40,28.5,U,UASB,U.P. Jal Nigam,06.12.2023,7.74,25,140,40,2400,930,Achieving,,River Yamuna,,Phase-II
+69,36 MLD Sadarwan (Bichpuri) New,2018,Agra,36,36,U,SBR,U.P. Jal Nigam,06.12.2023,7.68,28,170,46,4300,910,Achieving,Land/ Agra canal,Land/ Agra canal,,Phase-II
+70,"24 MLD Dhadhupura (New), Agra",2014,Agra,24,15,U,UASB,U.P. Jal Nigam,08.12.2023,7.95,26,160,44,2100,780,Achieving,Agriculture (on land),On Land,,Phase-II
+71,"4.50 MLD Kalindi Vihar, Agra",2014,Agra,4.5,4.5,U,UASB,U.P. Jal Nigam,08.12.2023,7.9,28,150,48,4600,920,Achieving,Karwan River,Karwan River,,Phase-II
+72,"03 MLD Pandav Nagar, Meerut",2013,Meerut,3,2.7,O,ASP,MDA,04.12.2023,7.47,16,168,54,4100,2700,Not Achieving,,River Kali (East),,Phase-I
+73,"07 MLD Pallavpuram-1, Meerut",2012,Meerut,7,6.5,O,ASP,MDA,04.12.2023,7.37,14,156,44,4000,3100,Not Achieving,,River Kali (East),,Phase-I
+74,"7 MLD Pallavpuram-2, Meerut",2008,Meerut,11,7,O,MBBR,MDA,04.12.2023,7.58,16,164,50,3900,3300,Not Achieving,,River Kali (East),,Phase-I
+75,"06 MLD Rakshapuram, Meerut",2011,Meerut,6,4.4,O,ASP,MDA,04.12.2023,7.38,18,136,46,4700,3900,Not Achieving,,River Kali (East),,Phase-I
+76,"10 MLD Lohiya Nagar, Meerut",2010,Meerut,10,2,O,ASP,MDA,04.12.2023,7.63,17,132,48,4800,3800,Not Achieving,,River Kali (East),,Phase-I
+77,"15 MLD Shatabdinagar, Meerut",2010,Meerut,15,4.8,O,ASP,MDA,04.12.2023,7.56,18,156,60,4900,3300,Not Achieving,,River Kali (East),,Phase-I
+78,15 MLD Vedvyaspuri Meerut,2010,Meerut,15,4.5,O,ASP,MDA,04.12.2023,7.61,17,160,56,4900,3800,Not Achieving,,River Kali (East),,Phase-I
+79,"06 MLD Shradhapuri-1, Meerut",2010,Meerut,6,5.5,O,ASP,MDA,04.12.2023,7.39,18,152,40,4700,3200,Not Achieving,,River Kali (East),,Phase-I
+80,06 MLD Sainik Vihar,2017,Meerut,6,5.95,O,UASB,MDA,04.12.2023,7.65,17,144,44,3900,3100,Not Achieving,,River Kali (East),,Phase-I
+81,5 MLD Modipuram Tiraha,2016,Meerut,5,4.9,O,ASP,MDA,04.12.2023,7.42,16,176,57,920,610,Achieving,,River Kali (East),,Phase-I
+82,"07 MLD Sports Goods Complex, Meerut",2012,Meerut,7,4,O,ASP,MDA,04.12.2023,7.48,16,164,55,4300,3800,Not Achieving,,River Kali (East),,Phase-I
+83,72 MLD Garh road (Jagriti vihar) Kamalpur,2018,Meerut,72,72,U,SBR,U.P. Jal Nigam,04.12.2023,7.36,8,76,7,830,620,Achieving,Treated sewage by conduit and sludge to pit,River Kali (East),,Phase-I
+84,"10 MLD Ganga Nagar, Meerut",2011,Meerut,10,3.8,O,SBR,MDA,04.12.2023,7.83,22,156,55,920,610,Achieving,,River Kali (East),,Phase-I
+85,"06 MLD Shradhapuri- Phase-2, Meerut",2012,Meerut,6,5.6,O,ASP,MDA,04.12.2023,7.56,15,148,54,930,710,Achieving,,River Kali (East),,Phase-I
+86,"14 MLD Baghpat, Meerut",2021,"Baghpat, Meerut",14,7.8,U,SBR,U.P. Jal Nigam,04.11.2023,7.39,15,124,42,930,680,Achieving,,River Yamuna,,Phase-I
+87,"32.5 MLD Nagar Palika Parishad, Kidwai nagar",2002,Muzaffar Nagar,32.5,30.6,U,Oxidation Pond,U.P. Jal Nigam,04.12.2023,7.4,22,88,46,140000,110000,Not Achieving,,River Kali West,,Phase-II
+88,12 MLD Ayodhya,2014,Ayodhya,12,12,U,UASB,U.P. Jal Nigam,05.12.2023,7.95,24,86,38,13000,2300,Not Achieving,Through Pond,,,Phase-II
+89,6 MLD Ayodhya,2023,Ayodhya,6,4,U,SBR,U.P. Jal Nigam,05.12.2023,7.26,19,82,26,49000,13000,Not Achieving,Sutiya drain,River Saryu (Downstream of river),,Phase-II
+90,"6.8 MLD, Masani, Mathura",2007,Mathura,6.8,6.8,R,WSP,Nagar Palika Parishad,05.12.2023,8.0,27,208,84,3100,910,Achieving,,River Yamuna,,Phase-II
+91,"04 MLD Vrindavan Near Pagal Baba Mandir, Mathura",2007,Mathura,4,4,R,Oxidation Pond,U.P. Jal Nigam,05.12.2023,7.9,22,208,52,3200,920,Achieving,,River Yamuna,,Phase-II
+92,"08 MLD STP Near 100 Bed Hospital Vrindavan, Manth road",2015,Mathura,8,8,U,UASB Reacter,U.P. Jal Nigam,05.12.2023,7.8,21,136,48,2500,910,Achieving,,River Yamuna,,Phase-II
+93,"14.5 MLD Trans-yamuna, Jamunapar, Mathura",2007,Mathura,14.5,14.5,R,Oxidation Pond,U.P. Jal Nigam,05.12.2023,8.1,26,216,78,2700,830,Achieving,Agriculture,River Yamuna,,Phase-II
+94,30 MLD Masani Mathura,2020,Mathura,30,30,R,SBR,U.P. Jal Nigam,05.12.2023,7.7,23,152,44,2100,820,Achieving,Agriculture,River Yamuna,,Phase-II
+95,"16 MLD Trans Yamuna, Laxmi Nagar, Mathura",2015,Mathura,16,14.45,R,UASB Reacter,U.P. Jal Nigam,05.12.2023,8.0,22,144,42,2100,820,Achieving,Agriculture,River Yamuna,,Phase-II
+96,2.76 MLD Goverdhan STP,2011,Mathura,2.76,2.76,O,WSP,Nagar Palika Parishad,05.12.2023,7.8,36,256,110,150000,26000,Not Achieving,Drain,,,Phase-II
+97,"33 MLD Sector-54, Noida",2011,Noida,33,33,O,SBR,Noida Authority,04.12.2023,7.64,11.8,68,31,1600,920,Achieving,,River Yamuna,,Phase-II
+98,"25 MLD Sector-50, Noida",2015,Noida,25,25,O,SBR,Noida Authority,04.12.2023,7.12,10.4,64,24,2100,790,Achieving,,River Yamuna,,Phase-II
+99,"35 MLD Sector-123, Noida",2011,Noida,35,35,O,SBR,Noida Authority,04.12.2023,7.53,13.2,84,37,2500,780,Achieving,,River Hindon,,Phase-II
+100,"50 MLD Sector-168, Noida",2015,Noida,50,50,O,SBR,Noida Authority,04.12.2023,7.44,12.4,76,34,1500,450,Achieving,,River Yamuna,,Phase-II
+101,"2.0 MLD Greater Noida Authority STP, Vill- Badalpur",2015,Greater Noida,2,1.5,O,SBR,GNIDA,05.12.2023,7.2,6,46,10,1200,450,Achieving,Drain,For Irrigation,,Phase-II
+102,15 MLD ECO tech -2,2018,Greater Noida,15,8,O,SBR,GNIDA,05.12.2023,7.15,8,36,12,1600,540,Achieving,Drain,Hawaliya Drain,,Phase-II
+103,20 MLD ECO tech -3,2018,Greater Noida,20,10,O,SBR,GNIDA,05.12.2023,7.28,10,44,16,2400,610,Achieving,Drain,Hawaliya Drain,,Phase-II
+104,"137 MLD Kasana, GreaterNoida",2015,Greater Noida,137,50,O,SBR,GNIDA,05.12.2023,7.36,7,38,14,1200,680,Achieving,Drain,Hawaliya Drain,,Phase-II
+105,34 MLD Sector -50 Noida,2012,Noida,34,34,O,SBR,Noida Authority,04.12.2023,7.71,12.4,76,28,3200,920,Achieving,,River Yamuna,,Phase-II
+106,"54 MLD Sector- 54, Noida",2012,Noida,54,54,O,SBR,Noida Authority,04.12.2023,7.73,9.6,52,19,1400,790,Achieving,,River Yamuna,,Phase-II
+107,"100 MLD Sector- 168, Noida",2023,Noida,100,38,O,SBR,Noida Authority,04.12.2023,7.62,8,49.6,18,920,240,Achieving,,Kundli drain,,-
+108,"80 MLD Sector- 123, Noida",2023,Noida,80,40,O,SBR,Noida Authority,04.12.2023,7.48,9.8,48,16,920,350,Achieving,,River Hindon,,
+109,"0.805 MLD Ahara Road, Zone-A, Anoopshahar",2003,Bulandhsahar,0.805,0.4,U,WSP,U.P. Jal Nigam,04.12.2023,7.81,20,168,74,3200,2200,Not Achieving,Treated Sewage - For Irrigation & Sludge- as Manure in Agricultural Field,For Irrigation,,Phase-I
+110,04 MLD Narora (NGRBA),2015,Bulandhsahar,4,3.89,R,SBR,U.P. Jal Nigam,04.12.2023,7.65,18,76,44,920,350,Achieving,For Irrigation,For Irrigation,,Phase-I
+111,"1.75 MLD Ahara Road, (Shivanand Ashram) Zone-B, Anoopshahar",2003,Bulandhsahar,1.75,0.9,U,WSP,U.P. Jal Nigam,04.12.2023,7.58,24,152,72,4100,3400,Not Achieving,River Ganga,River Ganga,,Phase-I
+112,2.25 MLD Narora Atomic power Station Narora Township,2000,Bulandhsahar,2.25,2.25,O,ASP,Narora Atomic power Station,04.12.2023,7.41,12,52,136,1600,540,Achieving,For Irrigation,,,Phase-I
+113,1.5 MLD Anoopshahar Zone A (NGRBA),2016,Bulandhsahar,1.5,1.4,R,MBBR,U.P. Jal Nigam,04.12.2023,7.54,24,176,88,4300,280,Achieving,Treated Sewage- For Irrigation,For Irrigation,,Phase-I
+114,01 MLD STP Zone-B Anoopshahar,2016,Bulandhsahar,1,1,R,MBBR,U.P. Jal Nigam,04.12.2023,7.78,26,160,84,1700,930,Achieving,Treated Sewage- Ganga River,River Ganga,,Phase-I
+115,40 MLD STP,2023,Bulandhsahar,40,15,U,SBR,U.P. Jal Nigam,04.12.2023,7.43,8,36,31,350,170,Achieving,,For Irrigation,,Phase-I
+116,24 MLD Bijnor,2018,Bijnor,24,21.41,U,UASB,U.P. Jal Nigam,01.12.2023,7.72,12,48,28,1700,120,Achieving,,Hemraj Drain,,Phase-I
+117,58 MLD Moradabad,2018,Moradabad,58,24,R,SBR,U.P. Jal Nigam,06.12.2023,7.49,9.6,96,18,1000,82,Achieving,,Ramganga River,,Phase-I
+118,14 MLD Benzirpur,2016,Rampur,14,,U,UASB,U.P. Jal Nigam,06.12.2023,7.53,24,88,40,2100,810,Achieving,,Ramganga River,,Phase-I
+119,5 MLD Rampur,2016,Rampur,5,,U,SBR,U.P. Jal Nigam,06.12.2023,7.8,9.2,80,8,680,93,Achieving,,Ramganga River,,Phase-I
+120,15 MLD Kasganj,31.12.2022,Aligarh,15,12,R,SBR,U.P. Jal Nigam,06.12.2023,7.37,22,92,88,,,Achieving,,River Kali (East),,----
+121,24 MLD Manpur Etah,01.09.2023,Aligarh,24,7.42,U,SBR,U.P. Jal Nigam,06.12.2023,7.39,26,116,82,,,Achieving,,Bhadon Nala to Ishar River,,----
+122,8.95 MLD Pratapgarh,2023,Pratapgarh,8.95,6,,FAB,U.P. Jal Nigam,02.12.2023,7.35,20,86,54,9200,2400,Not Achieving,,,,----
+123,"10 MLD Hathia Nala, Lolepur",2006,Sultanpur,10,10,R,Oxidation Pond (Ist Pond of II Phase),U.P. Jal Nigam,19.12.2023,8.04,26,108.8,58,3300,790,Achieving,,River Gomti,,Phase-Ist & IInd
+124,18 MLD Raebareli,,Raebareli,18,3.5,U,,U.P. Jal Nigam,30.11.2023,8.21,14,67.2,42,3500,920,Achieving,,,,
+125,"35 MLD, Saraitafi",2023,Bareilly,35,12,U,ASP,U.P. Jal Nigam,05.12.2023,7.3,8,32,13,170,83,Achieving,,River Deoraniya,,--

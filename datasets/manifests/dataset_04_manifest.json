@@ -1,0 +1,86 @@
+{
+  "dataset_id": "DATASET_04_CPCB_UP_STP",
+  "dataset_name": "CPCB / UPPCB Sewage Treatment Plant Operational Bulletin & Performance Dataset",
+  "source": "Central Pollution Control Board (CPCB) / Uttar Pradesh Pollution Control Board (UPPCB) & NMCG",
+  "source_url": "https://cpcb.nic.in/ / https://uppcb.com/",
+  "license": "Government Open Data License - India (GODL)",
+  "download_date": "2026-09-27",
+  "source_version": "December_2023_CORRECTED",
+  "original_filename": "UP_STP_Operational_December_2023_CORRECTED.csv",
+  "file_format": "CSV (UTF-8-BOM comma-delimited with header)",
+  "file_size_bytes": 19307,
+  "file_sha256": "3c925b13cbc12cdc055b38d6bc9606fe84f37df17af1d04ed338d75e68375228",
+  "facility_information": {
+    "facility_count": 125,
+    "facility_type": "Municipal Sewage Treatment Plants (125 Distinct Facilities)",
+    "country": "India (Uttar Pradesh)",
+    "river_catchments": [
+      "River Yamuna",
+      "River Ganga",
+      "River Hindon",
+      "River Ramganga",
+      "River Gomti"
+    ],
+    "technology_processes": [
+      "SBR",
+      "ASP",
+      "WSP",
+      "MBBR",
+      "UASB",
+      "FAB",
+      "EA",
+      "Pond"
+    ],
+    "capacity_range_mld": "0.15 to 345 MLD"
+  },
+  "measurement_stage": "outlet (treated effluent inspection point)",
+  "parameters_available": [
+    "pH (ph)",
+    "BOD (bod_mg_l)",
+    "COD (cod_mg_l)",
+    "TSS (tss_mg_l)",
+    "Total Coliform (total_coliform_mpn_100ml)",
+    "Fecal Coliform (fecal_coliform_mpn_100ml)",
+    "Installed Capacity (installed_capacity_mld)",
+    "Utilized Capacity (utilized_capacity_mld)",
+    "Compliance Status (compliance_status: Achieving / Non-Achieving)",
+    "Technology Process (technology_process)",
+    "Receiving Water Body (receiving_water_body)"
+  ],
+  "parameters_missing": [
+    "Ammoniacal Nitrogen",
+    "Total Nitrogen"
+  ],
+  "units": {
+    "ph": "pH units",
+    "bod_mg_l": "mg/L",
+    "cod_mg_l": "mg/L",
+    "tss_mg_l": "mg/L",
+    "total_coliform_mpn_100ml": "MPN/100mL",
+    "fecal_coliform_mpn_100ml": "MPN/100mL",
+    "installed_capacity_mld": "MLD",
+    "utilized_capacity_mld": "MLD"
+  },
+  "timestamp_availability": true,
+  "timestamp_format": "DD.MM.YYYY (Inspection dates across December 2023)",
+  "sampling_frequency": "Monthly Regulatory Inspection Snapshot",
+  "record_count": 125,
+  "column_count": 21,
+  "missingness_summary": {
+    "representation": "Blank cells in optional metadata fields",
+    "total_missing_cells": 28,
+    "missingness_percentage": 1.07,
+    "affected_columns": 2
+  },
+  "known_limitations": [
+    "Single-month cross-sectional snapshot rather than multi-year daily continuous timeseries.",
+    "Nitrogen compounds not included in standard state bulletin reporting table."
+  ],
+  "provenance": {
+    "data_origin": "observed",
+    "source_classification": "measurement_and_regulatory_limits",
+    "acquisition_method": "State Pollution Control Board Regulatory Bulletin Inspection"
+  },
+  "preprocessing_version": "v0.0.0-unprocessed",
+  "assigned_role": "Multi-STP Topology, Technology Diversity & Simulation Facility Profile Seed"
+}

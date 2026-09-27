@@ -1,0 +1,15 @@
+{
+  "reading_id": "11223344-5566-7788-9900-aabbccddeeff",
+  "dataset_id": "DATASET_02_MELBOURNE_ETP_INLET",
+  "source_record_id": "ROW_12",
+  "facility_id": "MWC_ETP_MELBOURNE",
+  "sensor_id": "SENS_INLET_BOD_01",
+  "timestamp": "2014-08-01T21:00:00.000000Z",
+  "measurement_stage": "inlet",
+  "parameter": "BOD",
+  "value": 240.0,
+  "unit": "mg/L",
+  "data_origin": "real",
+  "quality_status": "pending",
+  "provenance_id": "SHA256:1e60bff7f04397d81586dd79adf34393bb36d194331369edf54f993861987461"
+}

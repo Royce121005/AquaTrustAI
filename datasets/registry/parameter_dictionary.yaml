@@ -1,0 +1,320 @@
+version: 2.2.1
+last_updated: '2026-09-27T11:10:00Z'
+specification_authority: MASTER/DATA_CONTRACTS.md & MASTER/VALIDATION_SPECIFICATION.md
+canonical_core_parameters:
+  BOD:
+    canonical_name: "Biochemical Oxygen Demand (5-Day at 20\xB0C)"
+    symbol: BOD
+    canonical_unit: mg/L
+    physical_quantity: Mass concentration of dissolved oxygen required by aerobic
+      biological microorganisms to decompose organic material
+    standard_analytical_method: Standard Methods 5210 B / IS 3025 (Part 44) / EPA
+      405.1
+    data_type: NUMERIC(20,6)
+    valid_range:
+      min: 0.0
+      max: 2000.0
+      hard_min: 0.0
+      hard_max: 3000.0
+    rate_of_change_max_pct_per_hour: 150.0
+    applicable_treatment_stages:
+    - inlet
+    - primary_settler
+    - secondary_aeration
+    - final_effluent
+    dataset_availability:
+      DATASET_01_UCI_WATER_TREATMENT:
+        available: true
+        columns:
+        - DBO-E
+        - DBO-P
+        - DBO-D
+        - DBO-S
+        stages:
+        - inlet
+        - primary_settler
+        - secondary_aeration
+        - final_effluent
+      DATASET_02_MELBOURNE_ETP_INLET:
+        available: true
+        columns:
+        - BOD_mg.L-1
+        stages:
+        - inlet
+      DATASET_03_MELBOURNE_ETP_OUTLET:
+        available: true
+        columns:
+        - BOD_mg.L-1
+        stages:
+        - final_effluent
+      DATASET_04_CPCB_UP_STP:
+        available: true
+        columns:
+        - bod_mg_l
+        stages:
+        - final_effluent
+  COD:
+    canonical_name: Chemical Oxygen Demand
+    symbol: COD
+    canonical_unit: mg/L
+    physical_quantity: Mass concentration of equivalent oxygen consumed during chemical
+      oxidation of organic and oxidizable inorganic matter
+    standard_analytical_method: Standard Methods 5220 D (Closed Reflux, Colorimetric)
+      / IS 3025 (Part 58) / EPA 410.4
+    data_type: NUMERIC(20,6)
+    valid_range:
+      min: 0.0
+      max: 5000.0
+      hard_min: 0.0
+      hard_max: 8000.0
+    rate_of_change_max_pct_per_hour: 200.0
+    applicable_treatment_stages:
+    - inlet
+    - primary_settler
+    - secondary_aeration
+    - final_effluent
+    dataset_availability:
+      DATASET_01_UCI_WATER_TREATMENT:
+        available: true
+        columns:
+        - DQO-E
+        - DQO-D
+        - DQO-S
+        stages:
+        - inlet
+        - secondary_aeration
+        - final_effluent
+      DATASET_02_MELBOURNE_ETP_INLET:
+        available: true
+        columns:
+        - COD_mg.L-1
+        stages:
+        - inlet
+      DATASET_03_MELBOURNE_ETP_OUTLET:
+        available: true
+        columns:
+        - COD_mg.L-1
+        stages:
+        - final_effluent
+      DATASET_04_CPCB_UP_STP:
+        available: true
+        columns:
+        - cod_mg_l
+        stages:
+        - final_effluent
+  TSS:
+    canonical_name: Total Suspended Solids (Non-Filterable Residue)
+    symbol: TSS
+    canonical_unit: mg/L
+    physical_quantity: "Dry mass of particulate matter retained by a standard glass\
+      \ fiber filter (nominal pore size ~1.5 \xB5m)"
+    standard_analytical_method: Standard Methods 2540 D / IS 3025 (Part 17) / EPA
+      160.2
+    data_type: NUMERIC(20,6)
+    valid_range:
+      min: 0.0
+      max: 3000.0
+      hard_min: 0.0
+      hard_max: 5000.0
+    rate_of_change_max_pct_per_hour: 300.0
+    applicable_treatment_stages:
+    - inlet
+    - primary_settler
+    - secondary_aeration
+    - final_effluent
+    dataset_availability:
+      DATASET_01_UCI_WATER_TREATMENT:
+        available: true
+        columns:
+        - SS-E
+        - SS-P
+        - SS-D
+        - SS-S
+        stages:
+        - inlet
+        - primary_settler
+        - secondary_aeration
+        - final_effluent
+      DATASET_02_MELBOURNE_ETP_INLET:
+        available: false
+        columns: []
+        stages: []
+        notes: Parameter not monitored in MWC influent open dataset.
+      DATASET_03_MELBOURNE_ETP_OUTLET:
+        available: false
+        columns: []
+        stages: []
+        notes: Parameter not monitored in MWC effluent open dataset.
+      DATASET_04_CPCB_UP_STP:
+        available: true
+        columns:
+        - tss_mg_l
+        stages:
+        - final_effluent
+  pH:
+    canonical_name: pH (Hydrogen Ion Activity)
+    symbol: pH
+    canonical_unit: pH units
+    physical_quantity: Negative logarithm of hydrogen ion thermodynamic activity (-log10[H+])
+    standard_analytical_method: Standard Methods 4500-H+ B (Electrometric) / IS 3025
+      (Part 11) / EPA 150.1
+    data_type: NUMERIC(20,6)
+    valid_range:
+      min: 0.0
+      max: 14.0
+      hard_min: 0.0
+      hard_max: 14.0
+    rate_of_change_max_abs_per_hour: 2.5
+    applicable_treatment_stages:
+    - inlet
+    - primary_settler
+    - secondary_aeration
+    - final_effluent
+    dataset_availability:
+      DATASET_01_UCI_WATER_TREATMENT:
+        available: true
+        columns:
+        - PH-E
+        - PH-P
+        - PH-D
+        - PH-S
+        stages:
+        - inlet
+        - primary_settler
+        - secondary_aeration
+        - final_effluent
+      DATASET_02_MELBOURNE_ETP_INLET:
+        available: false
+        columns: []
+        stages: []
+        notes: Parameter not monitored in MWC influent open dataset.
+      DATASET_03_MELBOURNE_ETP_OUTLET:
+        available: false
+        columns: []
+        stages: []
+        notes: Parameter not monitored in MWC effluent open dataset.
+      DATASET_04_CPCB_UP_STP:
+        available: true
+        columns:
+        - ph
+        stages:
+        - final_effluent
+  NH4_N:
+    canonical_name: Ammoniacal Nitrogen (Ammonia + Ammonium as Nitrogen)
+    symbol: NH4_N
+    canonical_unit: mg/L
+    physical_quantity: Mass concentration of nitrogen present as un-ionized ammonia
+      (NH3) and ammonium ions (NH4+) expressed as elemental nitrogen (N)
+    standard_analytical_method: Standard Methods 4500-NH3 D (Phenate / Colorimetric)
+      / IS 3025 (Part 34) / EPA 350.1
+    data_type: NUMERIC(20,6)
+    valid_range:
+      min: 0.0
+      max: 200.0
+      hard_min: 0.0
+      hard_max: 300.0
+    rate_of_change_max_pct_per_hour: 150.0
+    applicable_treatment_stages:
+    - inlet
+    - final_effluent
+    dataset_availability:
+      DATASET_01_UCI_WATER_TREATMENT:
+        available: false
+        columns: []
+        stages: []
+        notes: Nitrogen compounds unmonitored in 1990 UCI study.
+      DATASET_02_MELBOURNE_ETP_INLET:
+        available: true
+        columns:
+        - Ammonia_mg.L-1
+        stages:
+        - inlet
+      DATASET_03_MELBOURNE_ETP_OUTLET:
+        available: true
+        columns:
+        - Ammonia_mg.L-1
+        stages:
+        - final_effluent
+      DATASET_04_CPCB_UP_STP:
+        available: false
+        columns: []
+        stages: []
+        notes: Ammonia not reported in CPCB monthly state inspection table.
+  TN:
+    canonical_name: Total Nitrogen
+    symbol: TN
+    canonical_unit: mg/L
+    physical_quantity: 'Sum of all nitrogen forms: Total Kjeldahl Nitrogen (ammonia
+      + organic N) plus Nitrate (NO3-) and Nitrite (NO2-) expressed as N'
+    standard_analytical_method: Standard Methods 4500-N C (Persulfate Digestion) /
+      IS 3025 / EPA 353.2
+    data_type: NUMERIC(20,6)
+    valid_range:
+      min: 0.0
+      max: 300.0
+      hard_min: 0.0
+      hard_max: 500.0
+    rate_of_change_max_pct_per_hour: 150.0
+    applicable_treatment_stages:
+    - inlet
+    - final_effluent
+    dataset_availability:
+      DATASET_01_UCI_WATER_TREATMENT:
+        available: false
+        columns: []
+        stages: []
+        notes: Nitrogen compounds unmonitored in 1990 UCI study.
+      DATASET_02_MELBOURNE_ETP_INLET:
+        available: true
+        columns:
+        - Nitrogentotal_mg.L-1
+        stages:
+        - inlet
+      DATASET_03_MELBOURNE_ETP_OUTLET:
+        available: true
+        columns:
+        - Nitrogentotal_mg.L-1
+        stages:
+        - final_effluent
+      DATASET_04_CPCB_UP_STP:
+        available: false
+        columns: []
+        stages: []
+        notes: Total nitrogen not reported in CPCB monthly state inspection table.
+supplementary_and_metadata_parameters:
+  COND:
+    canonical_name: Electrical Conductivity
+    canonical_unit: "\xB5S/cm"
+    valid_range:
+      min: 0.0
+      max: 20000.0
+  FLOW_RATE:
+    canonical_name: Volumetric Flow Rate
+    canonical_unit: m3/day
+    valid_range:
+      min: 0.0
+      max: 2000000.0
+  TOTAL_COLIFORM:
+    canonical_name: Total Coliform Bacteria
+    canonical_unit: MPN/100mL
+    valid_range:
+      min: 0.0
+      max: 100000000.0
+  FECAL_COLIFORM:
+    canonical_name: Fecal Coliform Bacteria
+    canonical_unit: MPN/100mL
+    valid_range:
+      min: 0.0
+      max: 100000000.0
+  INSTALLED_CAPACITY:
+    canonical_name: Plant Installed Design Capacity
+    canonical_unit: MLD
+    valid_range:
+      min: 0.0
+      max: 2000.0
+  UTILIZED_CAPACITY:
+    canonical_name: Plant Utilized Operational Capacity
+    canonical_unit: MLD
+    valid_range:
+      min: 0.0
+      max: 2000.0

@@ -1,0 +1,65 @@
+{
+  "dataset_id": "DATASET_02_MELBOURNE_ETP_INLET",
+  "dataset_name": "Melbourne Water ETP Daily Influent Wastewater Quality Dataset",
+  "source": "Melbourne Water Corporation / DataVic",
+  "source_url": "https://discover.data.vic.gov.au/dataset/eastern-treatment-plant-etp-daily-influent-quality-data-from-2014",
+  "license": "CC BY 4.0",
+  "download_date": "2026-09-27",
+  "source_version": "From2014",
+  "original_filename": "MWC_ETP_Daily_InfluentQuality_From2014_-900457074504834853_inlet.csv",
+  "file_format": "CSV (UTF-8-BOM comma-delimited with header)",
+  "file_size_bytes": 53767,
+  "file_sha256": "1e60bff7f04397d81586dd79adf34393bb36d194331369edf54f993861987461",
+  "facility_information": {
+    "facility_id": "MWC_ETP_MELBOURNE",
+    "facility_name": "Eastern Treatment Plant (ETP)",
+    "facility_type": "Large-Scale Municipal Wastewater Treatment Plant",
+    "country": "Australia (Victoria)",
+    "capacity": "330",
+    "capacity_unit": "MLD",
+    "operational_stages": [
+      "Raw Influent (Inlet)"
+    ]
+  },
+  "measurement_stage": "inlet (raw influent)",
+  "parameters_available": [
+    "Ammonia (Ammonia_mg.L-1)",
+    "BOD (BOD_mg.L-1)",
+    "COD (COD_mg.L-1)",
+    "Nitrate plus Nitrite (NitrateplusNitrite_mg.L-1)",
+    "Total Nitrogen (Nitrogentotal_mg.L-1)"
+  ],
+  "parameters_missing": [
+    "pH",
+    "TSS / Suspended Solids"
+  ],
+  "units": {
+    "Ammonia": "mg/L (as N)",
+    "BOD": "mg/L",
+    "COD": "mg/L",
+    "NitrateplusNitrite": "mg/L (as N)",
+    "Nitrogentotal": "mg/L (as N)"
+  },
+  "timestamp_availability": true,
+  "timestamp_format": "MM/DD/YYYY H:MM:SS AM/PM (2014-07-31 to 2020-04-30)",
+  "sampling_frequency": "Daily (Composite grab)",
+  "record_count": 1382,
+  "column_count": 7,
+  "missingness_summary": {
+    "representation": "Empty string / blank cells",
+    "total_missing_cells": 612,
+    "missingness_percentage": 6.33,
+    "affected_columns": 5
+  },
+  "known_limitations": [
+    "Lacks pH and TSS measurements.",
+    "Sampling times are composite timestamps; must not be joined row-wise with outlet records as single synchronous events."
+  ],
+  "provenance": {
+    "data_origin": "observed",
+    "source_classification": "measurement",
+    "acquisition_method": "DataVic Official API/CSV Export"
+  },
+  "preprocessing_version": "v0.0.0-unprocessed",
+  "assigned_role": "Influent Profile Extraction & Multi-STP Simulator Input Distribution"
+}

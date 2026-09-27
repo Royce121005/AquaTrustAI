@@ -1,0 +1,21 @@
+{
+  "reading_id": "8f3b2c14-7d5a-4e2a-9f1b-5e6a7c8d9e0f",
+  "dataset_id": "DATASET_01_UCI_WATER_TREATMENT",
+  "source_record_id": "ROW_142",
+  "facility_id": "FAC_UCI_URBAN_ETP_01",
+  "sensor_id": "SENS_OUTLET_COD_01",
+  "timestamp": "1990-07-20T12:00:00.000000Z",
+  "measurement_stage": "final_effluent",
+  "parameter": "COD",
+  "value": 42.5,
+  "unit": "mg/L",
+  "data_origin": "observed",
+  "quality_status": "valid",
+  "anomaly_status": "normal",
+  "compliance_status": "compliant",
+  "provenance_id": "SHA256:af2e632b370646ea9763b11aed54b30423f0c3b8a7fb1b7d23e1c922098a7a8a",
+  "metadata": {
+    "raw_source_file": "water-treatment.data",
+    "raw_attribute_name": "DQO-S"
+  }
+}

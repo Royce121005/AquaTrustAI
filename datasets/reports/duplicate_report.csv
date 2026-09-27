@@ -1,0 +1,5 @@
+dataset_id,total_rows,exact_duplicate_rows,duplicate_timestamps,duplicate_percentage,duplicate_handling_strategy
+DATASET_01_UCI_WATER_TREATMENT,527,0,0,0.0,Zero duplicates detected. No rows to discard.
+DATASET_02_MELBOURNE_ETP_INLET,1382,0,0,0.0,Zero duplicates detected. No rows to discard.
+DATASET_03_MELBOURNE_ETP_OUTLET,1716,0,0,0.0,Zero duplicates detected. No rows to discard.
+DATASET_04_CPCB_UP_STP,125,0,113,0.0,Zero duplicates detected. No rows to discard.

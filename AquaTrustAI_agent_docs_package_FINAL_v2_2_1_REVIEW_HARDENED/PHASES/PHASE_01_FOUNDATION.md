@@ -39,7 +39,7 @@ Create the agreed backend/shared/database/contracts structure only where justifi
 Do not implement the full wastewater pipeline, AI, Fabric, or frontend replacement. Do not invent contract fields without documenting their rationale.
 
 ## Implementation requirements
-Finalize canonical domain models, status enums, IDs, timestamps, provenance conventions, API/error conventions, configuration conventions and migration strategy. Add contract tests where practical.
+Canonical domain models, status enums, IDs, timestamps, and provenance conventions are frozen in `datasets/canonical/models.py` and `datasets/canonical/canonical_reading_schema.json` (Tier 1 Authority). Establish backend foundation, API/error conventions, database boundary, configuration conventions, and migration strategy matching the merged implementation baseline. Add contract tests where practical.
 
 ## Required pre-change audit
 

@@ -1,0 +1,5 @@
+dataset_id,row_count,column_count,total_cells,missing_cells,missing_pct,duplicate_rows,duplicate_timestamps,timestamp_start,timestamp_end,timespan_days,sampling_frequency,treatment_stage,facility_scope,primary_key_candidate
+DATASET_01_UCI_WATER_TREATMENT,527,41,21607,591,2.74,0,0,1990-01-01,1991-10-30,667,Daily,Multi-Stage,Single Plant (Catalonia),parsed_timestamp
+DATASET_02_MELBOURNE_ETP_INLET,1382,7,9674,2951,30.5,0,0,2014-01-01,2019-06-27,2003,Daily,Inlet,"Single Plant (Melbourne, 330 MLD)",parsed_timestamp
+DATASET_03_MELBOURNE_ETP_OUTLET,1716,8,13728,5027,36.62,0,0,2014-01-01,2019-09-03,2070,Daily,Final Effluent / Outlet,"Single Plant (Melbourne, 330 MLD)",parsed_timestamp
+DATASET_04_CPCB_UP_STP,125,21,2625,255,9.71,0,113,2023-11-02,2023-12-29,57,Monthly Snapshot,Final Effluent / Outlet,125 Municipal STPs (Uttar Pradesh),sl_no / stp_name

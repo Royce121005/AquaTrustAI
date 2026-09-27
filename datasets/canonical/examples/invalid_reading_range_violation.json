@@ -1,0 +1,20 @@
+{
+  "reading_id": "c9d8e7f6-a5b4-4c3d-2e1f-0a9b8c7d6e5f",
+  "dataset_id": "DATASET_04_CPCB_UP_STP",
+  "source_record_id": "ROW_45",
+  "facility_id": "STP_VARANASI_DINAPUR",
+  "sensor_id": "SENS_PH_PROBE_01",
+  "timestamp": "2023-12-15T10:00:00.000000Z",
+  "measurement_stage": "final_effluent",
+  "parameter": "pH",
+  "value": 18.5,
+  "unit": "pH units",
+  "data_origin": "observed",
+  "quality_status": "invalid",
+  "anomaly_status": "pending",
+  "compliance_status": "pending",
+  "provenance_id": "SHA256:3c925b13cbc12cdc055b38d6bc9606fe84f37df17af1d04ed338d75e68375228",
+  "metadata": {
+    "validation_error": "RANGE_VIOLATION: pH value 18.5 exceeds physical thermodynamic upper bound (14.0)"
+  }
+}
