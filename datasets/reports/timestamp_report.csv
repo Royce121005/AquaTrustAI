@@ -1,0 +1,5 @@
+dataset_id,date_column,valid_timestamp_count,invalid_timestamp_count,min_timestamp,max_timestamp,total_calendar_span_days,min_step_days,max_step_days,mean_step_days,gaps_greater_than_1_day,regularity_assessment
+DATASET_01_UCI_WATER_TREATMENT,DATE,527,0,1990-01-01,1991-10-30,667,1.0,32.0,1.27,108,Sparse / Irregular
+DATASET_02_MELBOURNE_ETP_INLET,recorddate,1382,0,2014-01-01,2019-06-27,2003,1.0,19.96,1.45,315,Moderate Daily Series
+DATASET_03_MELBOURNE_ETP_OUTLET,recorddate,1716,0,2014-01-01,2019-09-03,2070,0.01,6.0,1.21,330,Strictly Regular (Daily with few gaps)
+DATASET_04_CPCB_UP_STP,measurement_date,125,0,2023-11-02,2023-12-29,57,0.0,26.0,0.46,5,Moderate Daily Series

@@ -1,0 +1,109 @@
+version: 2.2.1
+canonical_parameters:
+  BOD:
+    canonical_name: "Biochemical Oxygen Demand (5-day at 20\xB0C)"
+    canonical_symbol: BOD
+    canonical_unit: mg/L
+    description: Measurement of dissolved oxygen consumed by biological organisms
+      in water.
+    measurement_stages:
+    - inlet
+    - primary_settler
+    - secondary_aeration
+    - final_effluent
+    data_type: NUMERIC(20,6)
+    valid_range:
+      min: 0.0
+      max: 2000.0
+  COD:
+    canonical_name: Chemical Oxygen Demand
+    canonical_symbol: COD
+    canonical_unit: mg/L
+    description: Measure of total amount of oxygen required to chemically oxidize
+      organic compounds.
+    measurement_stages:
+    - inlet
+    - primary_settler
+    - secondary_aeration
+    - final_effluent
+    data_type: NUMERIC(20,6)
+    valid_range:
+      min: 0.0
+      max: 5000.0
+  TSS:
+    canonical_name: Total Suspended Solids
+    canonical_symbol: TSS
+    canonical_unit: mg/L
+    description: Dry weight of suspended particles trapped by a filter.
+    measurement_stages:
+    - inlet
+    - primary_settler
+    - secondary_aeration
+    - final_effluent
+    data_type: NUMERIC(20,6)
+    valid_range:
+      min: 0.0
+      max: 3000.0
+  pH:
+    canonical_name: pH / Hydrogen Ion Activity
+    canonical_symbol: pH
+    canonical_unit: pH units
+    description: Logarithmic measure of hydrogen ion activity / acidity / alkalinity.
+    measurement_stages:
+    - inlet
+    - primary_settler
+    - secondary_aeration
+    - final_effluent
+    data_type: NUMERIC(20,6)
+    valid_range:
+      min: 0.0
+      max: 14.0
+  NH4_N:
+    canonical_name: Ammoniacal Nitrogen
+    canonical_symbol: NH4_N
+    canonical_unit: mg/L
+    description: Measurement of ammonia and ammonium ions expressed as elemental nitrogen.
+    measurement_stages:
+    - inlet
+    - final_effluent
+    data_type: NUMERIC(20,6)
+    valid_range:
+      min: 0.0
+      max: 200.0
+  TN:
+    canonical_name: Total Nitrogen
+    canonical_symbol: TN
+    canonical_unit: mg/L
+    description: Sum of all nitrogen forms (nitrate, nitrite, ammonia, organic nitrogen).
+    measurement_stages:
+    - inlet
+    - final_effluent
+    data_type: NUMERIC(20,6)
+    valid_range:
+      min: 0.0
+      max: 300.0
+supplementary_parameters:
+  COND:
+    canonical_name: Electrical Conductivity
+    canonical_unit: "\xB5S/cm"
+    valid_range:
+      min: 0.0
+      max: 20000.0
+  FLOW_RATE:
+    canonical_name: Influent / Effluent Flow Rate
+    canonical_unit: m3/day
+    valid_range:
+      min: 0.0
+      max: 2000000.0
+  TOTAL_COLIFORM:
+    canonical_name: Total Coliform Bacteria
+    canonical_unit: MPN/100mL
+    valid_range:
+      min: 0.0
+      max: 100000000.0
+  FECAL_COLIFORM:
+    canonical_name: Fecal Coliform Bacteria
+    canonical_unit: MPN/100mL
+    valid_range:
+      min: 0.0
+      max: 100000000.0

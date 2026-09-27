@@ -1,0 +1,37 @@
+dataset_id,source_column,source_definition,canonical_parameter,source_unit,canonical_unit,conversion_factor,treatment_stage,is_canonical_core
+DATASET_01_UCI_WATER_TREATMENT,PH-E,Input pH,pH,pH units,pH units,1.0,inlet,True
+DATASET_01_UCI_WATER_TREATMENT,PH-P,Primary Settler pH,pH,pH units,pH units,1.0,primary_settler,True
+DATASET_01_UCI_WATER_TREATMENT,PH-D,Secondary Settler pH,pH,pH units,pH units,1.0,secondary_aeration,True
+DATASET_01_UCI_WATER_TREATMENT,PH-S,Output / Final Effluent pH,pH,pH units,pH units,1.0,final_effluent,True
+DATASET_01_UCI_WATER_TREATMENT,DBO-E,Input Biological Demand of Oxygen,BOD,mg/L,mg/L,1.0,inlet,True
+DATASET_01_UCI_WATER_TREATMENT,DBO-P,Primary Settler Biological Demand of Oxygen,BOD,mg/L,mg/L,1.0,primary_settler,True
+DATASET_01_UCI_WATER_TREATMENT,DBO-D,Secondary Settler Biological Demand of Oxygen,BOD,mg/L,mg/L,1.0,secondary_aeration,True
+DATASET_01_UCI_WATER_TREATMENT,DBO-S,Output Biological Demand of Oxygen,BOD,mg/L,mg/L,1.0,final_effluent,True
+DATASET_01_UCI_WATER_TREATMENT,DQO-E,Input Chemical Demand of Oxygen,COD,mg/L,mg/L,1.0,inlet,True
+DATASET_01_UCI_WATER_TREATMENT,DQO-D,Secondary Settler Chemical Demand of Oxygen,COD,mg/L,mg/L,1.0,secondary_aeration,True
+DATASET_01_UCI_WATER_TREATMENT,DQO-S,Output Chemical Demand of Oxygen,COD,mg/L,mg/L,1.0,final_effluent,True
+DATASET_01_UCI_WATER_TREATMENT,SS-E,Input Suspended Solids,TSS,mg/L,mg/L,1.0,inlet,True
+DATASET_01_UCI_WATER_TREATMENT,SS-P,Primary Settler Suspended Solids,TSS,mg/L,mg/L,1.0,primary_settler,True
+DATASET_01_UCI_WATER_TREATMENT,SS-D,Secondary Settler Suspended Solids,TSS,mg/L,mg/L,1.0,secondary_aeration,True
+DATASET_01_UCI_WATER_TREATMENT,SS-S,Output Suspended Solids,TSS,mg/L,mg/L,1.0,final_effluent,True
+DATASET_01_UCI_WATER_TREATMENT,COND-E,Input Conductivity,COND,µS/cm,µS/cm,1.0,inlet,False
+DATASET_01_UCI_WATER_TREATMENT,Q-E,Input Flow Rate,FLOW_RATE,m3/day,m3/day,1.0,inlet,False
+DATASET_02_MELBOURNE_ETP_INLET,Ammonia_mg.L-1,Raw Influent Ammonia as N,NH4_N,mg/L,mg/L,1.0,inlet,True
+DATASET_02_MELBOURNE_ETP_INLET,BOD_mg.L-1,Raw Influent Biochemical Oxygen Demand,BOD,mg/L,mg/L,1.0,inlet,True
+DATASET_02_MELBOURNE_ETP_INLET,COD_mg.L-1,Raw Influent Chemical Oxygen Demand,COD,mg/L,mg/L,1.0,inlet,True
+DATASET_02_MELBOURNE_ETP_INLET,Nitrogentotal_mg.L-1,Raw Influent Total Nitrogen,TN,mg/L,mg/L,1.0,inlet,True
+DATASET_02_MELBOURNE_ETP_INLET,NitrateplusNitrite_mg.L-1,Raw Influent Nitrate + Nitrite as N,NOx_N,mg/L,mg/L,1.0,inlet,False
+DATASET_03_MELBOURNE_ETP_OUTLET,COD_mg.L-1,Final Effluent Chemical Oxygen Demand,COD,mg/L,mg/L,1.0,final_effluent,True
+DATASET_03_MELBOURNE_ETP_OUTLET,BOD_mg.L-1,Final Effluent Biochemical Oxygen Demand,BOD,mg/L,mg/L,1.0,final_effluent,True
+DATASET_03_MELBOURNE_ETP_OUTLET,Ammonia_mg.L-1,Final Effluent Ammonia as N,NH4_N,mg/L,mg/L,1.0,final_effluent,True
+DATASET_03_MELBOURNE_ETP_OUTLET,Nitrogentotal_mg.L-1,Final Effluent Total Nitrogen,TN,mg/L,mg/L,1.0,final_effluent,True
+DATASET_03_MELBOURNE_ETP_OUTLET,Total_KjeldahlNitrogen_mg.L-1,Final Effluent TKN as N,TKN,mg/L,mg/L,1.0,final_effluent,False
+DATASET_03_MELBOURNE_ETP_OUTLET,NitrateplusNitrite_mg.L-1,Final Effluent Nitrate + Nitrite as N,NOx_N,mg/L,mg/L,1.0,final_effluent,False
+DATASET_04_CPCB_UP_STP,ph,Treated Effluent pH,pH,pH units,pH units,1.0,final_effluent,True
+DATASET_04_CPCB_UP_STP,bod_mg_l,Treated Effluent BOD,BOD,mg/L,mg/L,1.0,final_effluent,True
+DATASET_04_CPCB_UP_STP,cod_mg_l,Treated Effluent COD,COD,mg/L,mg/L,1.0,final_effluent,True
+DATASET_04_CPCB_UP_STP,tss_mg_l,Treated Effluent TSS,TSS,mg/L,mg/L,1.0,final_effluent,True
+DATASET_04_CPCB_UP_STP,total_coliform_mpn_100ml,Total Coliform Count,TOTAL_COLIFORM,MPN/100mL,MPN/100mL,1.0,final_effluent,False
+DATASET_04_CPCB_UP_STP,fecal_coliform_mpn_100ml,Fecal Coliform Count,FECAL_COLIFORM,MPN/100mL,MPN/100mL,1.0,final_effluent,False
+DATASET_04_CPCB_UP_STP,installed_capacity_mld,Plant Installed Capacity,INSTALLED_CAPACITY,MLD,MLD,1.0,facility_metadata,False
+DATASET_04_CPCB_UP_STP,utilized_capacity_mld,Plant Utilized Capacity,UTILIZED_CAPACITY,MLD,MLD,1.0,facility_metadata,False
