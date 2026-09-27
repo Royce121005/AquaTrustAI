@@ -1,0 +1,284 @@
+{
+  "parameter_thresholds": {
+    "bod": {
+      "threshold": 0.0,
+      "model_offset": -0.5730172327986107,
+      "train_score_p05": 5.551115123125783e-17,
+      "train_score_mean": 0.14118521926030542,
+      "train_score_std": 0.06678332932153325,
+      "method": "decision_function_zero_boundary",
+      "contamination": 0.05,
+      "n_training_samples": 1706
+    },
+    "cod": {
+      "threshold": 0.0,
+      "model_offset": -0.5747022797125877,
+      "train_score_p05": -1.6886448836461732e-17,
+      "train_score_mean": 0.13127896190931274,
+      "train_score_std": 0.06093833697112292,
+      "method": "decision_function_zero_boundary",
+      "contamination": 0.05,
+      "n_training_samples": 2607
+    },
+    "tss": {
+      "threshold": 0.0,
+      "model_offset": -0.5757592947885086,
+      "train_score_p05": -9.64939933512099e-18,
+      "train_score_mean": 0.1594553267210443,
+      "train_score_std": 0.07507972707787453,
+      "method": "decision_function_zero_boundary",
+      "contamination": 0.05,
+      "n_training_samples": 1452
+    },
+    "ph": {
+      "threshold": 0.0,
+      "model_offset": -0.5711679248738514,
+      "train_score_p05": 0.0,
+      "train_score_mean": 0.12149176985092433,
+      "train_score_std": 0.05732568841423089,
+      "method": "decision_function_zero_boundary",
+      "contamination": 0.05,
+      "n_training_samples": 1461
+    },
+    "nh4_n": {
+      "threshold": 0.0,
+      "model_offset": -0.5823342173511565,
+      "train_score_p05": -4.141652298894627e-17,
+      "train_score_mean": 0.1899616177539128,
+      "train_score_std": 0.1022075983697983,
+      "method": "decision_function_zero_boundary",
+      "contamination": 0.05,
+      "n_training_samples": 2158
+    },
+    "tn": {
+      "status": "NOT_AVAILABLE",
+      "threshold": null
+    },
+    "tkn": {
+      "threshold": 0.0,
+      "model_offset": -0.5506062155693557,
+      "train_score_p05": 0.0,
+      "train_score_mean": 0.12397841869877418,
+      "train_score_std": 0.06253351039092558,
+      "method": "decision_function_zero_boundary",
+      "contamination": 0.05,
+      "n_training_samples": 911
+    },
+    "nox_n": {
+      "status": "NOT_AVAILABLE",
+      "threshold": null
+    }
+  },
+  "stream_thresholds": {
+    "DATASET_01_UCI:FAC_UCI_URBAN_ETP_01:final_effluent:bod": {
+      "threshold": 0.0,
+      "model_offset": -0.5403465285351241,
+      "train_score_p05": -1.9705374484924043e-17,
+      "train_score_mean": 0.13226960124325338,
+      "train_score_std": 0.06853865832220064,
+      "method": "decision_function_zero_boundary",
+      "contamination": 0.05,
+      "n_training_samples": 320
+    },
+    "DATASET_01_UCI:FAC_UCI_URBAN_ETP_01:final_effluent:cod": {
+      "threshold": 0.0,
+      "model_offset": -0.5474438187003404,
+      "train_score_p05": 3.5778671692021646e-17,
+      "train_score_mean": 0.11542013288015006,
+      "train_score_std": 0.06618571397414616,
+      "method": "decision_function_zero_boundary",
+      "contamination": 0.05,
+      "n_training_samples": 332
+    },
+    "DATASET_01_UCI:FAC_UCI_URBAN_ETP_01:final_effluent:ph": {
+      "threshold": 0.0,
+      "model_offset": -0.5561472455117414,
+      "train_score_p05": 4.87890977618477e-19,
+      "train_score_mean": 0.12281321666096852,
+      "train_score_std": 0.06669878845454205,
+      "method": "decision_function_zero_boundary",
+      "contamination": 0.05,
+      "n_training_samples": 363
+    },
+    "DATASET_01_UCI:FAC_UCI_URBAN_ETP_01:final_effluent:tss": {
+      "threshold": 0.0,
+      "model_offset": -0.5515021931563856,
+      "train_score_p05": 1.1709383462843448e-17,
+      "train_score_mean": 0.14761054651354175,
+      "train_score_std": 0.07654334275446349,
+      "method": "decision_function_zero_boundary",
+      "contamination": 0.05,
+      "n_training_samples": 357
+    },
+    "DATASET_01_UCI:FAC_UCI_URBAN_ETP_01:inlet:bod": {
+      "threshold": 0.0,
+      "model_offset": -0.5868663885851819,
+      "train_score_p05": -2.878556767949014e-17,
+      "train_score_mean": 0.14185172840530338,
+      "train_score_std": 0.06297246154196891,
+      "method": "decision_function_zero_boundary",
+      "contamination": 0.05,
+      "n_training_samples": 322
+    },
+    "DATASET_01_UCI:FAC_UCI_URBAN_ETP_01:inlet:cod": {
+      "threshold": 0.0,
+      "model_offset": -0.5850793629213249,
+      "train_score_p05": -1.9081958235744878e-17,
+      "train_score_mean": 0.14670523806962335,
+      "train_score_std": 0.0629101348549641,
+      "method": "decision_function_zero_boundary",
+      "contamination": 0.05,
+      "n_training_samples": 354
+    },
+    "DATASET_01_UCI:FAC_UCI_URBAN_ETP_01:inlet:ph": {
+      "threshold": 0.0,
+      "model_offset": -0.5801606936339773,
+      "train_score_p05": -2.7755575615628914e-17,
+      "train_score_mean": 0.1180543950114834,
+      "train_score_std": 0.05650103198769362,
+      "method": "decision_function_zero_boundary",
+      "contamination": 0.05,
+      "n_training_samples": 366
+    },
+    "DATASET_01_UCI:FAC_UCI_URBAN_ETP_01:inlet:tss": {
+      "threshold": 0.0,
+      "model_offset": -0.5901101587679367,
+      "train_score_p05": 5.551115123125783e-17,
+      "train_score_mean": 0.16434002275307863,
+      "train_score_std": 0.07539113723218209,
+      "method": "decision_function_zero_boundary",
+      "contamination": 0.05,
+      "n_training_samples": 366
+    },
+    "DATASET_01_UCI:FAC_UCI_URBAN_ETP_01:primary_settler:bod": {
+      "threshold": 0.0,
+      "model_offset": -0.5912663511097466,
+      "train_score_p05": 2.4340338772299575e-17,
+      "train_score_mean": 0.14275737584044235,
+      "train_score_std": 0.06228113012812523,
+      "method": "decision_function_zero_boundary",
+      "contamination": 0.05,
+      "n_training_samples": 302
+    },
+    "DATASET_01_UCI:FAC_UCI_URBAN_ETP_01:primary_settler:ph": {
+      "threshold": 0.0,
+      "model_offset": -0.5799835549237975,
+      "train_score_p05": 0.0,
+      "train_score_mean": 0.11433507991750158,
+      "train_score_std": 0.05562213612335262,
+      "method": "decision_function_zero_boundary",
+      "contamination": 0.05,
+      "n_training_samples": 366
+    },
+    "DATASET_01_UCI:FAC_UCI_URBAN_ETP_01:primary_settler:tss": {
+      "threshold": 0.0,
+      "model_offset": -0.5784342262885451,
+      "train_score_p05": 2.7755575615628914e-17,
+      "train_score_mean": 0.16227138133251376,
+      "train_score_std": 0.07678102199856106,
+      "method": "decision_function_zero_boundary",
+      "contamination": 0.05,
+      "n_training_samples": 366
+    },
+    "DATASET_01_UCI:FAC_UCI_URBAN_ETP_01:secondary_settler:bod": {
+      "threshold": 0.0,
+      "model_offset": -0.5511789868025961,
+      "train_score_p05": 2.1860226302738983e-17,
+      "train_score_mean": 0.10101748282363664,
+      "train_score_std": 0.055418616705118176,
+      "method": "decision_function_zero_boundary",
+      "contamination": 0.05,
+      "n_training_samples": 325
+    },
+    "DATASET_01_UCI:FAC_UCI_URBAN_ETP_01:secondary_settler:cod": {
+      "threshold": 0.0,
+      "model_offset": -0.5827165844562441,
+      "train_score_p05": 1.0299920638612292e-18,
+      "train_score_mean": 0.1201987126085243,
+      "train_score_std": 0.05552174699843098,
+      "method": "decision_function_zero_boundary",
+      "contamination": 0.05,
+      "n_training_samples": 360
+    },
+    "DATASET_01_UCI:FAC_UCI_URBAN_ETP_01:secondary_settler:ph": {
+      "threshold": 0.0,
+      "model_offset": -0.5982745906499751,
+      "train_score_p05": -2.7755575615628914e-17,
+      "train_score_mean": 0.13903661203204704,
+      "train_score_std": 0.0610041724544647,
+      "method": "decision_function_zero_boundary",
+      "contamination": 0.05,
+      "n_training_samples": 366
+    },
+    "DATASET_01_UCI:FAC_UCI_URBAN_ETP_01:secondary_settler:tss": {
+      "threshold": 0.0,
+      "model_offset": -0.5795971514817089,
+      "train_score_p05": -5.2692225582795515e-17,
+      "train_score_mean": 0.14434900866938669,
+      "train_score_std": 0.06758554524126278,
+      "method": "decision_function_zero_boundary",
+      "contamination": 0.05,
+      "n_training_samples": 363
+    },
+    "DATASET_02_MELBOURNE_INLET:MWC_ETP_MELBOURNE:inlet:bod": {
+      "threshold": 0.0,
+      "model_offset": -0.5950357916467763,
+      "train_score_p05": -2.7755575615628914e-17,
+      "train_score_mean": 0.15148663627729128,
+      "train_score_std": 0.06613520242208845,
+      "method": "decision_function_zero_boundary",
+      "contamination": 0.05,
+      "n_training_samples": 436
+    },
+    "DATASET_02_MELBOURNE_INLET:MWC_ETP_MELBOURNE:inlet:cod": {
+      "threshold": 0.0,
+      "model_offset": -0.5834856222332334,
+      "train_score_p05": -1.691355389077387e-17,
+      "train_score_mean": 0.14524790055204215,
+      "train_score_std": 0.06640799511812007,
+      "method": "decision_function_zero_boundary",
+      "contamination": 0.05,
+      "n_training_samples": 908
+    },
+    "DATASET_02_MELBOURNE_INLET:MWC_ETP_MELBOURNE:inlet:nh4_n": {
+      "threshold": 0.0,
+      "model_offset": -0.5627068276680216,
+      "train_score_p05": -2.1324901480074265e-17,
+      "train_score_mean": 0.11607385216589704,
+      "train_score_std": 0.05584989087754948,
+      "method": "decision_function_zero_boundary",
+      "contamination": 0.05,
+      "n_training_samples": 962
+    },
+    "DATASET_03_MELBOURNE_OUTLET:MWC_ETP_MELBOURNE:final_effluent:cod": {
+      "threshold": 0.0,
+      "model_offset": -0.571843868371794,
+      "train_score_p05": 6.505213034913027e-19,
+      "train_score_mean": 0.12417789435616743,
+      "train_score_std": 0.058116757288742125,
+      "method": "decision_function_zero_boundary",
+      "contamination": 0.05,
+      "n_training_samples": 653
+    },
+    "DATASET_03_MELBOURNE_OUTLET:MWC_ETP_MELBOURNE:final_effluent:nh4_n": {
+      "threshold": 0.0,
+      "model_offset": -0.5495298770631837,
+      "train_score_p05": 2.7755575615628914e-17,
+      "train_score_mean": 0.15163540492626448,
+      "train_score_std": 0.07716376394210873,
+      "method": "decision_function_zero_boundary",
+      "contamination": 0.05,
+      "n_training_samples": 1196
+    },
+    "DATASET_03_MELBOURNE_OUTLET:MWC_ETP_MELBOURNE:final_effluent:tkn": {
+      "threshold": 0.0,
+      "model_offset": -0.5506062155693557,
+      "train_score_p05": 0.0,
+      "train_score_mean": 0.12397841869877418,
+      "train_score_std": 0.06253351039092558,
+      "method": "decision_function_zero_boundary",
+      "contamination": 0.05,
+      "n_training_samples": 911
+    }
+  }
+}
