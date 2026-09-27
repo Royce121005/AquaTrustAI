@@ -1,10 +1,10 @@
 # AquaTrust AI — Model Packaging and Serialization Report (Phase 14)
 
-**Package Status:** `PACKAGED_AND_VERIFIED`  
-**Model Version:** `iforest_v2.2.1`  
-**Feature Set Version:** `v2.2.1`  
-**Preprocessing Version:** `v2.2.1`  
-**Packaging Timestamp:** `2026-09-27T10:42:34.188715+00:00`  
+**Package Status:** `PACKAGED_AND_VERIFIED`
+**Model Version:** `iforest_v2.2.1`
+**Feature Set Version:** `v2.2.1`
+**Preprocessing Version:** `v2.2.1`
+**Packaging Timestamp:** `2026-09-27T16:03:12.131364+00:00`
 
 ---
 
@@ -35,10 +35,10 @@ ml/models/anomaly_detection/
 
 | Artifact File | Role in Pipeline | SHA-256 Checksum |
 | :--- | :--- | :--- |
-| **`isolation_forest.joblib`** | Primary Model Bundle | `90e88c5aa26621ef420ece60ad3c2058f21c51d1f06da37a726f489b53e4b1d3` |
-| **`scaler.joblib`** | Preprocessing Scalers | `99a3728fa2f4189c596250c92b6dbb4c5cd521ad0f809450724188ccca78a862` |
+| **`isolation_forest.joblib`** | Primary Model Bundle | `c92cad23ff69ed139632b1d72159f3325bf62f3cdd2c83fb1543ecde93544dab` |
+| **`scaler.joblib`** | Preprocessing Scalers | `2f2456e9d5bb100277974a651242742d96234f057eb1941a60d0543cdfb8b482` |
 | **`feature_config.yaml`** | Feature Configuration | `0177a4cf6c94fa3b8289ba0562a0d9230ff4404920aab7313d7c73c19ea8351c` |
-| **`model_metadata.json`** | Production Metadata | `c2c8c89c687f25d7e784ec693735190ac956937853000458055d5cff632f8aee` |
+| **`model_metadata.json`** | Production Metadata | `3e5d57034fe539223d8cdc9d540583771e67c63089fc7c8bb5108ec49c7ae467` |
 | **`evaluation.json`** | Benchmark Metrics | `6c85eefa660865a8e0de585d08e41743ab8689606e987e74c0b48f14f6bd06b7` |
 
 ---

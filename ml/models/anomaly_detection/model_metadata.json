@@ -14,7 +14,7 @@
   "training_dataset_hash": "099b6d58d45adf1092c68cb8e4311eba80f18658209796099892edc2864cb444",
   "feature_set_version": "v2.2.1",
   "preprocessing_version": "v2.2.1",
-  "training_timestamp": "2026-09-27T10:03:34.028491+00:00",
+  "training_timestamp": "2026-09-27T16:02:42.757210+00:00",
   "target_parameters": [
     "bod",
     "cod",
@@ -114,7 +114,7 @@
         "DATASET_03_MELBOURNE_OUTLET:MWC_ETP_MELBOURNE:final_effluent:bod"
       ],
       "model_artifact": "isolation_forest_param_bod.joblib",
-      "model_path": "C:\\Users\\Risa vilas dias\\aquatrust-ai\\AquaTrustAI\\datasets\\anomaly_detection\\trained_models\\models\\isolation_forest_param_bod.joblib",
+      "model_path": "datasets/anomaly_detection/trained_models/models/isolation_forest_param_bod.joblib",
       "threshold_offset": -0.5730172327986107,
       "train_score_p05": 5.551115123125783e-17
     },
@@ -131,7 +131,7 @@
         "DATASET_03_MELBOURNE_OUTLET:MWC_ETP_MELBOURNE:final_effluent:cod"
       ],
       "model_artifact": "isolation_forest_param_cod.joblib",
-      "model_path": "C:\\Users\\Risa vilas dias\\aquatrust-ai\\AquaTrustAI\\datasets\\anomaly_detection\\trained_models\\models\\isolation_forest_param_cod.joblib",
+      "model_path": "datasets/anomaly_detection/trained_models/models/isolation_forest_param_cod.joblib",
       "threshold_offset": -0.5747022797125877,
       "train_score_p05": -1.6886448836461732e-17
     },
@@ -147,7 +147,7 @@
         "DATASET_01_UCI:FAC_UCI_URBAN_ETP_01:secondary_settler:tss"
       ],
       "model_artifact": "isolation_forest_param_tss.joblib",
-      "model_path": "C:\\Users\\Risa vilas dias\\aquatrust-ai\\AquaTrustAI\\datasets\\anomaly_detection\\trained_models\\models\\isolation_forest_param_tss.joblib",
+      "model_path": "datasets/anomaly_detection/trained_models/models/isolation_forest_param_tss.joblib",
       "threshold_offset": -0.5757592947885086,
       "train_score_p05": -9.64939933512099e-18
     },
@@ -163,7 +163,7 @@
         "DATASET_01_UCI:FAC_UCI_URBAN_ETP_01:secondary_settler:ph"
       ],
       "model_artifact": "isolation_forest_param_ph.joblib",
-      "model_path": "C:\\Users\\Risa vilas dias\\aquatrust-ai\\AquaTrustAI\\datasets\\anomaly_detection\\trained_models\\models\\isolation_forest_param_ph.joblib",
+      "model_path": "datasets/anomaly_detection/trained_models/models/isolation_forest_param_ph.joblib",
       "threshold_offset": -0.5711679248738514,
       "train_score_p05": 0.0
     },
@@ -177,7 +177,7 @@
         "DATASET_03_MELBOURNE_OUTLET:MWC_ETP_MELBOURNE:final_effluent:nh4_n"
       ],
       "model_artifact": "isolation_forest_param_nh4_n.joblib",
-      "model_path": "C:\\Users\\Risa vilas dias\\aquatrust-ai\\AquaTrustAI\\datasets\\anomaly_detection\\trained_models\\models\\isolation_forest_param_nh4_n.joblib",
+      "model_path": "datasets/anomaly_detection/trained_models/models/isolation_forest_param_nh4_n.joblib",
       "threshold_offset": -0.5823342173511565,
       "train_score_p05": -4.141652298894627e-17
     },
@@ -196,7 +196,7 @@
         "DATASET_03_MELBOURNE_OUTLET:MWC_ETP_MELBOURNE:final_effluent:tkn"
       ],
       "model_artifact": "isolation_forest_param_tkn.joblib",
-      "model_path": "C:\\Users\\Risa vilas dias\\aquatrust-ai\\AquaTrustAI\\datasets\\anomaly_detection\\trained_models\\models\\isolation_forest_param_tkn.joblib",
+      "model_path": "datasets/anomaly_detection/trained_models/models/isolation_forest_param_tkn.joblib",
       "threshold_offset": -0.5506062155693557,
       "train_score_p05": 0.0
     },
@@ -208,10 +208,10 @@
     }
   },
   "environment": {
-    "python": "3.13.7",
-    "scikit-learn": "1.7.2",
-    "joblib": "1.5.2",
-    "pandas": "2.2.3"
+    "python": "3.13.0",
+    "scikit-learn": "1.9.1",
+    "joblib": "1.6.0",
+    "pandas": "3.0.6"
   },
   "invariants_checked": [
     "Strict zero-leakage training partition only",
@@ -220,11 +220,11 @@
     "Separated quality_status and anomaly_status"
   ],
   "production_artifacts_sha256": {
-    "isolation_forest.joblib": "90e88c5aa26621ef420ece60ad3c2058f21c51d1f06da37a726f489b53e4b1d3",
-    "scaler.joblib": "99a3728fa2f4189c596250c92b6dbb4c5cd521ad0f809450724188ccca78a862",
+    "isolation_forest.joblib": "c92cad23ff69ed139632b1d72159f3325bf62f3cdd2c83fb1543ecde93544dab",
+    "scaler.joblib": "2f2456e9d5bb100277974a651242742d96234f057eb1941a60d0543cdfb8b482",
     "feature_config.yaml": "0177a4cf6c94fa3b8289ba0562a0d9230ff4404920aab7313d7c73c19ea8351c",
     "evaluation.json": "6c85eefa660865a8e0de585d08e41743ab8689606e987e74c0b48f14f6bd06b7"
   },
-  "packaging_timestamp": "2026-09-27T10:42:34.187010+00:00",
+  "packaging_timestamp": "2026-09-27T16:03:12.130152+00:00",
   "package_directory": "ml/models/anomaly_detection"
 }
