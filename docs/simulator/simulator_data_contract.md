@@ -86,8 +86,21 @@ Every record emitted by the simulator must conform to the canonical JSON data co
 | `unit` | `str` | **Yes** | `mg/L`, `pH_units`, `ppm` | Engineering unit. |
 | `measurement_stage` | `str` | **Yes** | `inlet`, `primary_settler`, `secondary_settler`, `final_effluent` | Process stage. |
 | `data_origin` | `str` | **Yes** | `"simulated"` (or `"observed"`, `"injected"`) | **Provenance tag.** Must NEVER be omitted. |
-| `quality_status` | `str` | **Yes** | `"valid"`, `"missing"`, `"stuck"`, `"range_violation"`, `"multivariate_inconsistency"` | Physical sensor health flag. |
-| `compliance_status` | `str` | **Yes** | `"compliant"`, `"non_compliant"`, `"warning"` | Regulatory discharge limit flag. |
+| `quality_status` | `str` | **Yes** | `"pending"`, `"valid"`, `"invalid"`, `"suspect"`, `"insufficient_data"` | Deterministic sensor quality status. |
+| `compliance_status` | `str` | **Yes** | `"pending"`, `"compliant"`, `"non_compliant"`, `"not_applicable"` | Regulatory discharge limit flag. |
+
+> [!IMPORTANT]
+> **Authoritative Canonical Status Enum Specifications (Tier 1 Pydantic Model)**  
+> Every emitted canonical reading payload MUST populate `quality_status`, `anomaly_status`, and `compliance_status` using ONLY valid canonical enum values defined in `datasets/canonical/models.py`:
+> 
+> * **`quality_status`**: `"pending"`, `"valid"`, `"invalid"`, `"suspect"`, `"insufficient_data"`
+> * **`anomaly_status`**: `"pending"`, `"normal"`, `"anomalous"`, `"insufficient_data"`
+> * **`compliance_status`**: `"pending"`, `"compliant"`, `"non_compliant"`, `"not_applicable"`
+> 
+> **Distinction Between Canonical Enums and Informal Reason Codes / Metadata:**  
+> Informal scenario terms appearing in recipe documentation or prose — such as `"missing"`, `"range_violation"`, `"stuck"`, `"range_violation_or_stuck"`, `"duplicate_rejected"`, `"multivariate_inconsistency"`, `"insufficient_data_or_ignored"`, `"unknown"`, or `"warning"` — are **NOT** canonical status enum values.
+> 
+> These terms represent validation reason codes, scenario metadata, ground-truth metadata, or informal documentation labels. They MUST be stored in `metadata` (e.g., `metadata["quality_reason"] = "multivariate_inconsistency"` or `metadata["ground_truth"]["injection_details"]["quality_reason"] = "duplicate_rejected"`), while the top-level canonical status field takes its valid Pydantic enum value (e.g. `quality_status = "invalid"`, `"suspect"`, or `"insufficient_data"`). Serializing non-canonical terms directly into top-level status enum fields is strictly prohibited.
 
 ---
 
