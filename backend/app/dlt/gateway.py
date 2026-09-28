@@ -12,10 +12,11 @@ import json
 import os
 import time
 from datetime import datetime, timezone
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, List
 from uuid import UUID, uuid4
 
 from app.db.base import utc_now
+from app.dlt.merkle import MerkleTree
 
 
 class FabricDLTGateway:
@@ -62,6 +63,60 @@ class FabricDLTGateway:
         self._mock_ledger[tx_id] = dlt_record
 
         return dlt_record
+
+    def anchor_batch(
+        self,
+        batch_id: str,
+        record_hashes: List[str],
+        facility_id: UUID,
+        key_id: str = "key-ecdsa-p256-01",
+    ) -> Dict[str, Any]:
+        """
+        Anchor a high-frequency telemetry batch using an RFC 6962 binary Merkle Tree.
+        Commits only the Merkle Root to the ledger while storing inclusion proofs for each leaf.
+        """
+        if not record_hashes:
+            raise ValueError("Cannot anchor an empty batch of hashes")
+
+        leaves = [h.encode("utf-8") for h in record_hashes]
+        tree = MerkleTree(leaves)
+        merkle_root = tree.root_hex
+
+        self._block_height += 1
+        tx_raw = f"batch:{batch_id}:{merkle_root}:{self._block_height}:{time.time()}"
+        tx_id = hashlib.sha256(tx_raw.encode("utf-8")).hexdigest()
+
+        proofs = {h: tree.get_audit_proof(idx) for idx, h in enumerate(record_hashes)}
+
+        batch_record = {
+            "tx_id": tx_id,
+            "block_number": self._block_height,
+            "channel_id": self.CHANNEL_NAME,
+            "chaincode": self.CHAINCODE_NAME,
+            "batch_id": batch_id,
+            "merkle_root": merkle_root,
+            "leaf_count": len(record_hashes),
+            "facility_id": str(facility_id),
+            "signature_metadata": {"algorithm": "ES256", "key_id": key_id},
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "proofs": proofs,
+            "status": "anchored",
+        }
+
+        self._mock_ledger[batch_id] = batch_record
+        self._mock_ledger[tx_id] = batch_record
+
+        return batch_record
+
+    def verify_batch_leaf(self, batch_id: str, leaf_hash: str) -> bool:
+        """Verify whether an individual reading's hash is cryptographically included in the anchored batch."""
+        batch = self._mock_ledger.get(batch_id)
+        if not batch or "proofs" not in batch or leaf_hash not in batch["proofs"]:
+            return False
+
+        proof = batch["proofs"][leaf_hash]
+        expected_root = batch["merkle_root"]
+        return MerkleTree.verify_proof(leaf_hash.encode("utf-8"), proof, expected_root)
 
     def query_record_anchor(self, record_id: UUID) -> Optional[Dict[str, Any]]:
         """Query anchored ledger state for a treatment record."""

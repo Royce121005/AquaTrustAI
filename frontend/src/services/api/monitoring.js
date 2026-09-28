@@ -27,3 +27,36 @@ export async function getHistoricalData(params) {
   const response = await apiClient.get('/api/v1/telemetry/readings', { params })
   return response.data
 }
+
+export function subscribeTelemetryStream(onMessage, onError) {
+  try {
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
+    const host = window.location.host
+    const wsUrl = `${protocol}//${host}/api/v1/simulator/stream`
+    const ws = new WebSocket(wsUrl)
+
+    ws.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data)
+        onMessage(data)
+      } catch {
+        // Ignore JSON parse errors
+      }
+    }
+
+    ws.onerror = (err) => {
+      if (onError) onError(err)
+    }
+
+    return () => {
+      try {
+        ws.close()
+      } catch {
+        // Ignore close errors
+      }
+    }
+  } catch (err) {
+    if (onError) onError(err)
+    return () => {}
+  }
+}

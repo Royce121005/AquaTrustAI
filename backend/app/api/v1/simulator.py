@@ -1,6 +1,6 @@
-"""AquaTrust AI — Simulator Telemetry Bridge Router."""
-
-from fastapi import APIRouter, HTTPException, status
+import asyncio
+from datetime import datetime, timezone
+from fastapi import APIRouter, HTTPException, status, WebSocket, WebSocketDisconnect
 from app.services.simulator_service import SimulatorService
 from app.schemas.simulator import (
     SimulatorStartRequest,
@@ -65,3 +65,21 @@ def inject_anomaly(payload: AnomalyInjectionRequest):
         )
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
+
+@router.websocket("/stream")
+async def websocket_telemetry_stream(websocket: WebSocket):
+    """Real-time SCADA telemetry WebSocket stream broadcasting live basin readings."""
+    await websocket.accept()
+    service = SimulatorService.get_instance()
+    try:
+        while True:
+            status_data = service.get_status()
+            await websocket.send_json({
+                "type": "TELEMETRY_UPDATE",
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "status": status_data,
+            })
+            await asyncio.sleep(max(service.interval_seconds, 1.0))
+    except WebSocketDisconnect:
+        pass

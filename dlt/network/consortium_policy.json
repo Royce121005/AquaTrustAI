@@ -1,0 +1,59 @@
+{
+  "channel_id": "aquatrust-channel",
+  "consortium_name": "AquaTrustIndustrialConsortium",
+  "version": "2.5.0",
+  "organizations": [
+    {
+      "msp_id": "FacilityOrgMSP",
+      "name": "Plant Operator (STP / ETP Facility Authority)",
+      "domain": "facility.aquatrust.internal",
+      "roles": ["IOT_EDGE_INGESTION", "TREATMENT_FINALIZATION", "PROPOSE_CORRECTION"],
+      "peer_endpoints": ["peer0.facility.aquatrust.internal:7051"],
+      "ca_endpoint": "ca.facility.aquatrust.internal:7054"
+    },
+    {
+      "msp_id": "RegulatorOrgMSP",
+      "name": "Central / State Pollution Control Board (CPCB / SPCB)",
+      "domain": "regulator.aquatrust.internal",
+      "roles": ["REGULATORY_AUDIT", "COMPLIANCE_ENFORCEMENT", "ENDORSE_ANCHOR", "AUTHORIZE_CORRECTION"],
+      "peer_endpoints": ["peer0.regulator.aquatrust.internal:8051"],
+      "ca_endpoint": "ca.regulator.aquatrust.internal:8054"
+    },
+    {
+      "msp_id": "AuditorOrgMSP",
+      "name": "NABL Accredited Environmental Testing Laboratory / Auditor",
+      "domain": "auditor.aquatrust.internal",
+      "roles": ["INDEPENDENT_CALIBRATION_AUDIT", "TAMPER_INVESTIGATION", "AUTHORIZE_CORRECTION"],
+      "peer_endpoints": ["peer0.auditor.aquatrust.internal:9051"],
+      "ca_endpoint": "ca.auditor.aquatrust.internal:9054"
+    }
+  ],
+  "orderer_cluster": {
+    "consensus_type": "etcdraft",
+    "batch_timeout": "1s",
+    "batch_size": {
+      "max_message_count": 100,
+      "absolute_max_bytes": 10485760,
+      "preferred_max_bytes": 524288
+    },
+    "orderer_nodes": [
+      "orderer1.orderer.aquatrust.internal:7050",
+      "orderer2.orderer.aquatrust.internal:7050",
+      "orderer3.orderer.aquatrust.internal:7050"
+    ]
+  },
+  "endorsement_policies": {
+    "CreateAnchor": {
+      "rule": "AND('FacilityOrgMSP.peer', 'RegulatorOrgMSP.peer')",
+      "description": "Routine treatment record anchoring requires joint consensus between Plant Operator and Environmental Regulator"
+    },
+    "CreateBatchAnchor": {
+      "rule": "AND('FacilityOrgMSP.peer', 'RegulatorOrgMSP.peer')",
+      "description": "High-throughput Merkle root batch anchoring requires joint consensus"
+    },
+    "RecordCorrectionLink": {
+      "rule": "AND('FacilityOrgMSP.peer', 'RegulatorOrgMSP.peer', 'AuditorOrgMSP.peer')",
+      "description": "Sensor recalibration / correction relinking requires tripartite consensus (Operator + Regulator + Accredited Auditor)"
+    }
+  }
+}
