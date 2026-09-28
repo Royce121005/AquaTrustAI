@@ -3,6 +3,7 @@ import { ScanSearch } from 'lucide-react'
 import MainLayout from './layouts/MainLayout.jsx'
 import EmptyState from './components/ui/EmptyState.jsx'
 import DashboardPage from './pages/dashboard/DashboardPage.jsx'
+import ProcessPage from './pages/process/ProcessPage.jsx'
 import MonitoringPage from './pages/monitoring/MonitoringPage.jsx'
 import SensorsPage from './pages/monitoring/SensorsPage.jsx'
 import HistoryPage from './pages/monitoring/HistoryPage.jsx'
@@ -20,6 +21,7 @@ export default function App() {
       <Route element={<MainLayout />}>
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
         <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/process" element={<ProcessPage />} />
 
         <Route path="/monitoring">
           <Route index element={<MonitoringPage />} />

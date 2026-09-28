@@ -7,3 +7,32 @@
   animation-iteration-count: 1 !important;
   transition-duration: 0.01ms !important;
 }
+
+/* SCADA Animated Flow Piping */
+@keyframes flow-dash {
+  to {
+    stroke-dashoffset: -36;
+  }
+}
+
+@keyframes flow-dash-reverse {
+  to {
+    stroke-dashoffset: 36;
+  }
+}
+
+.animate-flow {
+  animation: flow-dash 1.2s linear infinite;
+}
+
+.animate-flow-reverse {
+  animation: flow-dash-reverse 1.2s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-flow,
+  .animate-flow-reverse {
+    animation: none !important;
+  }
+}
+

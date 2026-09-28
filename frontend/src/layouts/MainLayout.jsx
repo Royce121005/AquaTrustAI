@@ -9,6 +9,7 @@ import OfflineBanner from '../components/layout/OfflineBanner.jsx'
 
 const SECTION_TITLES = [
   ['/dashboard', 'Dashboard'],
+  ['/process', 'Process Overview'],
   ['/monitoring', 'Monitoring'],
   ['/insights', 'AI Insights'],
   ['/compliance', 'Compliance'],
