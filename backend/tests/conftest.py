@@ -1,6 +1,14 @@
-"""Pytest configuration and test fixtures for AquaTrust AI Backend."""
-
 import os
+import sys
+
+repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+if repo_root not in sys.path:
+    sys.path.insert(0, repo_root)
+
+backend_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+if backend_root not in sys.path:
+    sys.path.insert(0, backend_root)
+
 import pytest
 from typing import AsyncGenerator, Generator
 from fastapi.testclient import TestClient
@@ -10,7 +18,7 @@ from sqlalchemy.orm import Session, sessionmaker
 
 # Force test environment settings before importing app modules
 os.environ["APP_ENV"] = "test"
-os.environ["DATABASE_URL"] = "postgresql://aquatrust_user:aquatrust_password@localhost:5432/aquatrust_db"
+os.environ.setdefault("DATABASE_URL", "sqlite:///:memory:")
 os.environ["LOG_LEVEL"] = "DEBUG"
 os.environ["LOG_FORMAT"] = "text"
 

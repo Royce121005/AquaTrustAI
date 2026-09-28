@@ -49,6 +49,14 @@ class Settings(BaseSettings):
     DB_MAX_OVERFLOW: int = Field(default=10, description="Database pool max overflow")
     DB_ECHO: bool = Field(default=False, description="SQLAlchemy query echoing")
 
+    # Security & JWT
+    JWT_SECRET_KEY: str = Field(
+        ...,
+        description="Secret key for JWT token signing",
+    )
+    JWT_ALGORITHM: str = Field(default="HS256", description="JWT signing algorithm")
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = Field(default=480, description="Token expiry in minutes")
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
@@ -71,3 +79,6 @@ class Settings(BaseSettings):
 def get_settings() -> Settings:
     """Return cached singleton instance of validated settings."""
     return Settings()
+
+
+settings = get_settings()

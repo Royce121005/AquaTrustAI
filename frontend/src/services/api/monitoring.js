@@ -1,16 +1,16 @@
-// FastAPI implementation seam — endpoint paths are intentionally TBD until the
-// backend OpenAPI contract arrives. Map query params (parameterId, from, to,
-// intervalMinutes) and responses into the frontend shapes here.
-import { notImplementedError } from '../apiErrors.js'
+import apiClient from '../apiClient.js'
 
-export function getParameterTrend() {
-  return Promise.reject(notImplementedError('getParameterTrend'))
+export async function getParameterTrend(params) {
+  const response = await apiClient.get('/api/v1/telemetry/readings', { params })
+  return response.data
 }
 
-export function getSensors() {
-  return Promise.reject(notImplementedError('getSensors'))
+export async function getSensors(facilityId) {
+  const response = await apiClient.get(`/api/v1/facilities/${encodeURIComponent(facilityId)}/sensors`)
+  return response.data
 }
 
-export function getHistoricalData() {
-  return Promise.reject(notImplementedError('getHistoricalData'))
+export async function getHistoricalData(params) {
+  const response = await apiClient.get('/api/v1/telemetry/readings', { params })
+  return response.data
 }
