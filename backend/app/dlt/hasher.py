@@ -25,6 +25,13 @@ def compute_canonical_hash(payload_bytes: bytes) -> str:
     return digest
 
 
+def compute_sha256_hex(payload: str | bytes) -> str:
+    """Computes SHA-256 hex string from string or bytes."""
+    if isinstance(payload, str):
+        payload = payload.encode("utf-8")
+    return compute_canonical_hash(payload)
+
+
 def validate_canonical_hash(hash_str: str) -> bool:
     """Validates that a string is a well-formed 64-character lowercase hex SHA-256 digest."""
     return bool(hash_str and isinstance(hash_str, str) and SHA256_HEX_REGEX.match(hash_str))

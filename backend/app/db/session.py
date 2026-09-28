@@ -17,17 +17,25 @@ settings = get_settings()
 
 # Configure PostgreSQL database engine per DATABASE_SCHEMA.md
 connect_args = {}
-if settings.DATABASE_URL.startswith("postgresql"):
-    connect_args["connect_timeout"] = 3
-
 engine_kwargs = {
     "echo": settings.DB_ECHO,
     "future": True,
-    "pool_size": settings.DB_POOL_SIZE,
-    "max_overflow": settings.DB_MAX_OVERFLOW,
-    "pool_pre_ping": True,
-    "connect_args": connect_args,
 }
+
+if settings.DATABASE_URL.startswith("postgresql"):
+    connect_args["connect_timeout"] = 3
+    engine_kwargs.update({
+        "pool_size": settings.DB_POOL_SIZE,
+        "max_overflow": settings.DB_MAX_OVERFLOW,
+        "pool_pre_ping": True,
+    })
+elif settings.DATABASE_URL.startswith("sqlite"):
+    connect_args["check_same_thread"] = False
+    if ":memory:" in settings.DATABASE_URL:
+        from sqlalchemy.pool import StaticPool
+        engine_kwargs["poolclass"] = StaticPool
+
+engine_kwargs["connect_args"] = connect_args
 
 engine = create_engine(
     settings.DATABASE_URL,

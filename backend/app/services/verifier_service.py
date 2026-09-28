@@ -1,0 +1,171 @@
+"""AquaTrust AI — Independent Cryptographic Verifier Service.
+
+Executes a 4-stage independent trust verification pipeline:
+Stage 1: Canonical Hash Integrity (reconstructs canonical atc-v1 payload and verifies SHA-256 hash)
+Stage 2: Signature Authenticity (recovers public key and validates ECDSA ES256 signature)
+Stage 3: Certificate Cross-Consistency (validates certificate hash and linkage against treatment record)
+Stage 4: DLT Ledger Anchor Verification (validates ledger hash against local evidence hash)
+"""
+
+from typing import Dict, Any, Optional
+from uuid import UUID
+from sqlalchemy.orm import Session
+
+from app.db.base import utc_now
+from app.models.treatment_record import TreatmentRecord
+from app.models.certificate import Certificate
+from app.models.signing_key import SigningKey
+from app.models.dlt_anchor import DLTAnchor
+from app.models.cryptographic_artifact import CryptographicArtifact
+from app.repositories.treatment_repository import TreatmentRepository
+from app.dlt.canonicalizer import canonicalize_treatment_record
+from app.dlt.hasher import compute_sha256_hex
+from app.dlt.signer import verify_signature
+
+
+class VerifierService:
+    """Four-stage independent trust verifier engine."""
+
+    @classmethod
+    def verify_treatment_record(
+        cls,
+        db: Session,
+        record_id: UUID,
+    ) -> Dict[str, Any]:
+        """Perform comprehensive 4-stage independent verification of a treatment record."""
+        treatment_repo = TreatmentRepository(db)
+        record = treatment_repo.get_by_id(record_id)
+
+        if not record:
+            return {
+                "record_id": record_id,
+                "overall_verdict": "RECORD_NOT_FOUND",
+                "verification_timestamp": utc_now(),
+                "stages": {},
+                "canonical_hash": "",
+                "tamper_detected": True,
+            }
+
+        stages = {}
+        all_passed = True
+
+        # Stage 1: Canonical Hash Integrity
+        stage1_pass = False
+        recalculated_hash = ""
+        canonical_bytes = None
+
+        comp_res = treatment_repo.get_compliance_result(record.record_id)
+        payload = {
+            "record_id": str(record.record_id),
+            "facility_id": str(record.facility_id),
+            "period_start": record.period_start.isoformat(),
+            "period_end": record.period_end.isoformat(),
+            "record_version": record.record_version,
+            "quality_status": record.quality_status,
+            "anomaly_status": record.anomaly_status,
+            "compliance_status": record.compliance_status,
+            "compliance_summary": comp_res.parameter_results if comp_res else {},
+        }
+        canonical_bytes = canonicalize_treatment_record(payload)
+        recalculated_hash = compute_sha256_hex(canonical_bytes)
+        stage1_pass = bool(record.canonical_hash and recalculated_hash.lower() == record.canonical_hash.lower())
+
+        stages["stage_1_hash_integrity"] = {
+            "stage_name": "Canonical Hash Integrity",
+            "status": "passed" if stage1_pass else "failed",
+            "details": {
+                "stored_hash": record.canonical_hash,
+                "recalculated_hash": recalculated_hash,
+                "match": stage1_pass,
+            },
+        }
+        if not stage1_pass:
+            all_passed = False
+
+        # Stage 2: Signature Authenticity
+        stage2_pass = False
+        crypto_art = db.query(CryptographicArtifact).filter(
+            CryptographicArtifact.record_id == record.record_id
+        ).first()
+
+        if crypto_art and canonical_bytes is not None:
+            key = treatment_repo.get_signing_key(crypto_art.key_id)
+            if key and key.public_key:
+                try:
+                    stage2_pass = verify_signature(
+                        canonical_bytes=canonical_bytes,
+                        signature_base64url=crypto_art.signature_value,
+                        public_key_pem=key.public_key,
+                    )
+                except Exception:
+                    stage2_pass = False
+
+        stages["stage_2_signature_authenticity"] = {
+            "stage_name": "Signature Authenticity",
+            "status": "passed" if stage2_pass else "failed",
+            "details": {
+                "key_id": crypto_art.key_id if crypto_art else None,
+                "signature_valid": stage2_pass,
+            },
+        }
+        if not stage2_pass:
+            all_passed = False
+
+        # Stage 3: Certificate Consistency
+        stage3_pass = False
+        cert = treatment_repo.get_certificate_by_record_id(record.record_id)
+        if cert and cert.canonical_hash.lower() == record.canonical_hash.lower() and cert.status == "valid":
+            stage3_pass = True
+
+        stages["stage_3_certificate_consistency"] = {
+            "stage_name": "Certificate Cross-Consistency",
+            "status": "passed" if stage3_pass else "failed",
+            "details": {
+                "certificate_id": str(cert.certificate_id) if cert else None,
+                "certificate_status": cert.status if cert else "missing",
+                "hash_match": (cert.canonical_hash.lower() == record.canonical_hash.lower()) if cert else False,
+            },
+        }
+        if not stage3_pass:
+            all_passed = False
+
+        # Stage 4: DLT Ledger Anchor Verification
+        stage4_pass = False
+        anchor = db.query(DLTAnchor).filter(
+            DLTAnchor.record_id == record.record_id
+        ).first()
+
+        dlt_tx_id = None
+        if anchor:
+            dlt_tx_id = anchor.transaction_id
+            if anchor.canonical_hash.lower() == record.canonical_hash.lower():
+                stage4_pass = True
+
+        stages["stage_4_dlt_anchor"] = {
+            "stage_name": "DLT Ledger Anchor Verification",
+            "status": "passed" if stage4_pass else "failed",
+            "details": {
+                "anchor_id": str(anchor.anchor_id) if anchor else None,
+                "anchor_status": anchor.anchor_status if anchor else "missing",
+                "transaction_id": dlt_tx_id,
+                "ledger_match": stage4_pass,
+            },
+        }
+        if not stage4_pass:
+            all_passed = False
+
+        overall_verdict = "VERIFIED" if all_passed else (
+            "TAMPER_DETECTED" if not stage1_pass else (
+                "SIGNATURE_INVALID" if not stage2_pass else "DLT_MISMATCH"
+            )
+        )
+
+        return {
+            "record_id": record.record_id,
+            "overall_verdict": overall_verdict,
+            "verification_timestamp": utc_now(),
+            "stages": stages,
+            "canonical_hash": record.canonical_hash or "",
+            "dlt_tx_id": dlt_tx_id,
+            "tamper_detected": not all_passed,
+        }

@@ -1,16 +1,16 @@
-// FastAPI implementation seam — endpoint paths are intentionally TBD until the
-// backend compliance contract arrives. Preserve the reject-on-missing-report
-// behaviour (mirrors HTTP 404) when mapping real responses.
-import { notImplementedError } from '../apiErrors.js'
+import apiClient from '../apiClient.js'
 
-export function getComplianceSummary() {
-  return Promise.reject(notImplementedError('getComplianceSummary'))
+export async function getComplianceSummary() {
+  const response = await apiClient.get('/api/v1/compliance/summary')
+  return response.data
 }
 
-export function getReports() {
-  return Promise.reject(notImplementedError('getReports'))
+export async function getReports() {
+  const response = await apiClient.get('/api/v1/treatment-records')
+  return response.data
 }
 
-export function getReportById() {
-  return Promise.reject(notImplementedError('getReportById'))
+export async function getReportById(reportId) {
+  const response = await apiClient.get(`/api/v1/treatment-records/${encodeURIComponent(reportId)}`)
+  return response.data
 }

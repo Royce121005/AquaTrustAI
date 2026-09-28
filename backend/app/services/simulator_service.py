@@ -1,0 +1,195 @@
+"""AquaTrust AI — Simulator Background Runner & Bridge Service."""
+
+import asyncio
+from datetime import datetime, timezone
+from decimal import Decimal
+from typing import Optional, Dict, Any, List
+from uuid import UUID, uuid4
+
+from app.db.session import SessionLocal
+from app.models.facility import Facility
+from app.models.reading import Reading
+from app.repositories.facility_repository import FacilityRepository
+from app.repositories.reading_repository import ReadingRepository
+from app.services.validation_service import ValidationService
+from app.services.anomaly_service import AnomalyService
+from backend.app.simulator.engine import AquaTrustRuntimeSimulator
+from backend.app.simulator.schemas import FacilityStreamConfig
+
+
+class SimulatorService:
+    """Singleton service managing runtime telemetry simulation and ingestion bridge."""
+
+    _instance: Optional["SimulatorService"] = None
+
+    def __init__(self):
+        self.is_running: bool = False
+        self.simulator: Optional[AquaTrustRuntimeSimulator] = None
+        self.active_facility_id: Optional[UUID] = None
+        self.active_facility_name: Optional[str] = None
+        self.interval_seconds: float = 1.0
+        self.steps_generated: int = 0
+        self.readings_ingested: int = 0
+        self.current_scenario: str = "baseline_normal"
+        self.last_tick_at: Optional[str] = None
+        self._task: Optional[asyncio.Task] = None
+
+    @classmethod
+    def get_instance(cls) -> "SimulatorService":
+        if cls._instance is None:
+            cls._instance = SimulatorService()
+        return cls._instance
+
+    def start(
+        self,
+        facility_id: Optional[UUID] = None,
+        facility_name: str = "Bharwara STP Lucknow",
+        interval_seconds: float = 1.0,
+        seed: int = 42,
+    ) -> Dict[str, Any]:
+        """Start the background telemetry generator."""
+        if self.is_running:
+            return {"status": "already_running", "facility_id": str(self.active_facility_id)}
+
+        self.active_facility_id = facility_id or uuid4()
+        self.active_facility_name = facility_name
+        self.interval_seconds = interval_seconds
+
+        config = FacilityStreamConfig(
+            facility_id=str(self.active_facility_id),
+            random_seed=seed,
+        )
+        self.simulator = AquaTrustRuntimeSimulator(config=config, enable_ai_inference=False)
+        self.is_running = True
+
+        # Launch background runner loop if event loop is running
+        try:
+            loop = asyncio.get_running_loop()
+            self._task = loop.create_task(self._run_loop())
+        except RuntimeError:
+            self._task = None
+
+        return {
+            "status": "started",
+            "facility_id": str(self.active_facility_id),
+            "facility_name": self.active_facility_name,
+            "interval_seconds": self.interval_seconds,
+        }
+
+    def stop(self) -> Dict[str, Any]:
+        """Stop the background telemetry generator."""
+        if not self.is_running:
+            return {"status": "not_running"}
+
+        self.is_running = False
+        if self._task and not self._task.done():
+            self._task.cancel()
+
+        return {
+            "status": "stopped",
+            "steps_generated": self.steps_generated,
+            "readings_ingested": self.readings_ingested,
+        }
+
+    SCENARIO_ALIASES = {
+        "organic_shock": "SCENARIO_08_SUDDEN_PROCESS_CHANGE",
+        "sensor_spike": "SCENARIO_01_SENSOR_SPIKE",
+        "sensor_drop": "SCENARIO_02_SENSOR_DROP",
+        "sensor_freeze": "SCENARIO_03_STUCK_SENSOR",
+        "sensor_drift": "SCENARIO_04_SENSOR_DRIFT",
+        "missing_reading": "SCENARIO_05_MISSING_READING",
+        "duplicate_reading": "SCENARIO_06_DUPLICATE_READING",
+        "parameter_inconsistency": "SCENARIO_07_PARAMETER_INCONSISTENCY",
+        "process_change": "SCENARIO_08_SUDDEN_PROCESS_CHANGE",
+        "aeration_failure": "SCENARIO_08_SUDDEN_PROCESS_CHANGE",
+        "toxic_inflow": "SCENARIO_08_SUDDEN_PROCESS_CHANGE",
+        "ph_drift": "SCENARIO_04_SENSOR_DRIFT",
+        "false_compliance": "SCENARIO_07_PARAMETER_INCONSISTENCY",
+        "storm_dilution": "SCENARIO_08_SUDDEN_PROCESS_CHANGE",
+    }
+
+    def inject_anomaly(self, scenario_id: str, severity: float = 1.0, duration_steps: int = 10) -> Dict[str, Any]:
+        """Inject an anomaly scenario into the active simulation."""
+        if not self.is_running or not self.simulator:
+            raise ValueError("Simulator is not currently running.")
+
+        target_scenario = self.SCENARIO_ALIASES.get(scenario_id.lower(), scenario_id)
+        self.simulator.inject_anomaly_scenario(target_scenario)
+        self.current_scenario = scenario_id
+        return {
+            "status": "injected",
+            "scenario_id": scenario_id,
+            "target_scenario": target_scenario,
+            "severity": severity,
+            "duration_steps": duration_steps,
+        }
+
+    def get_status(self) -> Dict[str, Any]:
+        """Return real-time simulator status report."""
+        return {
+            "is_running": self.is_running,
+            "active_facility_id": str(self.active_facility_id) if self.active_facility_id else None,
+            "active_facility_name": self.active_facility_name,
+            "steps_generated": self.steps_generated,
+            "readings_ingested": self.readings_ingested,
+            "current_scenario": self.current_scenario,
+            "last_tick_at": self.last_tick_at,
+        }
+
+    async def _run_loop(self):
+        """Internal asynchronous simulation loop."""
+        try:
+            while self.is_running and self.simulator:
+                # 1. Step simulation
+                readings = self.simulator.step()
+                self.steps_generated += 1
+                self.last_tick_at = datetime.now(timezone.utc).isoformat()
+
+                # 2. Ingest into database
+                db = SessionLocal()
+                try:
+                    # Ensure facility exists in DB
+                    fac_repo = FacilityRepository(db)
+                    fac = fac_repo.get_by_id(self.active_facility_id)
+                    if not fac:
+                        fac = Facility(
+                            facility_id=self.active_facility_id,
+                            facility_name=self.active_facility_name or "Simulated STP",
+                            facility_type="municipal_stp",
+                            location={"city": "Simulated City"},
+                            capacity=Decimal("100.000000"),
+                            capacity_unit="MLD",
+                            status="active",
+                        )
+                        fac_repo.create(fac)
+                        db.commit()
+
+                    reading_repo = ReadingRepository(db)
+                    for r in readings:
+                        reading_row = Reading(
+                            reading_id=r.reading_id,
+                            facility_id=self.active_facility_id,
+                            observed_at=r.timestamp,
+                            treatment_stage=str(r.measurement_stage),
+                            parameter=str(r.parameter),
+                            value=Decimal(f"{r.value:.6f}") if r.value is not None else None,
+                            unit=str(r.unit),
+                            source="simulated",
+                            quality_status="pending",
+                        )
+                        reading_repo.create(reading_row)
+
+                        # Validate & Anomaly detect
+                        ValidationService.validate_reading(db, reading_row)
+                        AnomalyService.infer_reading(db, reading_row)
+                        self.readings_ingested += 1
+
+                    db.commit()
+                except Exception as e:
+                    db.rollback()
+                finally:
+                    db.close()
+
+                await asyncio.sleep(self.interval_seconds)
+        except asyncio.CancelledError:
+            pass
