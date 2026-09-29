@@ -13,38 +13,48 @@ import StpSelector from '../monitoring/StpSelector.jsx'
 
 // Dataset-derived snapshot of the newest record per STP.
 // Values are historical dataset readings — NOT live sensor measurements.
-export default function StpSnapshotCard() {
-  const [stpId, setStpId] = useState('')
+export default function StpSnapshotCard({ selectedStpId, onSelectStp }) {
+  const [internalStpId, setInternalStpId] = useState('')
+  const activeStpId = selectedStpId || internalStpId
+
+  const handleSelect = (id) => {
+    setInternalStpId(id)
+    if (onSelectStp) onSelectStp(id)
+  }
 
   const fetcher = useCallback(async () => {
     const options = await getStpOptions()
-    const activeStpId =
-      stpId && options.some((option) => option.id === stpId) ? stpId : (options[0]?.id ?? null)
-    if (!activeStpId) {
+    const targetId =
+      activeStpId && options.some((option) => option.id === activeStpId)
+        ? activeStpId
+        : (options[0]?.id ?? null)
+    if (!targetId) {
       throw new Error('No STPs were found in the Bangalore dataset.')
     }
-    const snapshot = await getStpSnapshot(activeStpId)
+    const snapshot = await getStpSnapshot(targetId)
     return { options, snapshot }
-  }, [stpId])
+  }, [activeStpId])
 
   const { status, data, error, reload } = useAsyncData(fetcher)
 
   return (
-    <Card
-      title="Latest available readings"
-      subtitle="Newest record per selected STP · historical data, not live sensor output"
-      actions={
-        <div className="flex flex-wrap items-center gap-3">
-          <StpSelector
-            options={data?.options}
-            value={data?.snapshot?.stp?.id ?? ''}
-            onChange={setStpId}
-            disabled={status === 'loading'}
-          />
-          <StatusBadge tone="info" label="dataset-derived" dot={false} />
-        </div>
-      }
-    >
+    <div id="single-stp-inspector">
+      <Card
+        title="Plant Deep Analyzer & Parameters"
+        subtitle="Detailed laboratory telemetry & capacity metrics for selected facility · bangalore_clean.csv"
+        actions={
+          <div className="flex flex-wrap items-center gap-3">
+            <StpSelector
+              options={data?.options}
+              value={data?.snapshot?.stp?.id ?? ''}
+              onChange={handleSelect}
+              disabled={status === 'loading'}
+            />
+            <StatusBadge tone="info" label="dataset-derived" dot={false} />
+          </div>
+        }
+      >
+
       {status === 'loading' && (
         <div className="py-10">
           <Spinner size="lg" label="Loading dataset snapshot…" />
@@ -129,5 +139,7 @@ export default function StpSnapshotCard() {
         </div>
       )}
     </Card>
+    </div>
   )
 }
+

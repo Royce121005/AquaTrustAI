@@ -8,11 +8,13 @@ import {
   getCityCapacitySummary,
   getStpHistoricalData,
   getStpLatestSnapshot,
+  getAllStpSnapshots as getAllSnapshots,
+  evaluateCpcbCompliance,
   getStpOptions,
   getStpParameterTrend,
 } from '../../data/bangaloreDataset.js'
 
-export { getBangaloreDatasetInfo, getCityCapacitySummary, getStpOptions }
+export { getBangaloreDatasetInfo, getCityCapacitySummary, getStpOptions, evaluateCpcbCompliance }
 
 export async function getStpTrend(stpId, parameterId) {
   return getStpParameterTrend({ stpId, parameterId })
@@ -25,3 +27,8 @@ export function getStpHistory(filters = {}) {
 export function getStpSnapshot(stpId) {
   return getStpLatestSnapshot(stpId)
 }
+
+export function getAllStpSnapshots() {
+  return getAllSnapshots()
+}
+

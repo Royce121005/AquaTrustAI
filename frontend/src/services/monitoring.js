@@ -17,4 +17,7 @@ export const getStpOptions = datasetImplementation.getStpOptions
 export const getStpTrend = datasetImplementation.getStpTrend
 export const getStpHistory = datasetImplementation.getStpHistory
 export const getStpSnapshot = datasetImplementation.getStpSnapshot
+export const getAllStpSnapshots = datasetImplementation.getAllStpSnapshots
+export const evaluateCpcbCompliance = datasetImplementation.evaluateCpcbCompliance
 export const getBangaloreDatasetInfo = datasetImplementation.getBangaloreDatasetInfo
+

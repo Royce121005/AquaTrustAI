@@ -271,6 +271,134 @@ export async function getStpHistoricalData(filters = {}) {
 }
 
 /**
+ * Evaluate effluent readings against CPCB / NGT statutory standards for STPs:
+ * - pH: 6.5 - 8.5
+ * - BOD: <= 10.0 mg/L (Marginal: <= 20.0 mg/L)
+ * - COD: <= 50.0 mg/L (Marginal: <= 100.0 mg/L)
+ * - TSS: <= 20.0 mg/L (Marginal: <= 30.0 mg/L)
+ * - Ammonical Nitrogen: <= 5.0 mg/L
+ * - Total Nitrogen: <= 10.0 mg/L
+ */
+export function evaluateCpcbCompliance(readings = {}) {
+  const checks = []
+
+  if (typeof readings.ph === 'number') {
+    const isPass = readings.ph >= 6.5 && readings.ph <= 8.5
+    checks.push({
+      param: 'pH',
+      value: readings.ph,
+      limit: '6.5 – 8.5',
+      unit: '',
+      status: isPass ? 'compliant' : 'exceeded',
+      pass: isPass,
+    })
+  }
+
+  if (typeof readings.bod === 'number') {
+    const isPass = readings.bod <= 10.0
+    const isMarginal = !isPass && readings.bod <= 20.0
+    checks.push({
+      param: 'BOD',
+      value: readings.bod,
+      limit: '≤ 10 mg/L',
+      unit: 'mg/L',
+      status: isPass ? 'compliant' : isMarginal ? 'marginal' : 'exceeded',
+      pass: isPass,
+    })
+  }
+
+  if (typeof readings.cod === 'number') {
+    const isPass = readings.cod <= 50.0
+    const isMarginal = !isPass && readings.cod <= 100.0
+    checks.push({
+      param: 'COD',
+      value: readings.cod,
+      limit: '≤ 50 mg/L',
+      unit: 'mg/L',
+      status: isPass ? 'compliant' : isMarginal ? 'marginal' : 'exceeded',
+      pass: isPass,
+    })
+  }
+
+  if (typeof readings.tss === 'number') {
+    const isPass = readings.tss <= 20.0
+    const isMarginal = !isPass && readings.tss <= 30.0
+    checks.push({
+      param: 'TSS',
+      value: readings.tss,
+      limit: '≤ 20 mg/L',
+      unit: 'mg/L',
+      status: isPass ? 'compliant' : isMarginal ? 'marginal' : 'exceeded',
+      pass: isPass,
+    })
+  }
+
+  if (typeof readings['ammonical-nitrogen'] === 'number') {
+    const isPass = readings['ammonical-nitrogen'] <= 5.0
+    checks.push({
+      param: 'NH4-N',
+      value: readings['ammonical-nitrogen'],
+      limit: '≤ 5 mg/L',
+      unit: 'mg/L',
+      status: isPass ? 'compliant' : 'exceeded',
+      pass: isPass,
+    })
+  }
+
+  if (typeof readings['total-nitrogen'] === 'number') {
+    const isPass = readings['total-nitrogen'] <= 10.0
+    checks.push({
+      param: 'Total N',
+      value: readings['total-nitrogen'],
+      limit: '≤ 10 mg/L',
+      unit: 'mg/L',
+      status: isPass ? 'compliant' : 'exceeded',
+      pass: isPass,
+    })
+  }
+
+  const hasExceeded = checks.some((c) => c.status === 'exceeded')
+  const hasMarginal = checks.some((c) => c.status === 'marginal')
+  const overall = hasExceeded ? 'non_compliant' : hasMarginal ? 'marginal' : 'compliant'
+
+  return { overall, checks }
+}
+
+/**
+ * Snapshot for all 9 Bangalore STPs from the latest dataset record.
+ */
+export async function getAllStpSnapshots() {
+  const dataset = await getDataset()
+  const latestRecord = dataset.records[dataset.records.length - 1]
+
+  const city = { ...latestRecord.city }
+  delete city.temperatureMaxC
+  delete city.temperatureMinC
+
+  return dataset.stpOptions.map((stp) => {
+    const perParameter = latestRecord.values[stp.id] ?? {}
+    const readings = {
+      ...perParameter,
+      temperature: latestRecord.city.temperatureAvgC,
+    }
+    const compliance = evaluateCpcbCompliance(readings)
+
+    return {
+      id: stp.id,
+      name: stp.name,
+      installedCapacityMld: stp.installedCapacityMld,
+      treatmentFacility: stp.treatmentFacility,
+      recordedAt: latestRecord.timestamp,
+      readings,
+      city,
+      complianceStatus: compliance.overall,
+      compliance,
+      sourceLabel: BANGALORE_DATA_SOURCE_LABEL,
+    }
+  })
+}
+
+/**
  * Newest available record for an STP (or the whole city when stpId is omitted).
  * Returned values are labelled "latest available reading" upstream — they are
  * historical dataset values, NOT live sensor measurements.
@@ -305,6 +433,8 @@ export async function getStpLatestSnapshot(stpId) {
     recordedAt: latestRecord.timestamp,
     readings,
     city,
+    compliance: evaluateCpcbCompliance(readings),
     sourceLabel: BANGALORE_DATA_SOURCE_LABEL,
   }
 }
+
