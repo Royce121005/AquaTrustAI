@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   Download,
+  FileArchive,
   Search,
   Filter,
   ShieldCheck,
@@ -15,6 +16,7 @@ import {
 import Card from '../../components/ui/Card.jsx'
 import StatusBadge from '../../components/ui/StatusBadge.jsx'
 import { useAuditEvents, AUDIT_ACTIONS, ANCHOR_STATUS } from '../../lib/audit/auditStore.js'
+import { downloadEvidencePack } from '../../lib/export/evidencePack.js'
 import { formatTimestamp, formatDate } from '../../utils/format.js'
 
 export default function AuditTrailTable() {
@@ -271,7 +273,19 @@ export default function AuditTrailTable() {
                       )}
                     </td>
 
-                    <td className="px-3 py-2.5 text-right font-sans">
+                    <td className="px-3 py-2.5 text-right font-sans whitespace-nowrap space-x-2">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          downloadEvidencePack(evt)
+                        }}
+                        className="inline-flex items-center gap-1 text-slate-500 hover:text-sky-600 font-semibold text-[11px] p-1 rounded hover:bg-slate-100"
+                        title="Download Statutory Evidence Pack ZIP"
+                      >
+                        <FileArchive className="h-3 w-3" />
+                        <span>Pack</span>
+                      </button>
                       <span className="inline-flex items-center gap-1 text-sky-600 group-hover:text-sky-800 font-semibold text-[11px]">
                         <span>Verify</span>
                         <ExternalLink className="h-3 w-3" />

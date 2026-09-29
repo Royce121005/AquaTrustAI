@@ -1,5 +1,5 @@
-import { useState } from 'react'
 import PageHeader from '../../components/ui/PageHeader.jsx'
+import OperatorRecommendationsCard from '../../features/dashboard/OperatorRecommendationsCard.jsx'
 import DashboardKpiGrid from '../../features/dashboard/DashboardKpiGrid.jsx'
 import AllStpGrid from '../../features/dashboard/AllStpGrid.jsx'
 import StpSnapshotCard from '../../features/dashboard/StpSnapshotCard.jsx'
@@ -9,13 +9,13 @@ import RecentAlerts from '../../features/dashboard/RecentAlerts.jsx'
 export default function DashboardPage() {
   const [selectedStpId, setSelectedStpId] = useState('hebbal')
 
-
   return (
     <div className="space-y-6">
       <PageHeader
         title="Supervisory Dashboard"
         subtitle="Regional wastewater treatment network intelligence, multi-facility CPCB compliance & SCADA telemetry"
       />
+      <OperatorRecommendationsCard />
       <DashboardKpiGrid />
       <AllStpGrid onSelectStp={setSelectedStpId} selectedStpId={selectedStpId} />
       <StpSnapshotCard selectedStpId={selectedStpId} onSelectStp={setSelectedStpId} />

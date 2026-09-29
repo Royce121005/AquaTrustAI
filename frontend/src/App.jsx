@@ -3,6 +3,8 @@ import { ScanSearch } from 'lucide-react'
 import MainLayout from './layouts/MainLayout.jsx'
 import EmptyState from './components/ui/EmptyState.jsx'
 import DashboardPage from './pages/dashboard/DashboardPage.jsx'
+import AuditorPage from './pages/auditor/AuditorPage.jsx'
+import RegulatorPage from './pages/regulator/RegulatorPage.jsx'
 import ProcessPage from './pages/process/ProcessPage.jsx'
 import AlarmPage from './pages/alarms/AlarmPage.jsx'
 import MonitoringPage from './pages/monitoring/MonitoringPage.jsx'
@@ -15,13 +17,27 @@ import BlockchainPage from './pages/blockchain/BlockchainPage.jsx'
 import BlockchainVerifyPage from './pages/blockchain/BlockchainVerifyPage.jsx'
 import BlockchainTransactionDetailPage from './pages/blockchain/BlockchainTransactionDetailPage.jsx'
 import SettingsPage from './pages/settings/SettingsPage.jsx'
+import PublicVerifyPage from './pages/verify/PublicVerifyPage.jsx'
+import { useAuth } from './context/authContext.js'
+
+function RootRedirect() {
+  const { homeRoute } = useAuth()
+  return <Navigate to={homeRoute || '/dashboard'} replace />
+}
 
 export default function App() {
   return (
     <Routes>
+      {/* Public Standalone Verification Routes (No RBAC / No Layout) */}
+      <Route path="/verify" element={<PublicVerifyPage />} />
+      <Route path="/verify/:eventId" element={<PublicVerifyPage />} />
+
+      {/* Authenticated SCADA Workspace with MainLayout */}
       <Route element={<MainLayout />}>
-        <Route path="/" element={<Navigate to="/dashboard" replace />} />
+        <Route path="/" element={<RootRedirect />} />
         <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/auditor" element={<AuditorPage />} />
+        <Route path="/regulator" element={<RegulatorPage />} />
         <Route path="/process" element={<ProcessPage />} />
         <Route path="/alarms" element={<AlarmPage />} />
 

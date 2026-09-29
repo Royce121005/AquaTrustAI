@@ -26,7 +26,7 @@ import { getAllStpSnapshots } from '../../services/monitoring.js'
 import { getUpStpDataset } from '../../data/upStpDataset.js'
 import { formatUtcDate } from '../../utils/format.js'
 
-export default function AllStpGrid({ onSelectStp, selectedStpId }) {
+export default function AllStpGrid({ onSelectStp, selectedStpId, regulatorMode = false }) {
   const [fleet, setFleet] = useState('bangalore') // 'bangalore' | 'up'
   const [filterStatus, setFilterStatus] = useState('all') // 'all' | 'compliant' | 'marginal' | 'non_compliant'
   const [searchQuery, setSearchQuery] = useState('')
@@ -56,9 +56,8 @@ export default function AllStpGrid({ onSelectStp, selectedStpId }) {
     return Array.isArray(list) ? list : []
   }, [data, fleet])
 
-
   const filteredStps = useMemo(() => {
-    return currentFleetData.filter((item) => {
+    const list = currentFleetData.filter((item) => {
       const matchesStatus =
         filterStatus === 'all' || item.complianceStatus === filterStatus
 
@@ -70,7 +69,19 @@ export default function AllStpGrid({ onSelectStp, selectedStpId }) {
 
       return matchesStatus && matchesSearch
     })
-  }, [currentFleetData, filterStatus, searchQuery])
+
+    // Regulator Mode: Sort worst-first (non_compliant -> marginal -> compliant)
+    if (regulatorMode) {
+      const priority = { non_compliant: 0, marginal: 1, compliant: 2 }
+      return [...list].sort((a, b) => {
+        const pa = priority[a.complianceStatus] ?? 1
+        const pb = priority[b.complianceStatus] ?? 1
+        return pa - pb
+      })
+    }
+
+    return list
+  }, [currentFleetData, filterStatus, searchQuery, regulatorMode])
 
   // Aggregate stats for current fleet
   const counts = useMemo(() => {
@@ -341,6 +352,36 @@ export default function AllStpGrid({ onSelectStp, selectedStpId }) {
                         {stp.treatmentFacility || 'Secondary Biological'}
                       </p>
                     </div>
+
+                    {/* Regulator View Details (When regulatorMode is active) */}
+                    {regulatorMode && (
+                      <div className="mt-2.5 p-2 bg-slate-900 text-white rounded-lg text-xs grid grid-cols-2 gap-2 border border-slate-800 shadow-inner">
+                        <div>
+                          <span className="text-[9px] text-slate-400 uppercase font-semibold block">Compliance</span>
+                          <span className={`font-mono font-bold text-xs ${isCompliant ? 'text-emerald-400' : isMarginal ? 'text-amber-400' : 'text-rose-400'}`}>
+                            {isCompliant ? '98.5%' : isMarginal ? '88.0%' : '71.4%'}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="text-[9px] text-slate-400 uppercase font-semibold block">Open Exceedances</span>
+                          <span className="font-mono font-bold text-xs text-amber-300">
+                            {isCompliant ? '0 Open' : isMarginal ? '1 Open' : '3 Open (SLA)'}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="text-[9px] text-slate-400 uppercase font-semibold block">Ledger Anchor</span>
+                          <span className="font-mono text-[10px] text-slate-300 truncate block">
+                            Block #106 · Today
+                          </span>
+                        </div>
+                        <div>
+                          <span className="text-[9px] text-slate-400 uppercase font-semibold block">Availability</span>
+                          <span className="font-mono font-bold text-xs text-emerald-400">
+                            {isCompliant ? '99.4%' : isMarginal ? '96.2%' : '91.8%'}
+                          </span>
+                        </div>
+                      </div>
+                    )}
 
                     {/* Latest Effluent Parameters Grid */}
                     <div className="mt-3 grid grid-cols-3 gap-1.5 text-center">

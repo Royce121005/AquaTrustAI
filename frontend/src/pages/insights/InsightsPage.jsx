@@ -5,6 +5,7 @@ import InsightsTabs from '../../features/insights/InsightsTabs.jsx'
 import PredictionPanel from '../../features/insights/PredictionPanel.jsx'
 import AnomalyPanel from '../../features/insights/AnomalyPanel.jsx'
 import RecommendationsPanel from '../../features/insights/RecommendationsPanel.jsx'
+import ComplianceForecastCard from '../../features/insights/ComplianceForecastCard.jsx'
 
 const PANELS = {
   predictions: PredictionPanel,
@@ -23,6 +24,7 @@ export default function InsightsPage() {
         title="AI Insights"
         subtitle="Predictions, anomaly detection, and operational recommendations"
       />
+      <ComplianceForecastCard />
       <InsightsTabs />
       <ActivePanel />
     </div>

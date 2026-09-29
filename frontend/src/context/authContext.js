@@ -28,3 +28,4 @@ export const ROLE_METADATA = {
 }
 
 export const AuthContext = createContext(null)
+export { default as useAuth } from '../hooks/useAuth.js'

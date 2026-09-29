@@ -41,15 +41,22 @@ export default function AuthProvider({ children }) {
     }
   }, [currentRole])
 
+  const homeRoute = useMemo(() => {
+    if (currentRole === ROLES.AUDITOR) return '/auditor'
+    if (currentRole === ROLES.REGULATOR) return '/regulator'
+    return '/dashboard'
+  }, [currentRole])
+
   const value = useMemo(
     () => ({
       currentRole,
       setRole,
+      homeRoute,
       permissions,
       availableRoles: ROLES,
       roleMetadata: ROLE_METADATA,
     }),
-    [currentRole, setRole, permissions],
+    [currentRole, setRole, homeRoute, permissions],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

@@ -16,8 +16,7 @@ export default function CpcbCertificateModal({ isOpen, onClose, report, recordId
   // Real or canonical default cryptographic credentials
   const canonicalHash = report.canonical_hash || report.canonicalHash || 'e963fc23cf0eb966c4c5cf2339678e0c4cbca476a6e542bf82aa7aeb354f3b17'
   const txRef = report.transaction_id || report.txRef || 'tx_fabric_aquatrust_001'
-  const blockNumber = report.block_number || 104
-  const verificationUrl = `${window.location.origin}/blockchain/verify?recordId=${encodeURIComponent(resolvedRecordId)}`
+  const verificationUrl = `${window.location.origin}/verify/${encodeURIComponent(resolvedRecordId)}`
 
   const handlePrint = () => {
     window.print()
