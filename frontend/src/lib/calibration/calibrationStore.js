@@ -217,6 +217,10 @@ function notifyListeners() {
   listeners.forEach((l) => l({ ...calibrationState }))
 }
 
+export function getAllCalibrations() {
+  return { ...calibrationState }
+}
+
 export function getSensorCalibration(sensorId) {
   return (
     calibrationState[sensorId] || {

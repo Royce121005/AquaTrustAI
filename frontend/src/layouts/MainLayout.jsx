@@ -6,10 +6,12 @@ import RoleSwitcher from '../components/layout/RoleSwitcher.jsx'
 import AlarmAnnunciatorBar from '../components/layout/AlarmAnnunciatorBar.jsx'
 import NocModeBar from '../components/layout/NocModeBar.jsx'
 import OfflineBanner from '../components/layout/OfflineBanner.jsx'
+import ScenarioInjector from '../features/demo/ScenarioInjector.jsx'
 
 const SECTION_TITLES = [
   ['/dashboard', 'Dashboard'],
   ['/process', 'Process Overview'],
+  ['/alarms', 'Alarm Console'],
   ['/monitoring', 'Monitoring'],
   ['/insights', 'AI Insights'],
   ['/compliance', 'Compliance'],
@@ -126,6 +128,8 @@ export default function MainLayout() {
         </main>
       </div>
 
+      {/* Floating Demo Scenario & Fault Injector (Visible only with ?demo=true) */}
+      <ScenarioInjector />
     </div>
   )
 }

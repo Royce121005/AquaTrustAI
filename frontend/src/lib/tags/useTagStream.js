@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { TAG_REGISTRY, QUALITY } from './registry.js'
+import { scenarioController } from '../demo/scenarioController.js'
+import { alarmManager } from '../alarms/alarmManager.js'
 
 // Realistic baseline values for the Koramangala 60 MLD STP
 const BASELINE_VALUES = {
@@ -70,6 +72,19 @@ export function useTagStream() {
       stepRef.current += 1
       const step = stepRef.current
       const now = Date.now()
+      const activeScen = scenarioController.getActiveScenario()
+      const elapsed = activeScen ? now - activeScen.startTime : 0
+      const { tagOverrides, assetOverrides } = scenarioController.getOverrides(elapsed)
+
+      // Apply any scenario asset overrides (e.g. blower trip, pump fault)
+      if (assetOverrides && Object.keys(assetOverrides).length > 0) {
+        setAssetStates((prev) => ({
+          ...prev,
+          ...assetOverrides,
+        }))
+      }
+
+      let latestValues = null
 
       setTagValues((prev) => {
         const next = { ...prev }
@@ -96,6 +111,17 @@ export function useTagStream() {
           const noise = (Math.random() - 0.5) * (base * 0.015)
           let rawVal = (base + drift + noise) * flowFactor
 
+          // Check for scenario override on this tag
+          let activeQuality = current?.quality ?? QUALITY.GOOD
+          if (tagOverrides && tagOverrides[id]) {
+            if (typeof tagOverrides[id].value === 'number') {
+              rawVal = tagOverrides[id].value
+            }
+            if (tagOverrides[id].quality) {
+              activeQuality = tagOverrides[id].quality
+            }
+          }
+
           // Clamp to range
           if (meta.range) {
             rawVal = Math.max(meta.range[0], Math.min(meta.range[1], rawVal))
@@ -115,15 +141,21 @@ export function useTagStream() {
           next[id] = {
             value: rawVal,
             formatted: rawVal.toFixed(meta.decimals ?? 1),
-            quality: current?.quality ?? QUALITY.GOOD,
+            quality: activeQuality,
             timestamp: now,
             ageMs: 0,
             alarmState,
           }
         })
 
+        latestValues = next
         return next
       })
+
+      // Push telemetry tick to central ISA-18.2 alarm manager
+      if (latestValues) {
+        alarmManager.processTelemetry(latestValues)
+      }
 
       // Update 1-hour trend history buffer
       setHistoryBuffer((prev) => {

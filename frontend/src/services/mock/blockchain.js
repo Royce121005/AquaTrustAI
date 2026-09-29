@@ -98,6 +98,7 @@ export async function getAnchoredRecords() {
 }
 
 import { getAllAuditEvents } from '../../lib/audit/auditStore.js'
+import { canonicalize, sha256Sync } from '../../lib/crypto/rfc8785.js'
 
 export async function verifyRecord(recordId) {
   await delay(350)
@@ -105,12 +106,33 @@ export async function verifyRecord(recordId) {
     (item) => item.id === recordId || item.canonicalHash === recordId
   )
 
+  let hashMismatch = false
+
   if (!record) {
     const auditEvt = getAllAuditEvents().find(
       (e) => e.id === recordId || e.hash === recordId
     )
     if (auditEvt) {
       const isAnchored = auditEvt.anchorStatus === 'Anchored'
+      
+      // Cryptographic Stage 1: Recompute RFC 8785 canonical SHA-256 digest
+      const payloadToHash = {
+        id: auditEvt.id,
+        timestamp: auditEvt.timestamp,
+        userId: auditEvt.userId || 'usr_op_01',
+        userName: auditEvt.userName || 'Plant Operator',
+        role: auditEvt.role || 'Plant Operator',
+        action: auditEvt.action,
+        tagId: auditEvt.tagId,
+        oldValue: auditEvt.oldValue ?? null,
+        newValue: auditEvt.newValue ?? null,
+        reason: auditEvt.reason,
+        signatureMeaning: auditEvt.signatureMeaning || 'Approved',
+      }
+
+      const recomputedHash = sha256Sync(canonicalize(payloadToHash))
+      hashMismatch = recomputedHash !== auditEvt.hash || Boolean(auditEvt._tamperedInDev)
+
       record = {
         id: auditEvt.id,
         recordType: auditEvt.action,
@@ -140,6 +162,26 @@ export async function verifyRecord(recordId) {
         ledgerAnchorConfirmed: false,
       },
       message: `Record "${recordId}" not found on Hyperledger Fabric ledger`,
+    }
+  }
+
+  if (hashMismatch) {
+    return {
+      recordId: record.id,
+      verified: false,
+      checkedAt: new Date().toISOString(),
+      canonicalHash: record.canonicalHash,
+      txRef: record.txRef,
+      channel: record.channel,
+      endorsement: record.endorsement,
+      checks: {
+        recordExists: true,
+        canonicalHashMatch: false,
+        signatureVerified: false,
+        ledgerAnchorConfirmed: false,
+      },
+      message:
+        'CRITICAL SECURITY ALERT: RFC 8785 SHA-256 Digest Mismatch! Stored record payload has been tampered with or altered after cryptographic signing.',
     }
   }
 

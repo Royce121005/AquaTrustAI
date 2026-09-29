@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
   AlertTriangle,
@@ -10,96 +10,37 @@ import {
   ExternalLink,
   SlidersHorizontal,
 } from 'lucide-react'
-
-// Synthesizes an authentic industrial SCADA alert tone via Web Audio API without external files
-function playScadaAlertTone(frequency = 880, durationMs = 250) {
-  try {
-    const AudioContext = window.AudioContext || window.webkitAudioContext
-    if (!AudioContext) return
-    const ctx = new AudioContext()
-    const osc = ctx.createOscillator()
-    const gain = ctx.createGain()
-
-    osc.type = 'square'
-    osc.frequency.setValueAtTime(frequency, ctx.currentTime)
-    gain.gain.setValueAtTime(0.08, ctx.currentTime)
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + durationMs / 1000)
-
-    osc.connect(gain)
-    gain.connect(ctx.destination)
-
-    osc.start()
-    osc.stop(ctx.currentTime + durationMs / 1000)
-  } catch (err) {
-    // Ignore audio autoplay restrictions
-  }
-}
+import { useAlarmState } from '../../lib/alarms/useAlarmState.js'
+import { scenarioController, SCENARIO_TYPES } from '../../lib/demo/scenarioController.js'
 
 export default function AlarmAnnunciatorBar() {
-  // Industrial Alarm States: 'NORMAL' | 'WARNING' | 'CRITICAL'
-  const [alarmState, setAlarmState] = useState('NORMAL')
-  const [activeAlarm, setActiveAlarm] = useState(null)
-  const [isAcknowledged, setIsAcknowledged] = useState(false)
-  const [isMuted, setIsMuted] = useState(true) // Default muted to prevent unwanted noise
+  const { activeAlarms, isMuted, toggleMute, acknowledgeAlarm } = useAlarmState()
   const [showSimMenu, setShowSimMenu] = useState(false)
-  const audioIntervalRef = useRef(null)
 
-  // Trigger audio beeps if alarm is CRITICAL, unacknowledged, and not muted
-  useEffect(() => {
-    if (alarmState === 'CRITICAL' && !isAcknowledged && !isMuted) {
-      playScadaAlertTone(950, 300)
-      audioIntervalRef.current = setInterval(() => {
-        playScadaAlertTone(950, 300)
-      }, 2500)
-    } else {
-      if (audioIntervalRef.current) {
-        clearInterval(audioIntervalRef.current)
-        audioIntervalRef.current = null
-      }
-    }
+  // Find top priority active alarm (Critical over Warning)
+  const topCritical = activeAlarms.find((a) => a.priority === 'CRITICAL')
+  const topWarning = activeAlarms.find((a) => a.priority === 'WARNING')
+  const currentAlarm = topCritical || topWarning || null
 
-    return () => {
-      if (audioIntervalRef.current) clearInterval(audioIntervalRef.current)
-    }
-  }, [alarmState, isAcknowledged, isMuted])
+  const alarmState = currentAlarm ? currentAlarm.priority : 'NORMAL'
+  const isAcknowledged = currentAlarm ? currentAlarm.state === 'Ack-Active' : false
 
   const handleAcknowledge = () => {
-    setIsAcknowledged(true)
+    if (currentAlarm) {
+      acknowledgeAlarm(currentAlarm.tagId, 'Plant Operator', 'Annunciator bar ACK')
+    }
   }
 
   const triggerAlarmSimulation = (type) => {
     if (type === 'CRITICAL') {
-      setAlarmState('CRITICAL')
-      setActiveAlarm({
-        id: 'ALM-DO-001',
-        tag: 'DO_AERATION_BASIN_01',
-        unit: 'Biological Aeration Tank 01',
-        param: 'Dissolved Oxygen',
-        value: '1.24 mg/L',
-        limit: 'Min 2.00 mg/L',
-        severity: 'CRITICAL',
-        timestamp: new Date().toLocaleTimeString(),
-        link: '/monitoring/sensors',
-      })
-      setIsAcknowledged(false)
+      scenarioController.startScenario(SCENARIO_TYPES.BLOWER_TRIP, 45000)
     } else if (type === 'WARNING') {
-      setAlarmState('WARNING')
-      setActiveAlarm({
-        id: 'ALM-TSS-002',
-        tag: 'TSS_CLARIFIER_EFFLUENT',
-        unit: 'Secondary Clarifier Outfall',
-        param: 'Total Suspended Solids (TSS)',
-        value: '18.8 mg/L',
-        limit: 'Max 20.0 mg/L',
-        severity: 'WARNING',
-        timestamp: new Date().toLocaleTimeString(),
-        link: '/monitoring/sensors',
-      })
-      setIsAcknowledged(false)
+      scenarioController.startScenario(SCENARIO_TYPES.COD_SPIKE, 45000)
     } else {
-      setAlarmState('NORMAL')
-      setActiveAlarm(null)
-      setIsAcknowledged(false)
+      scenarioController.stopScenario()
+      if (currentAlarm) {
+        acknowledgeAlarm(currentAlarm.tagId, 'Plant Operator', 'Sim clear')
+      }
     }
     setShowSimMenu(false)
   }
@@ -116,11 +57,17 @@ export default function AlarmAnnunciatorBar() {
               SCADA Process Status: <strong className="font-semibold text-emerald-800">ALL BASINS NORMAL</strong>
             </span>
             <span className="text-emerald-700/80 hidden md:inline">
-              · 12 Online Sensors · 0 ISA-18.2 Priority Alarms Active · CPCB OCEMS Heartbeat OK
+              · 26 ISA-18.2 Tags Monitored · 0 Active Alarms · CPCB OCEMS Heartbeat OK
             </span>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
+            <Link
+              to="/alarms"
+              className="text-[11px] font-semibold text-emerald-700 hover:text-emerald-900 underline flex items-center gap-1"
+            >
+              Alarm Console
+            </Link>
             <button
               onClick={() => setShowSimMenu(!showSimMenu)}
               className="text-[11px] font-mono text-emerald-700 hover:text-emerald-900 underline flex items-center gap-1"
@@ -133,13 +80,19 @@ export default function AlarmAnnunciatorBar() {
       )}
 
       {/* Warning State Bar */}
-      {alarmState === 'WARNING' && activeAlarm && (
+      {alarmState === 'WARNING' && currentAlarm && (
         <div className="flex items-center justify-between px-6 py-2 bg-amber-500 text-slate-900 text-xs font-medium shadow-inner">
           <div className="flex items-center gap-3">
             <AlertTriangle className="h-4 w-4 shrink-0 text-slate-900" />
             <span>
-              <strong>[ISA-18.2 WARNING]</strong> {activeAlarm.unit}: {activeAlarm.param} reached{' '}
-              <strong>{activeAlarm.value}</strong> ({activeAlarm.limit}) at {activeAlarm.timestamp}
+              <strong>[ISA-18.2 WARNING]</strong> {currentAlarm.name}: reached{' '}
+              <strong>
+                {typeof currentAlarm.tripValue === 'number'
+                  ? currentAlarm.tripValue.toFixed(2)
+                  : currentAlarm.tripValue}{' '}
+                {currentAlarm.unit}
+              </strong>{' '}
+              (Limit {currentAlarm.limitCrossed}: {currentAlarm.limitValue}) [{currentAlarm.tagId}]
             </span>
             {isAcknowledged && (
               <span className="bg-amber-600/30 text-slate-900 px-2 py-0.5 rounded text-[10px] uppercase font-bold tracking-wider">
@@ -149,11 +102,18 @@ export default function AlarmAnnunciatorBar() {
           </div>
 
           <div className="flex items-center gap-2">
+            <button
+              onClick={toggleMute}
+              title={isMuted ? 'Unmute alarm horn' : 'Mute alarm horn'}
+              className="p-1 rounded bg-amber-600/40 hover:bg-amber-600/60 text-slate-900"
+            >
+              {isMuted ? <VolumeX className="h-3.5 w-3.5" /> : <Volume2 className="h-3.5 w-3.5" />}
+            </button>
             <Link
-              to={activeAlarm.link}
+              to="/alarms"
               className="inline-flex items-center gap-1 px-2.5 py-1 bg-white/90 hover:bg-white text-slate-900 rounded font-semibold text-[11px] transition-colors"
             >
-              Investigate Sensor <ExternalLink className="h-3 w-3" />
+              Investigate in /alarms <ExternalLink className="h-3 w-3" />
             </Link>
             {!isAcknowledged && (
               <button
@@ -163,18 +123,12 @@ export default function AlarmAnnunciatorBar() {
                 ACK ALARM
               </button>
             )}
-            <button
-              onClick={() => triggerAlarmSimulation('NORMAL')}
-              className="px-2 py-1 bg-amber-600 hover:bg-amber-700 text-white rounded text-[11px]"
-            >
-              Clear
-            </button>
           </div>
         </div>
       )}
 
       {/* Critical Exceedance Bar */}
-      {alarmState === 'CRITICAL' && activeAlarm && (
+      {alarmState === 'CRITICAL' && currentAlarm && (
         <div
           className={`flex items-center justify-between px-6 py-2.5 text-xs text-white shadow-md transition-colors ${
             isAcknowledged ? 'bg-red-800' : 'bg-red-600 animate-pulse'
@@ -187,29 +141,36 @@ export default function AlarmAnnunciatorBar() {
                 <span className="bg-white text-red-700 px-1.5 py-0.2 rounded font-black text-[10px] tracking-wider uppercase">
                   CRITICAL EXCEEDANCE
                 </span>
-                <span className="font-bold text-sm">{activeAlarm.param} Breach</span>
-                <span className="text-red-100 font-mono text-xs">[{activeAlarm.tag}]</span>
+                <span className="font-bold text-sm">{currentAlarm.name} Breach</span>
+                <span className="text-red-100 font-mono text-xs">[{currentAlarm.tagId}]</span>
               </div>
               <p className="text-[11px] text-red-100 mt-0.5">
-                {activeAlarm.unit}: Measured <strong className="text-white underline">{activeAlarm.value}</strong> vs.{' '}
-                {activeAlarm.limit}. Risk of regulatory violation under CPCB guidelines.
+                {currentAlarm.description}: Measured{' '}
+                <strong className="text-white underline">
+                  {typeof currentAlarm.tripValue === 'number'
+                    ? currentAlarm.tripValue.toFixed(2)
+                    : currentAlarm.tripValue}{' '}
+                  {currentAlarm.unit}
+                </strong>{' '}
+                vs. {currentAlarm.limitCrossed} Limit ({currentAlarm.limitValue} {currentAlarm.unit}). 
+                ISA-18.2 Response: {currentAlarm.responseProcedure}
               </p>
             </div>
           </div>
 
           <div className="flex items-center gap-2">
             <button
-              onClick={() => setIsMuted(!isMuted)}
+              onClick={toggleMute}
               title={isMuted ? 'Unmute alarm horn' : 'Mute alarm horn'}
               className="p-1.5 rounded bg-red-700/80 hover:bg-red-700 text-white"
             >
               {isMuted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
             </button>
             <Link
-              to={activeAlarm.link}
+              to="/alarms"
               className="inline-flex items-center gap-1 px-3 py-1.5 bg-white text-red-800 hover:bg-slate-100 rounded font-bold text-xs transition-colors shadow-xs"
             >
-              Inspect Basin <ExternalLink className="h-3 w-3" />
+              Alarm Console <ExternalLink className="h-3 w-3" />
             </Link>
             {!isAcknowledged ? (
               <button
@@ -223,12 +184,6 @@ export default function AlarmAnnunciatorBar() {
                 Silenced by Operator
               </span>
             )}
-            <button
-              onClick={() => triggerAlarmSimulation('NORMAL')}
-              className="px-2 py-1 bg-red-900/60 hover:bg-red-900 text-white rounded text-[11px]"
-            >
-              Reset
-            </button>
           </div>
         </div>
       )}
@@ -251,13 +206,13 @@ export default function AlarmAnnunciatorBar() {
               onClick={() => triggerAlarmSimulation('WARNING')}
               className="px-2.5 py-1 rounded bg-amber-600 hover:bg-amber-500 text-xs text-white font-semibold"
             >
-              Simulate Warning (TSS 18.8 mg/L)
+              Simulate Warning (COD Spike)
             </button>
             <button
               onClick={() => triggerAlarmSimulation('CRITICAL')}
               className="px-2.5 py-1 rounded bg-red-600 hover:bg-red-500 text-xs text-white font-semibold"
             >
-              Simulate Critical (DO 1.24 mg/L)
+              Simulate Critical (Blower Trip)
             </button>
             <button
               onClick={() => setShowSimMenu(false)}
@@ -271,3 +226,4 @@ export default function AlarmAnnunciatorBar() {
     </div>
   )
 }
+
