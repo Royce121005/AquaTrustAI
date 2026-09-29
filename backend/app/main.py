@@ -1,8 +1,14 @@
-"""AquaTrust AI — Backend Application Entrypoint.
+import os
+import sys
 
-Bootstrap structure and application lifecycle conforming strictly to
-MASTER/ARCHITECTURE_FREEZE.md, MASTER/API_CONTRACT.md, and PHASE_01_FOUNDATION.md.
-"""
+# Ensure repository root and backend directory are in sys.path for ml and datasets imports
+repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+if repo_root not in sys.path:
+    sys.path.insert(0, repo_root)
+
+backend_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+if backend_root not in sys.path:
+    sys.path.insert(0, backend_root)
 
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator
