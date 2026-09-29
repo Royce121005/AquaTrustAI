@@ -323,6 +323,7 @@ export const TAG_REGISTRY = {
     assetName: 'Final Discharge Outfall 01',
     assetType: ASSET_TYPES.ANALYZER,
     calibratable: true,
+    critical: true,
   },
   'AIT-502': {
     id: 'AIT-502',
@@ -338,6 +339,7 @@ export const TAG_REGISTRY = {
     assetName: 'Final Discharge Outfall 01',
     assetType: ASSET_TYPES.ANALYZER,
     calibratable: true,
+    critical: true,
   },
   'AIT-503': {
     id: 'AIT-503',
@@ -353,6 +355,7 @@ export const TAG_REGISTRY = {
     assetName: 'Final Discharge Outfall 01',
     assetType: ASSET_TYPES.ANALYZER,
     calibratable: true,
+    critical: true,
   },
   'AIT-504': {
     id: 'AIT-504',
@@ -368,6 +371,7 @@ export const TAG_REGISTRY = {
     assetName: 'Final Discharge Outfall 01',
     assetType: ASSET_TYPES.ANALYZER,
     calibratable: true,
+    critical: true,
   },
   'AIT-505': {
     id: 'AIT-505',
@@ -378,11 +382,12 @@ export const TAG_REGISTRY = {
     range: [0, 25],
     normal: [1.5, 4.0],
     alarmLimits: { LL: 0, L: 0, H: 8.0, HH: 10.0 },
-    responseProcedure: 'High effluent turbidity: check sand filter backwash cycle and clarifier surface scum skimmers.',
+    responseProcedure: 'Inspect ratio turbidimeter optical cell; verify coagulant dosing and clarifier overflow weir.',
     assetId: 'OUTFALL-01',
     assetName: 'Final Discharge Outfall 01',
     assetType: ASSET_TYPES.ANALYZER,
     calibratable: true,
+    critical: true,
   },
 
   // --- AUTOMATED ACTUATED CONTROL VALVES ---

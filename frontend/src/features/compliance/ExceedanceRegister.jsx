@@ -1,18 +1,13 @@
 import { useState, useMemo, useEffect } from 'react'
 import {
-  AlertOctagon,
-  CheckCircle2,
-  Clock,
   Download,
   FileArchive,
-  Filter,
   Lock,
   Search,
   ShieldAlert,
   Edit3,
   Check,
   X,
-  Sparkles,
 } from 'lucide-react'
 import Card from '../../components/ui/Card.jsx'
 import Button from '../../components/ui/Button.jsx'
@@ -101,6 +96,7 @@ export default function ExceedanceRegister() {
   // Closure modal state
   const [closeModalRecord, setCloseModalRecord] = useState(null)
   const [operatorPin, setOperatorPin] = useState('')
+  const [supervisorPin, setSupervisorPin] = useState('')
   const [closeReason, setCloseReason] = useState('')
   const [closeEvidence, setCloseEvidence] = useState('')
   const [closeError, setCloseError] = useState('')
@@ -182,8 +178,18 @@ export default function ExceedanceRegister() {
     e.preventDefault()
     setCloseError('')
 
+    const rec = closeModalRecord
+    const isCritical = TAG_REGISTRY[rec?.tagId]?.critical !== false
+
     if (operatorPin.trim() !== '1234') {
       setCloseError('Invalid Operator PIN. Verification code is 1234.')
+      return
+    }
+
+    if (isCritical && supervisorPin.trim() !== '9999') {
+      setCloseError(
+        'Invalid Supervisor Approval PIN. Verification code is 9999 (Dual-authorization mandatory for critical parameters).'
+      )
       return
     }
 
@@ -193,7 +199,6 @@ export default function ExceedanceRegister() {
     }
 
     try {
-      const rec = closeModalRecord
       // Dispatch immutable audit event
       addAuditEvent({
         action: AUDIT_ACTIONS.EXCEEDANCE_CLOSE,
@@ -204,7 +209,7 @@ export default function ExceedanceRegister() {
         userId: user?.id || 'usr_op_current',
         userName: user?.name || 'Plant Operator',
         role: user?.roleName || 'Plant Operator',
-        signatureMeaning: 'Exceedance Resolved',
+        signatureMeaning: isCritical ? 'Dual-Authorized & Closed' : 'Exceedance Resolved',
       })
 
       // Update state
@@ -214,7 +219,11 @@ export default function ExceedanceRegister() {
               ...item,
               status: 'Closed',
               timeRtn: item.timeRtn === 'Ongoing' ? new Date().toISOString() : item.timeRtn,
-              closureEvidence: closeEvidence.trim() || 'Closed with operator cryptographic re-authentication.',
+              closureEvidence:
+                closeEvidence.trim() ||
+                (isCritical
+                  ? 'Closed with dual-authorization cryptographic re-authentication (Operator + Supervisor).'
+                  : 'Closed with operator cryptographic re-authentication.'),
             }
           : item
       )
@@ -223,6 +232,7 @@ export default function ExceedanceRegister() {
       // Reset
       setCloseModalRecord(null)
       setOperatorPin('')
+      setSupervisorPin('')
       setCloseReason('')
       setCloseEvidence('')
     } catch (err) {
@@ -486,6 +496,8 @@ export default function ExceedanceRegister() {
                           onClick={() => {
                             setCloseModalRecord(item)
                             setCloseError('')
+                            setOperatorPin('')
+                            setSupervisorPin('')
                           }}
                         >
                           <Lock className="w-3 h-3 mr-1" />
@@ -579,6 +591,31 @@ export default function ExceedanceRegister() {
                 className="w-full text-xs p-2 rounded-lg font-mono tracking-widest border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-sky-500"
               />
             </div>
+
+            {TAG_REGISTRY[closeModalRecord?.tagId]?.critical !== false && (
+              <div className="pt-2 border-t border-slate-200 dark:border-slate-800">
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-xs font-medium text-amber-800 dark:text-amber-400">
+                    Supervisor / Peer Approval PIN (Demo: 9999) *
+                  </label>
+                  <span className="text-[10px] font-bold text-amber-600 bg-amber-100 dark:bg-amber-950 px-1.5 py-0.5 rounded">
+                    Dual-Auth Required
+                  </span>
+                </div>
+                <input
+                  type="password"
+                  required
+                  maxLength={6}
+                  placeholder="••••"
+                  value={supervisorPin}
+                  onChange={(e) => setSupervisorPin(e.target.value)}
+                  className="w-full text-xs p-2 rounded-lg font-mono tracking-widest border border-amber-300 dark:border-amber-700 bg-white dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                />
+                <span className="text-[10px] text-slate-500 mt-1 block">
+                  Mandatory second-signature supervisor authorization for critical statutory outfall parameter excursions.
+                </span>
+              </div>
+            )}
 
             <div className="flex items-center justify-end gap-2 pt-2">
               <Button

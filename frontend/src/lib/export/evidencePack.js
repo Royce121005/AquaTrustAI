@@ -21,6 +21,11 @@ export async function generateEvidencePack(record = {}) {
   const recordId = record.id || `REC-${Date.now()}`
   const plantName = record.plantName || 'Hebbal STP (60 MLD)'
 
+  const isPending =
+    record.anchorStatus === 'Pending' ||
+    record.status === 'pending' ||
+    record.anchorStatus === 'PENDING'
+
   // 1. Form V Certificate HTML
   const certHtml = `<!DOCTYPE html>
 <html lang="en">
@@ -59,7 +64,11 @@ export async function generateEvidencePack(record = {}) {
       <strong>Evidence Packet ID:</strong> ${recordId}<br>
       <strong>Generated:</strong> ${timestampStr}<br>
       <strong>Verification Ledger:</strong> Hyperledger Fabric Channel 'cpcb-compliance'<br>
-      <strong>Status:</strong> <span class="badge badge-pass">CERTIFIED & ANCHORED</span>
+      <strong>Status:</strong> ${
+        isPending
+          ? '<span class="badge" style="background:#fef3c7;color:#92400e;">PENDING LEDGER ANCHOR</span><br><small style="color:#b45309;font-size:10px;">(Pending anchor: Queued for Hyperledger Fabric batch anchor ~15s)</small>'
+          : '<span class="badge badge-pass">CERTIFIED & ANCHORED</span>'
+      }
     </div>
   </div>
 
@@ -151,16 +160,21 @@ export async function generateEvidencePack(record = {}) {
     channelId: 'aquatrust-cpcb-channel',
     chaincodeId: 'EnvironmentalComplianceContract',
     chaincodeVersion: '2.4.1',
-    blockNumber: record.blockNumber || 142981,
-    transactionId: record.batchTxId || `tx_${sha256Sync(recordId).slice(0, 32)}`,
+    blockNumber: isPending ? 'Pending (~15s batch interval)' : (record.blockNumber || 142981),
+    transactionId: record.batchTxId || (isPending ? 'pending_batch_queue' : `tx_${sha256Sync(recordId).slice(0, 32)}`),
     leafHash: recordHash,
-    rootHash: '5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8',
-    merklePath: [
-      { direction: 'right', hash: 'c9f0f895fb98ab9159f51fd0297e236d1da2c76204c31859a55000ee7bbee14f' },
-      { direction: 'left', hash: '4b227777d4dd1fc61c6f884f48641d02b4d121d3fd328cb08b5531fcacdabf8a' },
-      { direction: 'right', hash: 'ef2d127de37b942baad06145e54b0c619a1f22327b2ebbcfbec78f5564afe39d' },
-    ],
-    verifiedLedgerState: 'COMMITTED',
+    rootHash: isPending ? 'Pending block root computation' : '5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8',
+    merklePath: isPending
+      ? []
+      : [
+          { direction: 'right', hash: 'c9f0f895fb98ab9159f51fd0297e236d1da2c76204c31859a55000ee7bbee14f' },
+          { direction: 'left', hash: '4b227777d4dd1fc61c6f884f48641d02b4d121d3fd328cb08b5531fcacdabf8a' },
+          { direction: 'right', hash: 'ef2d127de37b942baad06145e54b0c619a1f22327b2ebbcfbec78f5564afe39d' },
+        ],
+    verifiedLedgerState: isPending ? 'PENDING_BATCH_ANCHOR' : 'COMMITTED',
+    anchorNote: isPending
+      ? 'Pending anchor: Transaction payload cryptographically verified and queued for block anchor commitment.'
+      : 'Committed and anchored onto Hyperledger Fabric ledger.',
     endorsingPeers: ['peer0.kspcb.gov.in:7051', 'peer0.cpcb.nic.in:7051', 'peer0.aquatrust.org:7051'],
   }
   const merkleProofJson = JSON.stringify(merkleProof, null, 2)
@@ -202,7 +216,11 @@ A4IBDwAwggEKAoIBAQCpCentralPollutionControlBoardRootCAG2CertValid2034
     hashes: fileDigests,
     rootManifestHash: sha256Sync(canonicalize(fileDigests)),
     totalFiles: 4,
-    complianceStatus: 'VERIFIED_TAMPER_EVIDENT',
+    complianceStatus: isPending ? 'PENDING_ANCHOR' : 'VERIFIED_TAMPER_EVIDENT',
+    anchorStatus: isPending ? 'Pending' : 'Anchored',
+    anchorNote: isPending
+      ? 'Pending anchor: Evidence packet compiled prior to batch ledger commit; cryptographic hash intact.'
+      : 'Anchored and immutable on ledger.',
   }
   const manifestJson = JSON.stringify(manifest, null, 2)
 

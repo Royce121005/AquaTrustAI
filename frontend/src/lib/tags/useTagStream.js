@@ -164,9 +164,15 @@ export function useTagStream() {
 
         Object.keys(BASELINE_VALUES).forEach((tagId) => {
           const arr = next[tagId] ? [...next[tagId]] : []
-          const curVal = BASELINE_VALUES[tagId] + Math.sin(step / 10) * 0.5
-          arr.push({ time: timeLabel, value: Number(curVal.toFixed(2)) })
-          if (arr.length > 40) arr.shift() // keep last 40 ticks
+          const tagData = latestValues?.[tagId]
+          const curVal = tagData ? tagData.value : (BASELINE_VALUES[tagId] + Math.sin(step / 10) * 0.5)
+          const curQuality = tagData ? tagData.quality : QUALITY.GOOD
+          arr.push({
+            time: timeLabel,
+            value: Number(curVal.toFixed(2)),
+            quality: curQuality,
+          })
+          if (arr.length > 60) arr.shift() // keep last 60 ticks
           next[tagId] = arr
         })
 

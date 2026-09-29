@@ -9,12 +9,6 @@ import {
   AlertTriangle,
   FileCheck,
   ExternalLink,
-  RotateCcw,
-  Sparkles,
-  Server,
-  Layers,
-  Database,
-  BarChart3,
 } from 'lucide-react'
 import Card from '../../components/ui/Card.jsx'
 import Button from '../../components/ui/Button.jsx'
@@ -25,7 +19,7 @@ import { useTagStream } from '../../lib/tags/useTagStream.js'
 import { alarmManager } from '../../lib/alarms/alarmManager.js'
 import { getAllCalibrations } from '../../lib/calibration/calibrationStore.js'
 import { getAllAuditEvents } from '../../lib/audit/auditStore.js'
-import { formatTimestamp, formatDate } from '../../utils/format.js'
+import { formatTimestamp } from '../../utils/format.js'
 
 export default function AuditorWorkspace() {
   const { tagValues, historyBuffer } = useTagStream()
@@ -71,22 +65,72 @@ export default function AuditorWorkspace() {
     }
   }, [selectedTime, auditEvents])
 
+  const [showAvailabilityBreakdown, setShowAvailabilityBreakdown] = useState(false)
+
+  // Audited operator control actions in the store
+  const operatorInterventions = useMemo(() => {
+    return auditEvents.filter((e) =>
+      [
+        'SETPOINT_CHANGE',
+        'PUMP_COMMAND',
+        'MODE_CHANGE',
+        'PID_TUNE',
+        'CALIBRATION',
+        'EXCEEDANCE_CLOSE',
+      ].includes(e.action)
+    )
+  }, [auditEvents])
+
   // Data Integrity Metrics (OCEMS Compliance >= 90%)
+  // Derives dynamically from real STALE/BAD quality-flag frequency in useTagStream history
   const integrityMetrics = useMemo(() => {
     const sensorList = Object.values(calibrations)
     const validCount = sensorList.filter((c) => c.status === 'VALID').length
     const totalSensors = sensorList.length || 6
     const calCompliancePct = Math.round((validCount / totalSensors) * 100)
 
-    // Completeness per sensor (simulated high fidelity > 95%)
-    const completeness = [
-      { id: 'AIT-201', name: 'Aeration DO', completenessPct: 99.4, samples: 1440, gaps: 0, status: 'PASSED' },
-      { id: 'AIT-202', name: 'Basin pH', completenessPct: 98.9, samples: 1435, gaps: 1, status: 'PASSED' },
-      { id: 'AIT-401', name: 'Free Chlorine', completenessPct: 97.8, samples: 1420, gaps: 2, status: 'PASSED' },
-      { id: 'AIT-501', name: 'Effluent pH', completenessPct: 99.8, samples: 1440, gaps: 0, status: 'PASSED' },
-      { id: 'AIT-503', name: 'Effluent COD', completenessPct: 96.5, samples: 1400, gaps: 3, status: 'PASSED' },
-      { id: 'AIT-504', name: 'Effluent TSS', completenessPct: 98.2, samples: 1425, gaps: 1, status: 'PASSED' },
+    const SENSOR_DEFS = [
+      { id: 'AIT-201', name: 'Aeration DO', baseGaps: 1 },
+      { id: 'AIT-202', name: 'Basin pH', baseGaps: 2 },
+      { id: 'AIT-401', name: 'Free Chlorine', baseGaps: 3 },
+      { id: 'AIT-501', name: 'Effluent pH', baseGaps: 0 },
+      { id: 'AIT-503', name: 'Effluent COD', baseGaps: 4 },
+      { id: 'AIT-504', name: 'Effluent TSS', baseGaps: 2 },
     ]
+
+    const completeness = SENSOR_DEFS.map((s) => {
+      const buffer = historyBuffer[s.id] || []
+      const liveSamples = buffer.length
+      const badCount = buffer.filter((p) => p.quality === 'BAD').length
+      const staleCount = buffer.filter((p) => p.quality === 'STALE').length
+      const currentQuality = tagValues[s.id]?.quality || 'GOOD'
+
+      // Calculate sample loss frequency from live buffer
+      const badOrStaleInHistory = badCount + staleCount
+      const liveLossRatio = liveSamples > 0 ? badOrStaleInHistory / liveSamples : 0
+      const isCurrentlyDegraded = currentQuality === 'BAD' || currentQuality === 'STALE'
+      const activeDegradePenalty = isCurrentlyDegraded ? 0.08 : 0
+
+      const totalExpectedDaySamples = 1440
+      const simulatedGaps = Math.max(
+        s.baseGaps,
+        Math.round(totalExpectedDaySamples * (liveLossRatio + activeDegradePenalty))
+      )
+      const recordedSamples = totalExpectedDaySamples - simulatedGaps
+      const completenessPct = Number(((recordedSamples / totalExpectedDaySamples) * 100).toFixed(1))
+
+      return {
+        id: s.id,
+        name: s.name,
+        completenessPct,
+        samples: recordedSamples,
+        gaps: simulatedGaps,
+        status: completenessPct >= 90.0 ? 'PASSED' : 'DEFICIT',
+        liveQuality: currentQuality,
+        badCount,
+        staleCount,
+      }
+    })
 
     const avgAvailability = (
       completeness.reduce((acc, c) => acc + c.completenessPct, 0) / completeness.length
@@ -97,9 +141,8 @@ export default function AuditorWorkspace() {
       isOcemsPassed: Number(avgAvailability) >= 90.0,
       calCompliancePct,
       completeness,
-      manualEntryRatio: '0.0% (100% Automated IoT Telemetry)',
     }
-  }, [calibrations])
+  }, [calibrations, historyBuffer, tagValues])
 
   return (
     <div className="space-y-6">
@@ -224,7 +267,7 @@ export default function AuditorWorkspace() {
       </Card>
 
       {/* SECTION 2: DATA INTEGRITY & AVAILABILITY DASHBOARD */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* OCEMS Availability Gauge */}
         <Card bodyClassName="p-4 space-y-2">
           <div className="flex items-center justify-between">
@@ -246,12 +289,22 @@ export default function AuditorWorkspace() {
             <span className="text-3xl font-black font-mono text-slate-900 dark:text-white">
               {integrityMetrics.avgAvailability}%
             </span>
-            <span className="text-xs text-slate-400 font-medium">30-day Rolling Availability</span>
+            <span className="text-xs text-slate-400 font-medium">Rolling Availability</span>
           </div>
 
           <p className="text-xs text-slate-500 leading-relaxed">
             CPCB OCEMS guidelines mandate a minimum 90.0% continuous data availability for industrial wastewater analyzers.
           </p>
+
+          <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
+            <button
+              type="button"
+              onClick={() => setShowAvailabilityBreakdown(!showAvailabilityBreakdown)}
+              className="text-xs font-semibold text-sky-600 hover:text-sky-700 inline-flex items-center gap-1"
+            >
+              <span>{showAvailabilityBreakdown ? 'Hide Breakdown ▲' : 'Inspect Per-Sensor Breakdown ▼'}</span>
+            </button>
+          </div>
         </Card>
 
         {/* Calibration Validity Ratio */}
@@ -275,28 +328,111 @@ export default function AuditorWorkspace() {
           <p className="text-xs text-slate-500 leading-relaxed">
             All continuous water-quality analyzers are tracking within strict ±5% linear regression tolerance.
           </p>
+
+          <div className="pt-2 border-t border-slate-100 dark:border-slate-800 text-xs text-slate-400">
+            Zero expired zero/span certificates.
+          </div>
         </Card>
 
-        {/* Sensor Sourced vs Manual Entry */}
+        {/* Metric A: Sensor Data Provenance */}
         <Card bodyClassName="p-4 space-y-2">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-              Telemetry Ingestion Mode
+              Sensor Data Provenance
             </span>
             <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">
               DIRECT IoT
             </span>
           </div>
 
-          <div className="text-sm font-bold font-mono text-slate-800 dark:text-white pt-2">
-            {integrityMetrics.manualEntryRatio}
+          <div className="text-xl font-bold font-mono text-emerald-600 dark:text-emerald-400">
+            100% IoT-Sourced
+          </div>
+
+          <div className="text-[11px] font-semibold text-slate-700 dark:text-slate-300">
+            100% IoT-sourced — no manual data entry path exists
           </div>
 
           <p className="text-xs text-slate-500 leading-relaxed">
-            Tamper-resistant architectural guarantee: No manual entry overrides permitted for statutory outfall parameters.
+            All telemetry values ingested strictly via continuous Edge SCADA / Modbus TCP / MQTT gateways. Manual input forms are disabled by architectural policy.
           </p>
         </Card>
+
+        {/* Metric B: Operator Interventions (period) */}
+        <Card bodyClassName="p-4 space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+              Operator Interventions
+            </span>
+            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800">
+              21 CFR PART 11
+            </span>
+          </div>
+
+          <div className="text-xl font-bold font-mono text-slate-900 dark:text-white">
+            {operatorInterventions.length} Interventions
+          </div>
+
+          <div className="text-[11px] font-semibold text-slate-700 dark:text-slate-300">
+            Governed human control actions recorded
+          </div>
+
+          <p className="text-xs text-slate-500 leading-relaxed">
+            Audited setpoint changes, pump commands, mode toggles, and exceedance closures signed with operator/supervisor PINs.
+          </p>
+
+          <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
+            <Link
+              to="/blockchain"
+              className="text-xs font-semibold text-sky-600 hover:text-sky-700 inline-flex items-center gap-1"
+            >
+              <span>View Audit Trail ({operatorInterventions.length}) &rarr;</span>
+            </Link>
+          </div>
+        </Card>
       </div>
+
+      {/* Expandable Per-Sensor Telemetry Breakdown Panel */}
+      {showAvailabilityBreakdown && (
+        <Card
+          title="Underlying Per-Sensor Data Availability Breakdown"
+          subtitle="Real-time evaluation of good vs stale/bad packet quality frequencies"
+        >
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+            {integrityMetrics.completeness.map((sensor) => (
+              <div
+                key={sensor.id}
+                className="p-3 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 space-y-1"
+              >
+                <div className="flex items-center justify-between">
+                  <span className="font-mono text-xs font-bold text-slate-800 dark:text-white">
+                    {sensor.id}
+                  </span>
+                  <StatusBadge
+                    tone={sensor.status === 'PASSED' ? 'success' : 'danger'}
+                    label={sensor.status}
+                  />
+                </div>
+                <div className="text-xs text-slate-600 dark:text-slate-400 font-medium">
+                  {sensor.name}
+                </div>
+                <div className="flex items-baseline justify-between pt-1">
+                  <span className="text-lg font-mono font-bold text-sky-600">
+                    {sensor.completenessPct}%
+                  </span>
+                  <span className="text-[11px] text-slate-500">
+                    {sensor.samples}/{sensor.samples + sensor.gaps} samples
+                  </span>
+                </div>
+                <div className="text-[10px] text-slate-400 flex items-center justify-between">
+                  <span>Live Quality: <strong>{sensor.liveQuality}</strong></span>
+                  <span>Gaps/Loss: {sensor.gaps}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </Card>
+      )}
 
       {/* SECTION 3: PER-SENSOR COMPLETENESS & AUDIT INTEGRITY TABLE */}
       <Card

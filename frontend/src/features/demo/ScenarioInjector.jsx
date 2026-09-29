@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useLocation } from 'react-router-dom'
 import {
   Play,
   Square,
@@ -16,17 +17,18 @@ import Button from '../../components/ui/Button.jsx'
 import { scenarioController, SCENARIO_TYPES } from '../../lib/demo/scenarioController.js'
 
 export default function ScenarioInjector() {
+  const location = useLocation()
   const [isVisible, setIsVisible] = useState(false)
   const [isExpanded, setIsExpanded] = useState(true)
   const [activeScenario, setActiveScenario] = useState(() => scenarioController.getActiveScenario())
   const [remainingSec, setRemainingSec] = useState(0)
 
-  // Verify visibility condition: ?demo=true or DEV mode override
+  // Verify visibility condition: ?demo=true in URL or DEV mode override
   useEffect(() => {
-    const isDemoQuery = window.location.search.includes('demo=true')
+    const isDemoQuery = location.search.includes('demo=true')
     const isDevFlag = import.meta.env.DEV && window.__AQUATRUST_DEMO__
     setIsVisible(Boolean(isDemoQuery || isDevFlag))
-  }, [])
+  }, [location.search])
 
   // Subscribe to scenarioController updates
   useEffect(() => {
