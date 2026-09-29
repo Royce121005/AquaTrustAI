@@ -51,7 +51,7 @@ class Settings(BaseSettings):
 
     # Security & JWT
     JWT_SECRET_KEY: str = Field(
-        ...,
+        default="aquatrust-dev-secret-key-do-not-use-in-production-1234567890",
         description="Secret key for JWT token signing",
     )
     JWT_ALGORITHM: str = Field(default="HS256", description="JWT signing algorithm")
