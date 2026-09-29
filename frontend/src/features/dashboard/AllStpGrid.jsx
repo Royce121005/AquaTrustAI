@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import {
   Building2,
@@ -32,20 +32,30 @@ export default function AllStpGrid({ onSelectStp, selectedStpId }) {
   const [searchQuery, setSearchQuery] = useState('')
   const [viewMode, setViewMode] = useState('grid') // 'grid' | 'table'
 
-  const fetcher = async () => {
-    const [bangaloreStps, upStps] = await Promise.all([
-      getAllStpSnapshots(),
-      getUpStpDataset().catch(() => []),
-    ])
-    return { bangaloreStps, upStps }
-  }
+  const fetcher = useCallback(async () => {
+    try {
+      const [bangaloreStps, upStps] = await Promise.all([
+        getAllStpSnapshots(),
+        getUpStpDataset().catch(() => []),
+      ])
+      return {
+        bangaloreStps: Array.isArray(bangaloreStps) ? bangaloreStps : [],
+        upStps: Array.isArray(upStps) ? upStps : [],
+      }
+    } catch (err) {
+      console.error('AllStpGrid fetcher failed:', err)
+      return { bangaloreStps: [], upStps: [] }
+    }
+  }, [])
 
   const { status, data, error, reload } = useAsyncData(fetcher)
 
   const currentFleetData = useMemo(() => {
     if (!data) return []
-    return fleet === 'bangalore' ? data.bangaloreStps : data.upStps
+    const list = fleet === 'bangalore' ? data.bangaloreStps : data.upStps
+    return Array.isArray(list) ? list : []
   }, [data, fleet])
+
 
   const filteredStps = useMemo(() => {
     return currentFleetData.filter((item) => {
@@ -73,8 +83,11 @@ export default function AllStpGrid({ onSelectStp, selectedStpId }) {
   }, [currentFleetData])
 
   const maxCapacity = useMemo(() => {
-    return Math.max(...currentFleetData.map((s) => s.installedCapacityMld || 0), 60)
+    if (!currentFleetData || currentFleetData.length === 0) return 60
+    const caps = currentFleetData.map((s) => s.installedCapacityMld || 0)
+    return Math.max(60, ...caps)
   }, [currentFleetData])
+
 
   const handleInspect = (stpId) => {
     if (onSelectStp) {

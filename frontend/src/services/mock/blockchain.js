@@ -97,9 +97,36 @@ export async function getAnchoredRecords() {
   return ANCHORED_RECORDS.map((record) => ({ ...record }))
 }
 
+import { getAllAuditEvents } from '../../lib/audit/auditStore.js'
+
 export async function verifyRecord(recordId) {
   await delay(350)
-  const record = ANCHORED_RECORDS.find((item) => item.id === recordId)
+  let record = ANCHORED_RECORDS.find(
+    (item) => item.id === recordId || item.canonicalHash === recordId
+  )
+
+  if (!record) {
+    const auditEvt = getAllAuditEvents().find(
+      (e) => e.id === recordId || e.hash === recordId
+    )
+    if (auditEvt) {
+      const isAnchored = auditEvt.anchorStatus === 'Anchored'
+      record = {
+        id: auditEvt.id,
+        recordType: auditEvt.action,
+        facilityId: 'STP-KORAMANGALA-01',
+        anchorTime: auditEvt.timestamp,
+        canonicalHash: auditEvt.hash,
+        txRef: auditEvt.batchTxId || 'tx_fabric_batch_pending',
+        status: isAnchored ? 'confirmed' : 'pending',
+        network: 'Hyperledger Fabric 2.5 LTS',
+        channel: 'aquatrust-channel',
+        chaincode: 'aquatrust-audit',
+        complianceStatus: 'COMPLIANT',
+        endorsement: 'FacilityMSP, AuditorMSP',
+      }
+    }
+  }
 
   if (!record) {
     return {
@@ -116,9 +143,11 @@ export async function verifyRecord(recordId) {
     }
   }
 
+  const isConfirmed = record.status === 'confirmed'
+
   return {
-    recordId,
-    verified: record.status === 'confirmed',
+    recordId: record.id,
+    verified: isConfirmed,
     checkedAt: new Date().toISOString(),
     canonicalHash: record.canonicalHash,
     txRef: record.txRef,
@@ -128,11 +157,14 @@ export async function verifyRecord(recordId) {
       recordExists: true,
       canonicalHashMatch: true,
       signatureVerified: true,
-      ledgerAnchorConfirmed: record.status === 'confirmed',
+      ledgerAnchorConfirmed: isConfirmed,
     },
-    message: 'Cryptographic proof verified against Hyperledger Fabric immutable anchor.',
+    message: isConfirmed
+      ? 'Cryptographic proof verified against Hyperledger Fabric immutable anchor.'
+      : 'Record validated with RFC 8785 SHA-256 hash; pending ledger Merkle batch anchor.',
   }
 }
+
 
 export async function getTransactionById(txId) {
   const transaction = TRANSACTIONS[txId]

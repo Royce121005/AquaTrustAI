@@ -1,14 +1,16 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ShieldCheck, Search, KeyRound, Network, Cpu, Lock } from 'lucide-react'
+import { ShieldCheck, Search, KeyRound, Network, Cpu, Lock, Database, FileCheck } from 'lucide-react'
 import PageHeader from '../../components/ui/PageHeader.jsx'
 import Card from '../../components/ui/Card.jsx'
 import Button from '../../components/ui/Button.jsx'
 import AnchoredRecordsTable from '../../features/blockchain/AnchoredRecordsTable.jsx'
+import AuditTrailTable from '../../features/blockchain/AuditTrailTable.jsx'
 
 const SAMPLE_RECORDS = ['REC-0001', 'REC-0002', 'REC-0003']
 
 export default function BlockchainPage() {
+  const [activeTab, setActiveTab] = useState('anchors')
   const [searchId, setSearchId] = useState('')
   const navigate = useNavigate()
 
@@ -45,7 +47,7 @@ export default function BlockchainPage() {
               Independent Cryptographic Audit Console
             </h2>
             <p className="text-xs text-slate-300 leading-relaxed">
-              Verify any treatment batch against the immutable ledger without trusting the database. 
+              Verify any treatment batch or SCADA setpoint event against the immutable ledger without trusting the database. 
               AquaTrust AI checks canonical atc-v1 SHA-256 digests, ECDSA NIST P-256 signatures, and Fabric multi-org endorsements.
             </p>
 
@@ -68,7 +70,7 @@ export default function BlockchainPage() {
           {/* Search / Verification Form */}
           <form onSubmit={handleSubmit} className="w-full lg:max-w-md space-y-2">
             <label htmlFor="record-search" className="block text-xs font-medium text-slate-300">
-              Enter Treatment Record ID or Digest:
+              Enter Treatment Record ID or SHA-256 Digest:
             </label>
             <div className="flex items-center gap-2">
               <div className="relative flex-1">
@@ -78,7 +80,7 @@ export default function BlockchainPage() {
                   type="text"
                   value={searchId}
                   onChange={(e) => setSearchId(e.target.value)}
-                  placeholder="e.g. REC-0001 or UUID"
+                  placeholder="e.g. REC-0001, EVT-..., or SHA-256"
                   className="w-full rounded-lg bg-slate-900/90 pl-9 pr-3 py-2 text-xs font-mono text-white placeholder-slate-500 border border-slate-700 focus:border-sky-500 focus:ring-1 focus:ring-sky-500 focus:outline-hidden"
                 />
               </div>
@@ -111,7 +113,39 @@ export default function BlockchainPage() {
         </div>
       </Card>
 
-      <AnchoredRecordsTable />
+      {/* Tabs navigation */}
+      <div className="flex border-b border-slate-200 dark:border-slate-800">
+        <button
+          onClick={() => setActiveTab('anchors')}
+          className={`flex items-center gap-2 px-5 py-3 text-sm font-semibold border-b-2 transition-colors ${
+            activeTab === 'anchors'
+              ? 'border-sky-600 text-sky-600 dark:border-sky-400 dark:text-sky-400'
+              : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
+          }`}
+        >
+          <Database className="w-4 h-4" />
+          Anchored Treatment Records
+        </button>
+        <button
+          onClick={() => setActiveTab('audit')}
+          className={`flex items-center gap-2 px-5 py-3 text-sm font-semibold border-b-2 transition-colors ${
+            activeTab === 'audit'
+              ? 'border-sky-600 text-sky-600 dark:border-sky-400 dark:text-sky-400'
+              : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
+          }`}
+        >
+          <FileCheck className="w-4 h-4" />
+          SCADA Audit Trail (Part 11)
+        </button>
+      </div>
+
+      {/* Tab Panels */}
+      {activeTab === 'anchors' ? (
+        <AnchoredRecordsTable />
+      ) : (
+        <AuditTrailTable />
+      )}
     </div>
   )
 }
+

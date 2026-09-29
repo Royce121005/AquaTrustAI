@@ -57,6 +57,8 @@ export const TAG_REGISTRY = {
     assetType: ASSET_TYPES.PUMP,
     ratingKW: 45,
     fullLoadAmps: 78,
+    writable: true,
+    critical: true,
   },
   'P-102': {
     id: 'P-102',
@@ -67,6 +69,8 @@ export const TAG_REGISTRY = {
     assetType: ASSET_TYPES.PUMP,
     ratingKW: 45,
     fullLoadAmps: 78,
+    writable: true,
+    critical: true,
   },
   'DP-101': {
     id: 'DP-101',
@@ -80,6 +84,9 @@ export const TAG_REGISTRY = {
     assetId: 'DP-101',
     assetName: 'Alum Dosing Skid',
     assetType: ASSET_TYPES.DOSING,
+    writable: true,
+    critical: true,
+    maxRateOfChange: 10,
   },
   'DP-102': {
     id: 'DP-102',
@@ -93,6 +100,9 @@ export const TAG_REGISTRY = {
     assetId: 'DP-102',
     assetName: 'Polymer Skid',
     assetType: ASSET_TYPES.DOSING,
+    writable: true,
+    critical: true,
+    maxRateOfChange: 5,
   },
 
   // --- BIOLOGICAL AERATION BASIN ---
@@ -107,7 +117,15 @@ export const TAG_REGISTRY = {
     alarmLimits: { LL: 1.2, L: 1.8, H: 4.5, HH: 5.5 },
     assetId: 'BIO-201',
     assetName: 'Aeration Basin 01',
-    assetType: ASSET_TYPES.TANK,
+    assetType: ASSET_TYPES.ANALYZER,
+    calibratable: true,
+    loop: true,
+    writable: true,
+    critical: true,
+    spTag: 'AIT-201.SP',
+    outTag: 'BLW-201.SPEED',
+    pidParams: { kp: 2.5, ki: 0.1, kd: 0.05, mode: 'Auto', minOut: 20, maxOut: 100 },
+    maxRateOfChange: 1.5,
   },
   'AIT-202': {
     id: 'AIT-202',
@@ -120,7 +138,8 @@ export const TAG_REGISTRY = {
     alarmLimits: { LL: 6.2, L: 6.8, H: 8.2, HH: 8.8 },
     assetId: 'BIO-201',
     assetName: 'Aeration Basin 01',
-    assetType: ASSET_TYPES.TANK,
+    assetType: ASSET_TYPES.ANALYZER,
+    calibratable: true,
   },
   'TIT-201': {
     id: 'TIT-201',
@@ -144,6 +163,8 @@ export const TAG_REGISTRY = {
     assetType: ASSET_TYPES.BLOWER,
     ratingKW: 90,
     fullLoadAmps: 155,
+    writable: true,
+    critical: true,
   },
   'BLW-202': {
     id: 'BLW-202',
@@ -154,6 +175,8 @@ export const TAG_REGISTRY = {
     assetType: ASSET_TYPES.BLOWER,
     ratingKW: 90,
     fullLoadAmps: 155,
+    writable: true,
+    critical: true,
   },
   'DP-201': {
     id: 'DP-201',
@@ -167,6 +190,9 @@ export const TAG_REGISTRY = {
     assetId: 'DP-201',
     assetName: 'Acid Neutralization Skid',
     assetType: ASSET_TYPES.DOSING,
+    writable: true,
+    critical: true,
+    maxRateOfChange: 4,
   },
   'DP-202': {
     id: 'DP-202',
@@ -180,6 +206,9 @@ export const TAG_REGISTRY = {
     assetId: 'DP-202',
     assetName: 'Caustic Neutralization Skid',
     assetType: ASSET_TYPES.DOSING,
+    writable: true,
+    critical: true,
+    maxRateOfChange: 4,
   },
 
   // --- SECONDARY CLARIFIER & SLUDGE RECYCLE (RAS/WAS) ---
@@ -205,6 +234,8 @@ export const TAG_REGISTRY = {
     assetType: ASSET_TYPES.PUMP,
     ratingKW: 22,
     fullLoadAmps: 42,
+    writable: true,
+    critical: true,
   },
   'P-104': {
     id: 'P-104',
@@ -215,6 +246,8 @@ export const TAG_REGISTRY = {
     assetType: ASSET_TYPES.PUMP,
     ratingKW: 15,
     fullLoadAmps: 28,
+    writable: true,
+    critical: true,
   },
 
   // --- DISINFECTION & CHLORINE CONTACT ---
@@ -229,7 +262,8 @@ export const TAG_REGISTRY = {
     alarmLimits: { LL: 0.3, L: 0.5, H: 2.5, HH: 3.5 },
     assetId: 'CCT-401',
     assetName: 'Chlorine Contact Chamber',
-    assetType: ASSET_TYPES.TANK,
+    assetType: ASSET_TYPES.ANALYZER,
+    calibratable: true,
   },
   'DP-401': {
     id: 'DP-401',
@@ -243,6 +277,9 @@ export const TAG_REGISTRY = {
     assetId: 'DP-401',
     assetName: 'Chlorination Skid',
     assetType: ASSET_TYPES.DOSING,
+    writable: true,
+    critical: true,
+    maxRateOfChange: 6,
   },
 
   // --- FINAL TREATED EFFLUENT & CPCB OUTFALL ---
@@ -271,6 +308,7 @@ export const TAG_REGISTRY = {
     assetId: 'OUTFALL-01',
     assetName: 'Final Discharge Outfall 01',
     assetType: ASSET_TYPES.ANALYZER,
+    calibratable: true,
   },
   'AIT-502': {
     id: 'AIT-502',
@@ -284,6 +322,7 @@ export const TAG_REGISTRY = {
     assetId: 'OUTFALL-01',
     assetName: 'Final Discharge Outfall 01',
     assetType: ASSET_TYPES.ANALYZER,
+    calibratable: true,
   },
   'AIT-503': {
     id: 'AIT-503',
@@ -297,6 +336,7 @@ export const TAG_REGISTRY = {
     assetId: 'OUTFALL-01',
     assetName: 'Final Discharge Outfall 01',
     assetType: ASSET_TYPES.ANALYZER,
+    calibratable: true,
   },
   'AIT-504': {
     id: 'AIT-504',
@@ -310,6 +350,7 @@ export const TAG_REGISTRY = {
     assetId: 'OUTFALL-01',
     assetName: 'Final Discharge Outfall 01',
     assetType: ASSET_TYPES.ANALYZER,
+    calibratable: true,
   },
   'AIT-505': {
     id: 'AIT-505',
@@ -323,6 +364,7 @@ export const TAG_REGISTRY = {
     assetId: 'OUTFALL-01',
     assetName: 'Final Discharge Outfall 01',
     assetType: ASSET_TYPES.ANALYZER,
+    calibratable: true,
   },
 
   // --- AUTOMATED ACTUATED CONTROL VALVES ---

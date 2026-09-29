@@ -13,6 +13,9 @@ import {
 } from 'lucide-react'
 import Button from '../../components/ui/Button.jsx'
 import Tabs from '../../components/ui/Tabs.jsx'
+import ControlAction from '../../components/controls/ControlAction.jsx'
+import PidFaceplate from './PidFaceplate.jsx'
+import { AUDIT_ACTIONS } from '../../lib/audit/auditStore.js'
 
 export default function EquipmentFaceplate({
   assetId,
@@ -29,13 +32,16 @@ export default function EquipmentFaceplate({
 
   const isRunning = assetState?.status === 'Running'
   const isPumpOrBlower = assetMeta?.assetType === 'PUMP' || assetMeta?.assetType === 'BLOWER' || assetMeta?.assetType === 'DOSING'
+  const hasLoop = assetId === 'BLW-201' || assetId === 'BLW-202' || assetId === 'AIT-201' || assetMeta?.loop
 
   const tabs = [
     { id: 'overview', label: 'Overview' },
+    ...(hasLoop ? [{ id: 'pid', label: 'PID Loop' }] : []),
     { id: 'trend', label: 'Trend (1h)' },
     { id: 'alarms', label: 'Alarms (5)' },
     { id: 'maintenance', label: 'Maintenance' },
   ]
+
 
   return (
     <div className="fixed inset-y-0 right-0 z-50 w-full max-w-md bg-white shadow-2xl border-l border-slate-300 flex flex-col select-none">
@@ -89,43 +95,62 @@ export default function EquipmentFaceplate({
                   <span className="font-bold text-slate-800 uppercase tracking-wider text-[11px]">
                     Operator Advisory Command
                   </span>
-                  <div className="flex items-center gap-1 bg-white p-1 rounded border border-slate-200 text-[10px]">
-                    {['Auto', 'Manual', 'Local'].map((mode) => (
-                      <button
-                        key={mode}
-                        onClick={() => setControlMode(mode)}
-                        className={`px-2 py-0.5 rounded font-semibold transition-colors ${
-                          controlMode === mode
-                            ? 'bg-sky-600 text-white shadow-xs'
-                            : 'text-slate-600 hover:bg-slate-100'
-                        }`}
-                      >
-                        {mode}
-                      </button>
-                    ))}
+                  <div className="flex items-center gap-1">
+                    <span className="text-[10px] text-slate-500 font-mono">Mode:</span>
+                    <ControlAction
+                      tagId={assetId}
+                      actionType={AUDIT_ACTIONS.MODE_CHANGE}
+                      currentValue={controlMode}
+                      targetValue={controlMode === 'Auto' ? 'Manual' : 'Auto'}
+                      label={controlMode === 'Auto' ? 'Auto (Switch)' : 'Manual (Switch)'}
+                      variant="outline"
+                      onExecute={({ newValue }) => setControlMode(newValue)}
+                      className="text-[10px] py-0.5 px-2"
+                    />
                   </div>
                 </div>
 
                 <div className="flex items-center gap-3 pt-1">
-                  <button
-                    type="button"
-                    onClick={() => onTogglePump(assetId)}
+                  <ControlAction
+                    tagId={assetId}
+                    actionType={AUDIT_ACTIONS.PUMP_COMMAND}
+                    currentValue={isRunning ? 'Running' : 'Stopped'}
+                    targetValue={isRunning ? 'Stopped' : 'Running'}
+                    label={isRunning ? 'Request Stop Command' : 'Request Start Command'}
+                    variant={isRunning ? 'danger' : 'primary'}
+                    icon={isRunning ? Square : Play}
                     disabled={controlMode === 'Local'}
-                    className={`flex-1 py-2 px-3 rounded-lg font-bold flex items-center justify-center gap-2 transition-colors shadow-xs ${
-                      isRunning
-                        ? 'bg-amber-600 hover:bg-amber-700 text-white'
-                        : 'bg-emerald-600 hover:bg-emerald-700 text-white'
-                    } ${controlMode === 'Local' ? 'opacity-50 cursor-not-allowed' : ''}`}
-                  >
-                    {isRunning ? <Square className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-                    <span>{isRunning ? 'Request Stop Command' : 'Request Start Command'}</span>
-                  </button>
+                    onExecute={() => onTogglePump(assetId)}
+                    className="flex-1 py-2.5 font-bold"
+                  />
                 </div>
+
+                {/* If Dosing Pump, add chemical dosing rate setpoint */}
+                {assetMeta?.assetType === 'DOSING' && (
+                  <div className="pt-2 border-t border-slate-200 space-y-1.5">
+                    <div className="flex justify-between items-center text-xs">
+                      <span className="text-slate-600 font-medium">Metering Target Rate:</span>
+                      <span className="font-mono font-bold text-slate-800">
+                        {assetMeta?.normal?.[1] || 15} L/h
+                      </span>
+                    </div>
+                    <ControlAction
+                      tagId={assetId}
+                      actionType={AUDIT_ACTIONS.SETPOINT_CHANGE}
+                      currentValue={assetMeta?.normal?.[1] || 15}
+                      label="Adjust Dosing Flow Rate"
+                      unit="L/h"
+                      className="w-full"
+                    />
+                  </div>
+                )}
+
                 <p className="text-[10px] text-slate-500 italic">
                   * Advisory request dispatched to SCADA PLC gateway. Safety interlocks remain hardware-enforced.
                 </p>
               </div>
             )}
+
 
             {/* ISA-101 Bar-with-Pointer Analog Limits */}
             {isPumpOrBlower && (
@@ -213,7 +238,15 @@ export default function EquipmentFaceplate({
           </div>
         )}
 
+        {/* TAB: PID LOOP */}
+        {activeTab === 'pid' && (
+          <PidFaceplate
+            loopTagId={assetId === 'BLW-201' || assetId === 'BLW-202' ? 'AIT-201' : assetId}
+          />
+        )}
+
         {/* TAB 2: LIVE TREND (1h) */}
+
         {activeTab === 'trend' && (
           <div className="space-y-4">
             <h3 className="font-bold text-slate-800 uppercase tracking-wider text-[11px]">

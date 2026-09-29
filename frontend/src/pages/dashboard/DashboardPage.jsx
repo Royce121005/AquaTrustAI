@@ -7,7 +7,8 @@ import TreatmentStatusCard from '../../features/dashboard/TreatmentStatusCard.js
 import RecentAlerts from '../../features/dashboard/RecentAlerts.jsx'
 
 export default function DashboardPage() {
-  const [selectedStpId, setSelectedStpId] = useState('hebbal-stp')
+  const [selectedStpId, setSelectedStpId] = useState('hebbal')
+
 
   return (
     <div className="space-y-6">

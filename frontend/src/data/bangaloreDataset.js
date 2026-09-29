@@ -12,6 +12,8 @@
 // Missing/invalid cells are mapped to null and never replaced with substitute numbers.
 
 import { loadBundledCsv, normalizeHeader, toNumberOrNull } from '../utils/csv.js'
+import { isSensorExcludedFromCompliance } from '../lib/calibration/calibrationStore.js'
+
 
 export const BANGALORE_DATASET_FILE = 'bangalore_clean.csv'
 export const BANGALORE_DATA_SOURCE_LABEL = 'bangalore_clean.csv (historical STP dataset)'
@@ -279,8 +281,14 @@ export async function getStpHistoricalData(filters = {}) {
  * - Ammonical Nitrogen: <= 5.0 mg/L
  * - Total Nitrogen: <= 10.0 mg/L
  */
-export function evaluateCpcbCompliance(readings = {}) {
+export function evaluateCpcbCompliance(readings = {}, options = {}) {
   const checks = []
+
+  // Check if sensors are in calibration HOLD or FAILED
+  const isPhExcluded = isSensorExcludedFromCompliance('AIT-501') || isSensorExcludedFromCompliance('AIT-202')
+  const isBodExcluded = isSensorExcludedFromCompliance('AIT-502')
+  const isCodExcluded = isSensorExcludedFromCompliance('AIT-503')
+  const isTssExcluded = isSensorExcludedFromCompliance('AIT-504')
 
   if (typeof readings.ph === 'number') {
     const isPass = readings.ph >= 6.5 && readings.ph <= 8.5
@@ -291,6 +299,8 @@ export function evaluateCpcbCompliance(readings = {}) {
       unit: '',
       status: isPass ? 'compliant' : 'exceeded',
       pass: isPass,
+      excluded: isPhExcluded,
+      exclusionReason: isPhExcluded ? 'Sensor under calibration HOLD' : null,
     })
   }
 
@@ -304,6 +314,8 @@ export function evaluateCpcbCompliance(readings = {}) {
       unit: 'mg/L',
       status: isPass ? 'compliant' : isMarginal ? 'marginal' : 'exceeded',
       pass: isPass,
+      excluded: isBodExcluded,
+      exclusionReason: isBodExcluded ? 'Sensor under calibration HOLD' : null,
     })
   }
 
@@ -317,6 +329,8 @@ export function evaluateCpcbCompliance(readings = {}) {
       unit: 'mg/L',
       status: isPass ? 'compliant' : isMarginal ? 'marginal' : 'exceeded',
       pass: isPass,
+      excluded: isCodExcluded,
+      exclusionReason: isCodExcluded ? 'Sensor under calibration HOLD' : null,
     })
   }
 
@@ -330,6 +344,8 @@ export function evaluateCpcbCompliance(readings = {}) {
       unit: 'mg/L',
       status: isPass ? 'compliant' : isMarginal ? 'marginal' : 'exceeded',
       pass: isPass,
+      excluded: isTssExcluded,
+      exclusionReason: isTssExcluded ? 'Sensor under calibration HOLD' : null,
     })
   }
 
@@ -342,6 +358,7 @@ export function evaluateCpcbCompliance(readings = {}) {
       unit: 'mg/L',
       status: isPass ? 'compliant' : 'exceeded',
       pass: isPass,
+      excluded: false,
     })
   }
 
@@ -354,15 +371,18 @@ export function evaluateCpcbCompliance(readings = {}) {
       unit: 'mg/L',
       status: isPass ? 'compliant' : 'exceeded',
       pass: isPass,
+      excluded: false,
     })
   }
 
-  const hasExceeded = checks.some((c) => c.status === 'exceeded')
-  const hasMarginal = checks.some((c) => c.status === 'marginal')
-  const overall = hasExceeded ? 'non_compliant' : hasMarginal ? 'marginal' : 'compliant'
+  const activeChecks = checks.filter((c) => !c.excluded)
+  const hasExceeded = activeChecks.some((c) => c.status === 'exceeded')
+  const hasMarginal = activeChecks.some((c) => c.status === 'marginal')
+  const overall = activeChecks.length === 0 ? 'compliant' : hasExceeded ? 'non_compliant' : hasMarginal ? 'marginal' : 'compliant'
 
-  return { overall, checks }
+  return { overall, checks, activeChecksCount: activeChecks.length }
 }
+
 
 /**
  * Snapshot for all 9 Bangalore STPs from the latest dataset record.
