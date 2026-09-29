@@ -64,7 +64,7 @@ export default function AllStpGrid({ onSelectStp, selectedStpId, regulatorMode =
       const matchesSearch =
         !searchQuery.trim() ||
         item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (item.city && item.city.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        (typeof item.city === 'string' && item.city.toLowerCase().includes(searchQuery.toLowerCase())) ||
         (item.treatmentFacility && item.treatmentFacility.toLowerCase().includes(searchQuery.toLowerCase()))
 
       return matchesStatus && matchesSearch
@@ -306,7 +306,7 @@ export default function AllStpGrid({ onSelectStp, selectedStpId, regulatorMode =
                         </div>
                         <p className="text-[11px] text-slate-500 mt-0.5 flex items-center gap-1">
                           <MapPin className="h-3 w-3 text-slate-400 shrink-0" />
-                          <span className="truncate">{stp.city || 'Karnataka / BWSSB'}</span>
+                          <span className="truncate">{typeof stp.city === 'string' ? stp.city : 'Bengaluru'}</span>
                         </p>
                       </div>
 
@@ -568,7 +568,7 @@ export default function AllStpGrid({ onSelectStp, selectedStpId, regulatorMode =
                           <span>{stp.name}</span>
                         </div>
                         <span className="text-[10px] text-slate-400 block font-normal">
-                          {stp.city || 'Karnataka'}
+                          {typeof stp.city === 'string' ? stp.city : 'Bengaluru'}
                         </span>
                       </td>
                       <td className="px-3 py-2.5 text-slate-700">

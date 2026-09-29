@@ -9,6 +9,7 @@ import OfflineBanner from '../components/layout/OfflineBanner.jsx'
 import RolePermissionsBanner from '../components/layout/RolePermissionsBanner.jsx'
 import ScenarioInjector from '../features/demo/ScenarioInjector.jsx'
 import { useOnlineStatus } from '../hooks/useOnlineStatus.js'
+import ErrorBoundary from '../components/ui/ErrorBoundary.jsx'
 
 const SECTION_TITLES = [
   ['/dashboard', 'Dashboard'],
@@ -173,7 +174,9 @@ export default function MainLayout() {
         {/* Main Content Workspace */}
         <main className={`flex-1 overflow-y-auto p-6 ${isNocMode ? 'bg-slate-900' : 'bg-slate-50'}`}>
           <RolePermissionsBanner />
-          <Outlet />
+          <ErrorBoundary routeName={location.pathname} key={location.pathname}>
+            <Outlet />
+          </ErrorBoundary>
         </main>
       </div>
 

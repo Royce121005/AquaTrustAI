@@ -1,6 +1,7 @@
 import { Link, Navigate, Route, Routes } from 'react-router-dom'
 import { ScanSearch } from 'lucide-react'
 import MainLayout from './layouts/MainLayout.jsx'
+import ErrorBoundary from './components/ui/ErrorBoundary.jsx'
 import EmptyState from './components/ui/EmptyState.jsx'
 import DashboardPage from './pages/dashboard/DashboardPage.jsx'
 import AuditorPage from './pages/auditor/AuditorPage.jsx'
@@ -27,43 +28,45 @@ function RootRedirect() {
 
 export default function App() {
   return (
-    <Routes>
-      {/* Public Standalone Verification Routes (No RBAC / No Layout) */}
-      <Route path="/verify" element={<PublicVerifyPage />} />
-      <Route path="/verify/:eventId" element={<PublicVerifyPage />} />
+    <ErrorBoundary routeName="GlobalAppRoot">
+      <Routes>
+        {/* Public Standalone Verification Routes (No RBAC / No Layout) */}
+        <Route path="/verify" element={<PublicVerifyPage />} />
+        <Route path="/verify/:eventId" element={<PublicVerifyPage />} />
 
-      {/* Authenticated SCADA Workspace with MainLayout */}
-      <Route element={<MainLayout />}>
-        <Route path="/" element={<RootRedirect />} />
-        <Route path="/dashboard" element={<DashboardPage />} />
-        <Route path="/auditor" element={<AuditorPage />} />
-        <Route path="/regulator" element={<RegulatorPage />} />
-        <Route path="/process" element={<ProcessPage />} />
-        <Route path="/alarms" element={<AlarmPage />} />
+        {/* Authenticated SCADA Workspace with MainLayout */}
+        <Route element={<MainLayout />}>
+          <Route path="/" element={<RootRedirect />} />
+          <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/auditor" element={<AuditorPage />} />
+          <Route path="/regulator" element={<RegulatorPage />} />
+          <Route path="/process" element={<ProcessPage />} />
+          <Route path="/alarms" element={<AlarmPage />} />
 
-        <Route path="/monitoring">
-          <Route index element={<MonitoringPage />} />
-          <Route path="sensors" element={<SensorsPage />} />
-          <Route path="history" element={<HistoryPage />} />
+          <Route path="/monitoring">
+            <Route index element={<MonitoringPage />} />
+            <Route path="sensors" element={<SensorsPage />} />
+            <Route path="history" element={<HistoryPage />} />
+          </Route>
+
+          <Route path="/insights" element={<InsightsPage />} />
+
+          <Route path="/compliance">
+            <Route index element={<CompliancePage />} />
+            <Route path="reports/:reportId" element={<ComplianceReportDetailPage />} />
+          </Route>
+
+          <Route path="/blockchain">
+            <Route index element={<BlockchainPage />} />
+            <Route path="verify" element={<BlockchainVerifyPage />} />
+            <Route path="transactions/:txId" element={<BlockchainTransactionDetailPage />} />
+          </Route>
+
+          <Route path="/settings" element={<SettingsPage />} />
+          <Route path="*" element={<NotFoundPage />} />
         </Route>
-
-        <Route path="/insights" element={<InsightsPage />} />
-
-        <Route path="/compliance">
-          <Route index element={<CompliancePage />} />
-          <Route path="reports/:reportId" element={<ComplianceReportDetailPage />} />
-        </Route>
-
-        <Route path="/blockchain">
-          <Route index element={<BlockchainPage />} />
-          <Route path="verify" element={<BlockchainVerifyPage />} />
-          <Route path="transactions/:txId" element={<BlockchainTransactionDetailPage />} />
-        </Route>
-
-        <Route path="/settings" element={<SettingsPage />} />
-        <Route path="*" element={<NotFoundPage />} />
-      </Route>
-    </Routes>
+      </Routes>
+    </ErrorBoundary>
   )
 }
 

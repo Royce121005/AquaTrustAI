@@ -49,7 +49,8 @@ export default function ParameterTrendPanel() {
     return getStpOptions()
   }, [])
 
-  const { status, data: options = [] } = useAsyncData(fetchOptions)
+  const { status, data } = useAsyncData(fetchOptions)
+  const options = data || []
   const activeStpId = stpId && options.some((o) => o.id === stpId) ? stpId : (options[0]?.id ?? 'hebbal')
 
   // Generate synthetic high-density multi-pen time-series tied to timeRange
