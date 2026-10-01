@@ -10,11 +10,13 @@ from app.db.session import get_db
 from app.db.base import utc_now
 from app.models.user import User, UserRole
 from app.repositories.user_repository import UserRepository
+from app.core.rate_limit import login_rate_limiter
 from app.core.security import (
     verify_password,
     get_password_hash,
     create_access_token,
     get_current_user_claims,
+    revoke_token,
     require_role,
     ACCESS_TOKEN_EXPIRE_MINUTES,
 )
@@ -89,15 +91,24 @@ def seed_default_users(db: Session) -> List[User]:
     "/auth/login",
     response_model=LoginResponse,
     summary="Authenticate user and obtain JWT access token",
+    dependencies=[Depends(login_rate_limiter)],
 )
 def login(payload: LoginRequest, db: Session = Depends(get_db)):
     """Validates user credentials against database or demo accounts."""
-    seed_default_users(db)
-
     user_repo = UserRepository(db)
     user = user_repo.get_by_username(payload.username)
 
+    # Lazy-seed fallback if user is in DEMO_USERS and not yet created in the current DB
+    if not user and payload.username in DEMO_USERS:
+        seed_default_users(db)
+        user = user_repo.get_by_username(payload.username)
+
     if user:
+        if user.status != "active":
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"User account is {user.status}",
+            )
         if not verify_password(payload.password, user.hashed_password):
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
@@ -151,6 +162,19 @@ def login(payload: LoginRequest, db: Session = Depends(get_db)):
         role=UserRole(role_val),
         facility_id=facility_id,
     )
+
+
+@router.post(
+    "/auth/logout",
+    summary="Revoke current user JWT access token session",
+    status_code=status.HTTP_200_OK,
+)
+def logout(claims: Dict[str, Any] = Depends(get_current_user_claims)):
+    """Invalidates the caller's JWT token immediately by adding it to the revocation registry."""
+    raw_token = claims.get("_raw_token")
+    if raw_token:
+        revoke_token(raw_token)
+    return {"message": "Session successfully terminated and token revoked"}
 
 
 @router.get(

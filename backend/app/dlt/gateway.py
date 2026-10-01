@@ -10,6 +10,7 @@ Hyperledger Fabric distributed ledger. Supports dual execution modes:
 import hashlib
 import json
 import os
+import threading
 import time
 from datetime import datetime, timezone
 from typing import Optional, Dict, Any, List
@@ -40,29 +41,35 @@ class FabricDLTGateway:
         self._storage_path = os.getenv("DLT_MOCK_LEDGER_PATH", os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "aquatrust_mock_ledger.json"))
         self._mock_ledger: Dict[str, Dict[str, Any]] = {}
         self._block_height: int = 1000
+        self._lock = threading.RLock()
         self._status: str = "connected" if self.mode in ("live", "simulation") else "degraded"
         self._load_ledger()
 
     def _load_ledger(self) -> None:
         """Load persisted ledger entries from disk in simulation mode."""
-        if self._storage_path and os.path.exists(self._storage_path):
-            try:
-                with open(self._storage_path, "r", encoding="utf-8") as f:
-                    data = json.load(f)
-                    self._mock_ledger.update(data.get("entries", {}))
-                    self._block_height = max(self._block_height, data.get("block_height", 1000))
-            except Exception:
-                pass
+        with self._lock:
+            if self._storage_path and os.path.exists(self._storage_path):
+                try:
+                    with open(self._storage_path, "r", encoding="utf-8") as f:
+                        data = json.load(f)
+                        self._mock_ledger.update(data.get("entries", {}))
+                        self._block_height = max(self._block_height, data.get("block_height", 1000))
+                except Exception:
+                    pass
 
     def _save_ledger(self) -> None:
-        """Persist current ledger entries to disk to ensure survival across process restarts."""
-        if self._storage_path:
-            try:
-                os.makedirs(os.path.dirname(os.path.abspath(self._storage_path)), exist_ok=True)
-                with open(self._storage_path, "w", encoding="utf-8") as f:
-                    json.dump({"block_height": self._block_height, "entries": self._mock_ledger}, f)
-            except Exception:
-                pass
+        """Persist current ledger entries atomically to disk to ensure survival across process restarts."""
+        with self._lock:
+            if self._storage_path:
+                try:
+                    dirname = os.path.dirname(os.path.abspath(self._storage_path))
+                    os.makedirs(dirname, exist_ok=True)
+                    tmp_path = f"{self._storage_path}.tmp.{os.getpid()}"
+                    with open(tmp_path, "w", encoding="utf-8") as f:
+                        json.dump({"block_height": self._block_height, "entries": self._mock_ledger}, f)
+                    os.replace(tmp_path, self._storage_path)
+                except Exception:
+                    pass
 
     @property
     def is_connected(self) -> bool:
@@ -88,13 +95,14 @@ class FabricDLTGateway:
 
     def reset_ledger(self) -> None:
         """Reset mock ledger state for test isolation."""
-        self._mock_ledger.clear()
-        self._block_height = 1000
-        if self._storage_path and os.path.exists(self._storage_path):
-            try:
-                os.remove(self._storage_path)
-            except Exception:
-                pass
+        with self._lock:
+            self._mock_ledger.clear()
+            self._block_height = 1000
+            if self._storage_path and os.path.exists(self._storage_path):
+                try:
+                    os.remove(self._storage_path)
+                except Exception:
+                    pass
 
     def anchor_record(
         self,
@@ -106,30 +114,31 @@ class FabricDLTGateway:
         key_id: str,
     ) -> Dict[str, Any]:
         """Submit treatment record evidence hash to the DLT channel."""
-        self._block_height += 1
-        tx_raw = f"{record_id}:{record_hash}:{self._block_height}:{time.time()}"
-        tx_id = hashlib.sha256(tx_raw.encode("utf-8")).hexdigest()
+        with self._lock:
+            self._block_height += 1
+            tx_raw = f"{record_id}:{record_hash}:{self._block_height}:{time.time()}"
+            tx_id = hashlib.sha256(tx_raw.encode("utf-8")).hexdigest()
 
-        dlt_record = {
-            "tx_id": tx_id,
-            "block_number": self._block_height,
-            "channel_id": self.channel_name,
-            "chaincode": self.chaincode_name,
-            "docType": "record_anchor",
-            "record_id": str(record_id),
-            "record_hash": record_hash,
-            "facility_id": str(facility_id),
-            "compliance_status": compliance_status,
-            "signature_metadata": {"algorithm": "ES256", "key_id": key_id, "signature": signature_value[:32] + "..."},
-            "timestamp": datetime.now(timezone.utc).isoformat(),
-            "status": "anchored",
-        }
+            dlt_record = {
+                "tx_id": tx_id,
+                "block_number": self._block_height,
+                "channel_id": self.channel_name,
+                "chaincode": self.chaincode_name,
+                "docType": "record_anchor",
+                "record_id": str(record_id),
+                "record_hash": record_hash,
+                "facility_id": str(facility_id),
+                "compliance_status": compliance_status,
+                "signature_metadata": {"algorithm": "ES256", "key_id": key_id, "signature": signature_value[:32] + "..."},
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "status": "anchored",
+            }
 
-        self._mock_ledger[str(record_id)] = dlt_record
-        self._mock_ledger[tx_id] = dlt_record
-        self._save_ledger()
+            self._mock_ledger[str(record_id)] = dlt_record
+            self._mock_ledger[tx_id] = dlt_record
+            self._save_ledger()
 
-        return dlt_record
+            return dlt_record
 
     def record_correction_link(
         self,
@@ -141,30 +150,31 @@ class FabricDLTGateway:
         Record an append-only correction linkage on the DLT ledger.
         Commits docType='correction_link' with transaction ID, block number, and audit references.
         """
-        self._block_height += 1
-        tx_raw = f"correction:{original_record_id}:{corrected_record_id}:{self._block_height}:{time.time()}"
-        tx_id = hashlib.sha256(tx_raw.encode("utf-8")).hexdigest()
+        with self._lock:
+            self._block_height += 1
+            tx_raw = f"correction:{original_record_id}:{corrected_record_id}:{self._block_height}:{time.time()}"
+            tx_id = hashlib.sha256(tx_raw.encode("utf-8")).hexdigest()
 
-        correction_record = {
-            "tx_id": tx_id,
-            "block_number": self._block_height,
-            "channel_id": self.channel_name,
-            "chaincode": self.chaincode_name,
-            "docType": "correction_link",
-            "original_record_id": str(original_record_id),
-            "corrected_record_id": str(corrected_record_id),
-            "reason": reason,
-            "timestamp": datetime.now(timezone.utc).isoformat(),
-            "status": "anchored",
-        }
+            correction_record = {
+                "tx_id": tx_id,
+                "block_number": self._block_height,
+                "channel_id": self.channel_name,
+                "chaincode": self.chaincode_name,
+                "docType": "correction_link",
+                "original_record_id": str(original_record_id),
+                "corrected_record_id": str(corrected_record_id),
+                "reason": reason,
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "status": "anchored",
+            }
 
-        self._mock_ledger[f"correction:{original_record_id}:{corrected_record_id}"] = correction_record
-        self._mock_ledger[f"correction:{original_record_id}"] = correction_record
-        self._mock_ledger[f"correction:{corrected_record_id}"] = correction_record
-        self._mock_ledger[tx_id] = correction_record
-        self._save_ledger()
+            self._mock_ledger[f"correction:{original_record_id}:{corrected_record_id}"] = correction_record
+            self._mock_ledger[f"correction:{original_record_id}"] = correction_record
+            self._mock_ledger[f"correction:{corrected_record_id}"] = correction_record
+            self._mock_ledger[tx_id] = correction_record
+            self._save_ledger()
 
-        return correction_record
+            return correction_record
 
     def query_correction_link(
         self,

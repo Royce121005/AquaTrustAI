@@ -9,7 +9,7 @@ from app.models.facility import Facility
 from app.repositories.deps import get_facility_repository, get_reading_repository
 from app.repositories.facility_repository import FacilityRepository
 from app.repositories.reading_repository import ReadingRepository
-from app.schemas.ingestion import FacilityCreate, FacilityResponse, ReadingResponse
+from app.schemas.ingestion import FacilityCreate, FacilityResponse, ReadingResponse, SensorResponse
 from app.core.security import get_current_user_claims, require_role
 
 router = APIRouter(tags=["Facilities"])
@@ -160,4 +160,35 @@ def get_facility_readings(
             )
         )
     return results
+
+
+@router.get(
+    "/facilities/{facility_id}/sensors",
+    response_model=List[SensorResponse],
+    summary="Get sensors registered under a facility",
+    dependencies=[Depends(get_current_user_claims)],
+)
+def get_facility_sensors(
+    facility_id: UUID,
+    fac_repo: FacilityRepository = Depends(get_facility_repository),
+):
+    """Retrieve all sensors associated with a treatment facility."""
+    facility = fac_repo.get_by_id(facility_id)
+    if not facility:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Facility {facility_id} not found")
+    sensors = fac_repo.get_sensors(facility_id)
+    return [
+        SensorResponse(
+            sensor_id=s.sensor_id,
+            facility_id=s.facility_id,
+            parameter=s.parameter,
+            unit=s.unit,
+            treatment_stage=s.treatment_stage,
+            status=s.status,
+            metadata=s.sensor_metadata or {},
+            created_at=s.created_at,
+            updated_at=s.updated_at,
+        )
+        for s in sensors
+    ]
 

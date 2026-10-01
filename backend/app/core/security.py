@@ -62,8 +62,33 @@ def create_access_token(
     return encoded_jwt
 
 
+import threading
+
+# Token revocation blacklist
+REVOKED_TOKENS: set = set()
+_revocation_lock = threading.RLock()
+
+
+def revoke_token(token: str) -> None:
+    """Add a JWT token to the revocation blacklist."""
+    with _revocation_lock:
+        REVOKED_TOKENS.add(token)
+
+
+def is_token_revoked(token: str) -> bool:
+    """Check if a token has been revoked."""
+    with _revocation_lock:
+        return token in REVOKED_TOKENS
+
+
 def decode_access_token(token: str) -> Dict[str, Any]:
     """Decode and validate JWT access token."""
+    if is_token_revoked(token):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token has been revoked",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
     try:
         payload = jwt.decode(
             token,
@@ -94,8 +119,9 @@ def decode_access_token(token: str) -> Dict[str, Any]:
 
 def get_current_user_claims(
     credentials: Optional[HTTPAuthorizationCredentials] = Depends(security_scheme),
+    db: Session = Depends(get_db),
 ) -> Dict[str, Any]:
-    """Extract authenticated user claims from Authorization header."""
+    """Extract authenticated user claims from Authorization header and verify user active status."""
     if credentials is None or not credentials.credentials:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -103,7 +129,20 @@ def get_current_user_claims(
             headers={"WWW-Authenticate": "Bearer"},
         )
     token = credentials.credentials
-    return decode_access_token(token)
+    claims = decode_access_token(token)
+    claims["_raw_token"] = token
+
+    # Real-time database active status verification
+    username = claims.get("username") or claims.get("sub")
+    if username and db:
+        user = db.query(User).filter(User.username == username).first()
+        if user and user.status != "active":
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"User account is {user.status}",
+            )
+
+    return claims
 
 
 def get_current_user(

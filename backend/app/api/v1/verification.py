@@ -18,7 +18,9 @@ from app.schemas.verification import (
     PublicKeyResponse,
 )
 
+from app.core.rate_limit import verification_rate_limiter
 from app.core.security import get_current_user_claims
+from app.dlt.signer import verify_signature, generate_key_pair
 
 router = APIRouter(tags=["Cryptographic Verification & Trust"])
 
@@ -118,10 +120,11 @@ def verify_certificate_public(certificate_id: UUID, db: Session = Depends(get_db
 @router.post(
     "/verification/verify-proof",
     response_model=VerifyProofResponse,
-    summary="Stateless standalone cryptographic proof verification",
+    summary="Cryptographic proof verification with authority trust anchor enforcement",
+    dependencies=[Depends(verification_rate_limiter)],
 )
-def verify_proof(payload: VerifyProofRequest):
-    """Verifies SHA-256 canonical hash and ECDSA NIST P-256 signature without database access."""
+def verify_proof(payload: VerifyProofRequest, db: Session = Depends(get_db)):
+    """Verifies SHA-256 canonical hash, ECDSA NIST P-256 signature, and authority trust anchor."""
     try:
         canonical_bytes = canonicalize_treatment_record(payload.canonical_payload)
         calc_hash = compute_sha256_hex(canonical_bytes)
@@ -133,12 +136,37 @@ def verify_proof(payload: VerifyProofRequest):
             public_key_pem=payload.public_key_pem,
         )
 
-        verdict = "VALID" if (hash_valid and sig_valid) else "INVALID"
-        message = "Cryptographic proof is valid" if verdict == "VALID" else "Proof verification failed"
+        # Authority trust anchor verification
+        treatment_repo = TreatmentRepository(db)
+        key_trusted = False
+        if payload.key_id:
+            db_key = treatment_repo.get_signing_key(payload.key_id)
+            if db_key and db_key.status == "active":
+                if "".join(db_key.public_key.split()) == "".join(payload.public_key_pem.split()):
+                    key_trusted = True
+            elif payload.key_id == "key-ecdsa-p256-01":
+                _, default_pub = generate_key_pair("key-ecdsa-p256-01", deterministic=True)
+                if "".join(default_pub.split()) == "".join(payload.public_key_pem.split()):
+                    key_trusted = True
+        else:
+            _, default_pub = generate_key_pair("key-ecdsa-p256-01", deterministic=True)
+            if "".join(default_pub.split()) == "".join(payload.public_key_pem.split()):
+                key_trusted = True
+
+        if not key_trusted:
+            verdict = "INVALID"
+            message = "Proof verification failed: public key is not registered or authorized by a recognized authority"
+        elif hash_valid and sig_valid:
+            verdict = "VALID"
+            message = "Cryptographic proof and authority signature are valid"
+        else:
+            verdict = "INVALID"
+            message = "Proof verification failed: hash or signature mismatch"
 
         return VerifyProofResponse(
             hash_valid=hash_valid,
             signature_valid=sig_valid,
+            key_trusted=key_trusted,
             verdict=verdict,
             message=message,
         )
@@ -146,6 +174,7 @@ def verify_proof(payload: VerifyProofRequest):
         return VerifyProofResponse(
             hash_valid=False,
             signature_valid=False,
+            key_trusted=False,
             verdict="INVALID",
             message=f"Verification error: {str(e)}",
         )

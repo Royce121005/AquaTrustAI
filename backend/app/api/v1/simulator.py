@@ -1,6 +1,7 @@
 import asyncio
 from datetime import datetime, timezone
-from fastapi import APIRouter, Depends, HTTPException, status, WebSocket, WebSocketDisconnect
+from typing import Optional
+from fastapi import APIRouter, Depends, HTTPException, status, WebSocket, WebSocketDisconnect, Query
 from app.services.simulator_service import SimulatorService
 from app.schemas.simulator import (
     SimulatorStartRequest,
@@ -8,7 +9,7 @@ from app.schemas.simulator import (
     SimulatorStatusResponse,
     AnomalyInjectionRequest,
 )
-from app.core.security import get_current_user_claims, require_role
+from app.core.security import get_current_user_claims, require_role, decode_access_token
 
 router = APIRouter(prefix="/simulator", tags=["Telemetry Simulator Bridge"])
 
@@ -76,8 +77,29 @@ def inject_anomaly(payload: AnomalyInjectionRequest):
 
 
 @router.websocket("/stream")
-async def websocket_telemetry_stream(websocket: WebSocket):
-    """Real-time SCADA telemetry WebSocket stream broadcasting live basin readings."""
+async def websocket_telemetry_stream(
+    websocket: WebSocket,
+    token: Optional[str] = Query(None),
+):
+    """Real-time SCADA telemetry WebSocket stream broadcasting live basin readings.
+    Requires valid JWT authentication token supplied via '?token=...' query parameter or Authorization header.
+    """
+    auth_token = token
+    if not auth_token:
+        auth_header = websocket.headers.get("authorization")
+        if auth_header and auth_header.startswith("Bearer "):
+            auth_token = auth_header.split(" ", 1)[1]
+
+    if not auth_token:
+        await websocket.close(code=status.WS_1008_POLICY_VIOLATION, reason="Authentication token required")
+        return
+
+    try:
+        decode_access_token(auth_token)
+    except Exception:
+        await websocket.close(code=status.WS_1008_POLICY_VIOLATION, reason="Invalid or expired authentication token")
+        return
+
     await websocket.accept()
     service = SimulatorService.get_instance()
     try:

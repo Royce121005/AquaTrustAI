@@ -93,3 +93,16 @@ class ReadingResponse(BaseModel):
     anomaly_status: Optional[str] = None
     anomaly_score: Optional[Decimal] = None
     created_at: datetime
+
+
+class SensorResponse(BaseModel):
+    """Sensor details response."""
+    sensor_id: UUID
+    facility_id: UUID
+    parameter: str
+    unit: str
+    treatment_stage: Optional[str] = None
+    status: str
+    metadata: Optional[Dict[str, Any]] = Field(default_factory=dict)
+    created_at: datetime
+    updated_at: datetime

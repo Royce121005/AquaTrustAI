@@ -39,6 +39,7 @@ class VerifyProofRequest(BaseModel):
 class VerifyProofResponse(BaseModel):
     hash_valid: bool
     signature_valid: bool
+    key_trusted: bool = True
     verdict: str
     message: str
 

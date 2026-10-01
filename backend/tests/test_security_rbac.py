@@ -283,3 +283,104 @@ def test_public_routes_accessible_without_auth(client: TestClient):
     assert proof_resp.json()["verdict"] == "INVALID"
 
 
+def test_token_revocation_and_logout_lifecycle(client: TestClient):
+    """Verify that logging out revokes the JWT token immediately and rejects further access."""
+    login_resp = client.post("/api/v1/auth/login", json={"username": "operator", "password": "operator123"})
+    assert login_resp.status_code == 200
+    token = login_resp.json()["access_token"]
+    headers = {"Authorization": f"Bearer {token}"}
+
+    # Verify token works
+    me_resp = client.get("/api/v1/auth/me", headers=headers)
+    assert me_resp.status_code == 200
+
+    # Call logout
+    logout_resp = client.post("/api/v1/auth/logout", headers=headers)
+    assert logout_resp.status_code == 200
+    assert "revoked" in logout_resp.json()["message"]
+
+    # Subsequent request using the revoked token must be rejected with 401
+    denied_resp = client.get("/api/v1/auth/me", headers=headers)
+    assert denied_resp.status_code == 401
+    assert "revoked" in denied_resp.json()["message"].lower()
+
+
+def test_suspended_user_account_rejection(client: TestClient, db_session: Session):
+    """Verify that suspended or deactivated user accounts cannot log in or make API calls."""
+    seed_default_users(db_session)
+    user = db_session.query(User).filter(User.username == "operator").first()
+    assert user is not None
+    user.status = "suspended"
+    db_session.commit()
+
+    # Login attempt must return 403 Forbidden
+    login_resp = client.post("/api/v1/auth/login", json={"username": "operator", "password": "operator123"})
+    assert login_resp.status_code == 403
+    assert "suspended" in login_resp.json()["message"]
+
+
+def test_websocket_telemetry_stream_security(client: TestClient):
+    """Verify that WebSocket stream requires authentication and closes on missing or invalid tokens."""
+    # 1. Unauthenticated connection rejected with WS_1008
+    with pytest.raises(Exception):
+        with client.websocket_connect("/api/v1/simulator/stream") as ws:
+            pass
+
+    # 2. Invalid token rejected with WS_1008
+    with pytest.raises(Exception):
+        with client.websocket_connect("/api/v1/simulator/stream?token=invalid.jwt.token") as ws:
+            pass
+
+    # 3. Valid token connects and receives telemetry update
+    login_resp = client.post("/api/v1/auth/login", json={"username": "admin", "password": "admin123"})
+    token = login_resp.json()["access_token"]
+    with client.websocket_connect(f"/api/v1/simulator/stream?token={token}") as ws:
+        msg = ws.receive_json()
+        assert msg["type"] == "TELEMETRY_UPDATE"
+        assert "status" in msg
+
+
+def test_verify_proof_untrusted_key_rejected(client: TestClient):
+    """Verify that verify-proof flags unregistered public keys as untrusted."""
+    resp = client.post(
+        "/api/v1/verification/verify-proof",
+        json={
+            "canonical_payload": {"test": "data"},
+            "canonical_hash": "a" * 64,
+            "signature": "sample-sig",
+            "public_key_pem": "-----BEGIN PUBLIC KEY-----\nMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEfakefakefakefakefakefakefakefakefakefakefakefakefakefakefakefakefakefakefakefakefakefakefakefakefakefakefakefakefakefakefake==\n-----END PUBLIC KEY-----\n",
+            "key_id": "key-unregistered-999",
+        },
+    )
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["verdict"] == "INVALID"
+    assert data["key_trusted"] is False
+    assert "not registered" in data["message"]
+
+
+def test_rate_limiter_throttles_excessive_requests():
+    """Verify that RateLimiter rejects requests exceeding threshold with HTTP 429."""
+    from app.core.rate_limit import RateLimiter
+
+    limiter = RateLimiter(max_requests=3, window_seconds=60, enabled=True)
+
+    class DummyClient:
+        host = "192.168.1.100"
+
+    class DummyRequest:
+        headers = {}
+        client = DummyClient()
+
+    req = DummyRequest()
+    assert limiter(req) is True
+    assert limiter(req) is True
+    assert limiter(req) is True
+
+    # 4th request must raise HTTPException 429
+    with pytest.raises(HTTPException) as exc:
+        limiter(req)
+    assert exc.value.status_code == 429
+    assert "Retry-After" in exc.value.headers
+
+
