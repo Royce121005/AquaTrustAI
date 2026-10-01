@@ -13,6 +13,7 @@ from app.models.reading import Reading
 from app.models.anomaly_result import AnomalyResult
 from app.repositories.reading_repository import ReadingRepository
 from app.services.anomaly_service import AnomalyService
+from app.core.security import get_current_user_claims, require_role
 from app.schemas.anomaly import (
     AnomalyInferRequest,
     AnomalyInferResponse,
@@ -27,6 +28,7 @@ router = APIRouter(tags=["AI Anomaly Detection"])
     "/anomalies/infer",
     response_model=AnomalyInferResponse,
     summary="Execute AI anomaly inference on a reading",
+    dependencies=[Depends(require_role(["operator", "admin"]))],
 )
 def infer_anomaly(payload: AnomalyInferRequest, db: Session = Depends(get_db)):
     """Run Isolation Forest anomaly inference on a reading or ad-hoc payload."""
@@ -85,6 +87,7 @@ def infer_anomaly(payload: AnomalyInferRequest, db: Session = Depends(get_db)):
     "/anomalies/readings/{reading_id}",
     response_model=AnomalyInferResponse,
     summary="Get anomaly report for a reading",
+    dependencies=[Depends(get_current_user_claims)],
 )
 def get_anomaly_report(reading_id: UUID, db: Session = Depends(get_db)):
     """Retrieve anomaly inference report for a reading."""
@@ -114,6 +117,7 @@ def get_anomaly_report(reading_id: UUID, db: Session = Depends(get_db)):
     "/anomalies/metrics",
     response_model=AnomalyMetricsSummary,
     summary="Get anomaly detection summary metrics",
+    dependencies=[Depends(get_current_user_claims)],
 )
 def get_anomaly_metrics(db: Session = Depends(get_db)):
     """Summary metrics supporting frontend insights dashboard."""
@@ -141,3 +145,4 @@ def get_anomaly_metrics(db: Session = Depends(get_db)):
         model_version=engine.model_version,
         recent_events=events,
     )
+

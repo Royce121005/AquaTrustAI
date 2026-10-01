@@ -2,7 +2,7 @@
 
 from typing import Optional, List
 from uuid import UUID
-from datetime import datetime
+from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
 from sqlalchemy import select, desc
 
@@ -22,6 +22,66 @@ class ReadingRepository(BaseRepository[Reading]):
         """Fetch reading by UUID."""
         return self.get(reading_id)
 
+    def get_by_idempotency_or_time_key(
+        self,
+        facility_id: UUID,
+        parameter: str,
+        treatment_stage: Optional[str],
+        observed_at: datetime,
+        idempotency_key: Optional[str] = None,
+    ) -> Optional[Reading]:
+        """Fetch existing reading matching idempotency_key or natural composite key (facility, parameter, stage, observed_at)."""
+        # 1. Check natural composite time key
+        stmt = select(Reading).where(
+            Reading.facility_id == facility_id,
+            Reading.parameter == parameter,
+            Reading.observed_at == observed_at,
+        )
+        if treatment_stage is not None:
+            stmt = stmt.where(Reading.treatment_stage == treatment_stage)
+        else:
+            stmt = stmt.where(Reading.treatment_stage.is_(None))
+
+        existing = self.db.scalars(stmt).first()
+        if existing:
+            return existing
+
+        # 2. If idempotency_key provided, search facility readings provenance
+        if idempotency_key:
+            recent_stmt = (
+                select(Reading)
+                .where(Reading.facility_id == facility_id)
+                .order_by(desc(Reading.observed_at))
+                .limit(500)
+            )
+            for r in self.db.scalars(recent_stmt).all():
+                if r.provenance and isinstance(r.provenance, dict):
+                    if r.provenance.get("idempotency_key") == idempotency_key:
+                        return r
+
+        return None
+
+    def get_contemporaneous_readings(
+        self,
+        facility_id: UUID,
+        observed_at: datetime,
+        tolerance_seconds: int = 300,
+        treatment_stage: Optional[str] = None,
+    ) -> List[Reading]:
+        """Fetch readings from the same facility within a temporal tolerance window."""
+        start_time = observed_at - timedelta(seconds=tolerance_seconds)
+        end_time = observed_at + timedelta(seconds=tolerance_seconds)
+        stmt = select(Reading).where(
+            Reading.facility_id == facility_id,
+            Reading.observed_at >= start_time,
+            Reading.observed_at <= end_time,
+        )
+        if treatment_stage is not None:
+            stmt = stmt.where(Reading.treatment_stage == treatment_stage)
+
+        stmt = stmt.order_by(Reading.observed_at.asc())
+        return list(self.db.scalars(stmt).all())
+
     def get_readings(
         self,
         facility_id: Optional[UUID] = None,
@@ -30,7 +90,7 @@ class ReadingRepository(BaseRepository[Reading]):
         end_time: Optional[datetime] = None,
         quality_status: Optional[str] = None,
         skip: int = 0,
-        limit: int = 100,
+        limit: Optional[int] = 100,
     ) -> List[Reading]:
         """Query readings with multi-dimensional filtering."""
         stmt = select(Reading)
@@ -45,7 +105,31 @@ class ReadingRepository(BaseRepository[Reading]):
         if quality_status:
             stmt = stmt.where(Reading.quality_status == quality_status)
 
-        stmt = stmt.order_by(desc(Reading.observed_at)).offset(skip).limit(limit)
+        stmt = stmt.order_by(desc(Reading.observed_at)).offset(skip)
+        if limit is not None:
+            stmt = stmt.limit(limit)
+        return list(self.db.scalars(stmt).all())
+
+    def get_readings_in_window(
+        self,
+        facility_id: UUID,
+        start_time: datetime,
+        end_time: datetime,
+        treatment_stage: Optional[str] = None,
+        quality_status: Optional[str] = None,
+    ) -> List[Reading]:
+        """Fetch ALL readings in a composite window chronologically ascending without arbitrary limit cap."""
+        stmt = select(Reading).where(
+            Reading.facility_id == facility_id,
+            Reading.observed_at >= start_time,
+            Reading.observed_at <= end_time,
+        )
+        if treatment_stage is not None:
+            stmt = stmt.where(Reading.treatment_stage == treatment_stage)
+        if quality_status is not None:
+            stmt = stmt.where(Reading.quality_status == quality_status)
+
+        stmt = stmt.order_by(Reading.observed_at.asc())
         return list(self.db.scalars(stmt).all())
 
     def get_historical_stream_window(

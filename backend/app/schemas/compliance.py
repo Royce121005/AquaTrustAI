@@ -20,6 +20,30 @@ class ComplianceRuleResponse(BaseModel):
     rule_version: str
     source_reference: str
     active: bool
+    effective_from: Optional[datetime] = None
+    effective_to: Optional[datetime] = None
+
+
+class ParameterComplianceDetail(BaseModel):
+    """Detailed compliance evaluation result for a single parameter."""
+    parameter: str
+    observed_value: Optional[float] = None
+    observed_unit: Optional[str] = None
+    normalized_value: Optional[float] = None
+    rule_id: Optional[str] = None
+    rule_version: Optional[str] = None
+    operator: str
+    threshold: Optional[float] = None
+    threshold_min: Optional[float] = None
+    threshold_max: Optional[float] = None
+    threshold_unit: str
+    status: str
+    result: str
+    reason: str
+    sample_count: int
+    min_value: Optional[float] = None
+    max_value: Optional[float] = None
+    mean_value: Optional[float] = None
 
 
 class ComplianceEvaluateRequest(BaseModel):

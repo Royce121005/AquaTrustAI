@@ -4,6 +4,7 @@ export const ROLES = {
   OPERATOR: 'operator',
   AUDITOR: 'auditor',
   REGULATOR: 'regulatory_stakeholder',
+  ADMIN: 'admin',
 }
 
 export const ROLE_METADATA = {
@@ -24,6 +25,12 @@ export const ROLE_METADATA = {
     badgeTone: 'success',
     description: 'Enforces CPCB / NGT effluent standards, reviews compliance certifications, and audits ledger proof.',
     scope: 'National Regulatory Jurisdiction',
+  },
+  [ROLES.ADMIN]: {
+    label: 'System Administrator',
+    badgeTone: 'danger',
+    description: 'Full administrative access to manage users, facilities, system configuration, and audit logs.',
+    scope: 'Enterprise Root Administration',
   },
 }
 

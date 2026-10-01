@@ -42,6 +42,20 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     db_connected = check_db_connection()
     if db_connected:
         logger.info("Database connectivity verified successfully.")
+        if settings.APP_ENV in ("development", "test"):
+            try:
+                from app.models import Base
+                from app.db.session import engine, SessionLocal
+                from app.api.v1.auth import seed_default_users
+
+                Base.metadata.create_all(bind=engine)
+                with SessionLocal() as session:
+                    seed_default_users(session)
+                logger.info("Local development schema and demo accounts verified successfully.")
+            except Exception as exc:
+                logger.warning(f"Development schema initialization notice: {exc}")
+        else:
+            logger.info("Production mode: Schema lifecycle is managed via Alembic migrations.")
     else:
         logger.warning("Database is currently unreachable. Operating in degraded state.")
 

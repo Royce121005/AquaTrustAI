@@ -12,6 +12,7 @@ from fastapi.responses import JSONResponse
 
 from app.core.logging import correlation_id_ctx, get_logger
 from app.schemas.error import ErrorResponse
+from sqlalchemy.exc import IntegrityError
 
 logger = get_logger("aquatrust.errors")
 
@@ -208,7 +209,32 @@ async def http_exception_handler(request: Request, exc: HTTPException) -> JSONRe
         details=None,
         request_id=req_id,
     )
-    return JSONResponse(status_code=exc.status_code, content=payload.model_dump())
+    return JSONResponse(
+        status_code=exc.status_code,
+        content=payload.model_dump(),
+        headers=getattr(exc, "headers", None),
+    )
+
+
+
+
+async def integrity_error_handler(request: Request, exc: IntegrityError) -> JSONResponse:
+    """Handle database uniqueness, foreign key, or constraint violations as HTTP 409 Conflict."""
+    req_id = get_request_id(request)
+    logger.warning(
+        f"Database integrity/uniqueness conflict: {str(exc.orig) if hasattr(exc, 'orig') else str(exc)}",
+        extra={"request_id": req_id, "error_code": "CONFLICT"},
+    )
+    payload = ErrorResponse(
+        error_code="CONFLICT",
+        message="A database integrity constraint or uniqueness conflict occurred.",
+        details=str(exc.orig) if hasattr(exc, "orig") else None,
+        request_id=req_id,
+    )
+    return JSONResponse(
+        status_code=status.HTTP_409_CONFLICT,
+        content=payload.model_dump(),
+    )
 
 
 async def unhandled_exception_handler(request: Request, exc: Exception) -> JSONResponse:
@@ -236,4 +262,5 @@ def register_exception_handlers(app: FastAPI) -> None:
     app.add_exception_handler(AquaTrustException, aquatrust_exception_handler)
     app.add_exception_handler(RequestValidationError, request_validation_exception_handler)
     app.add_exception_handler(HTTPException, http_exception_handler)
+    app.add_exception_handler(IntegrityError, integrity_error_handler)
     app.add_exception_handler(Exception, unhandled_exception_handler)

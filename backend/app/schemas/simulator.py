@@ -13,6 +13,8 @@ class SimulatorStartRequest(BaseModel):
     interval_seconds: float = Field(default=1.0, ge=0.1, le=60.0)
     seed: int = 42
     auto_ingest: bool = True
+    use_http_bridge: bool = False
+    bridge_endpoint: Optional[str] = None
 
 
 class SimulatorStopRequest(BaseModel):
@@ -28,6 +30,7 @@ class SimulatorStatusResponse(BaseModel):
     steps_generated: int
     readings_ingested: int
     current_scenario: str
+    use_http_bridge: bool = False
     last_tick_at: Optional[str] = None
 
 

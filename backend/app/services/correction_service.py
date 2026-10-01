@@ -6,6 +6,7 @@ Enforces immutable provenance and append-only governance:
    to the prior record.
 3. The prior record is transitioned to `superseded_by_correction`.
 4. A full cryptographic re-finalization, new digital certificate, and new DLT anchor are generated.
+5. An immutable correction link is committed to the Hyperledger Fabric DLT ledger.
 """
 
 from datetime import datetime, timezone
@@ -18,11 +19,13 @@ from app.db.base import utc_now
 from app.models.treatment_record import TreatmentRecord
 from app.models.correction import Correction
 from app.models.reading import Reading
+from app.models.dlt_anchor import DLTAnchor
 from app.models.audit_log import AuditLog
 from app.repositories.treatment_repository import TreatmentRepository
 from app.repositories.reading_repository import ReadingRepository
 from app.services.treatment_service import TreatmentService
 from app.services.compliance_service import ComplianceService
+from app.dlt.gateway import dlt_gateway
 
 
 class CorrectionService:
@@ -78,7 +81,7 @@ class CorrectionService:
         authorized_by: Optional[UUID] = None,
         key_id: str = "key-ecdsa-p256-01",
     ) -> TreatmentRecord:
-        """Authorize a correction: supersedes previous record and creates new versioned record."""
+        """Authorize a correction: supersedes previous record, creates new versioned record, and anchors link on DLT."""
         treatment_repo = TreatmentRepository(db)
         correction = db.query(Correction).filter(Correction.correction_id == correction_id).first()
         if not correction:
@@ -94,18 +97,29 @@ class CorrectionService:
         # 2. Update readings if parameters were provided
         param_delta = correction.proposed_changes.get("parameters", {}) if correction.proposed_changes else {}
         for param, val in param_delta.items():
-            r = Reading(
-                reading_id=uuid4(),
-                facility_id=original_record.facility_id,
-                observed_at=original_record.period_start,
-                treatment_stage="final_effluent",
-                parameter=param,
-                value=Decimal(str(val)),
-                unit="mg/L" if param != "PH" else "pH units",
-                quality_status="valid",
-                provenance={"correction_id": str(correction.correction_id), "supersedes": str(original_record.record_id)},
-            )
-            db.add(r)
+            existing = db.query(Reading).filter(
+                Reading.facility_id == original_record.facility_id,
+                Reading.treatment_stage == "final_effluent",
+                Reading.parameter == param,
+                Reading.observed_at == original_record.period_start,
+            ).first()
+            if existing:
+                existing.value = Decimal(str(val))
+                existing.quality_status = "valid"
+                existing.provenance = {"correction_id": str(correction.correction_id), "supersedes": str(original_record.record_id)}
+            else:
+                r = Reading(
+                    reading_id=uuid4(),
+                    facility_id=original_record.facility_id,
+                    observed_at=original_record.period_start,
+                    treatment_stage="final_effluent",
+                    parameter=param,
+                    value=Decimal(str(val)),
+                    unit="mg/L" if param != "PH" else "pH units",
+                    quality_status="valid",
+                    provenance={"correction_id": str(correction.correction_id), "supersedes": str(original_record.record_id)},
+                )
+                db.add(r)
         db.flush()
 
         # 3. Create new Treatment Record with incremented version
@@ -131,7 +145,17 @@ class CorrectionService:
         ComplianceService.evaluate_treatment_record(db, new_record)
         finalized_new = TreatmentService.finalize_record(db, new_record, key_id=key_id)
 
-        # 5. Mark correction authorized
+        # 5. Anchor correction linkage on DLT ledger
+        dlt_corr_link = dlt_gateway.record_correction_link(
+            original_record_id=original_record.record_id,
+            corrected_record_id=finalized_new.record_id,
+            reason=correction.reason or "",
+        )
+
+        # Retrieve new record's DLT Anchor if present
+        dlt_anchor = db.query(DLTAnchor).filter(DLTAnchor.record_id == finalized_new.record_id).first()
+
+        # 6. Mark correction authorized
         auth_uuid = authorized_by or uuid4()
         correction.status = "authorized"
         correction.authorized_by = auth_uuid
@@ -140,9 +164,10 @@ class CorrectionService:
         correction.new_certificate_id = finalized_new.certificate_id
         correction.new_hash = finalized_new.canonical_hash
         correction.new_signature_id = finalized_new.signature_id
+        correction.new_dlt_anchor_id = dlt_anchor.anchor_id if dlt_anchor else None
         correction.completed_at = utc_now()
 
-        # 6. Audit Trail
+        # 7. Audit Trail
         audit = AuditLog(
             audit_log_id=uuid4(),
             action="AUTHORIZE_CORRECTION",
@@ -154,6 +179,10 @@ class CorrectionService:
                 "superseded_record_id": str(original_record.record_id),
                 "new_record_id": str(finalized_new.record_id),
                 "new_version": finalized_new.record_version,
+                "dlt_tx_id": dlt_corr_link.get("tx_id"),
+                "dlt_block_number": dlt_corr_link.get("block_number"),
+                "correction_link_tx": dlt_corr_link.get("tx_id"),
+                "new_dlt_anchor_id": str(dlt_anchor.anchor_id) if dlt_anchor else None,
             },
             created_at=utc_now(),
         )

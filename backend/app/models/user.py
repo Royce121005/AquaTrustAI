@@ -1,11 +1,17 @@
-"""AquaTrust AI — User ORM Model."""
-
+from enum import Enum
 from uuid import uuid4
 from sqlalchemy import Column, String, Index
 from sqlalchemy.dialects.postgresql import UUID
 
 from app.db.base import Base, utc_now
 from app.models.types import UTCDateTime
+
+
+class UserRole(str, Enum):
+    OPERATOR = "operator"
+    AUDITOR = "auditor"
+    REGULATORY_STAKEHOLDER = "regulatory_stakeholder"
+    ADMIN = "admin"
 
 
 class User(Base):
@@ -17,7 +23,7 @@ class User(Base):
     username = Column(String, unique=True, nullable=False)
     email = Column(String, unique=True, nullable=True)
     hashed_password = Column(String, nullable=False)
-    role = Column(String, nullable=False, default="operator")  # 'operator', 'auditor', 'regulatory_stakeholder', 'admin'
+    role = Column(String, nullable=False, default=UserRole.OPERATOR.value)  # 'operator', 'auditor', 'regulatory_stakeholder', 'admin'
     external_subject = Column(String, unique=True, nullable=True)
     display_name = Column(String, nullable=True)
     status = Column(String, nullable=False, default="active")  # 'active', 'suspended', 'deactivated'
@@ -28,3 +34,4 @@ class User(Base):
         Index("ix_users_username", "username"),
         Index("ix_users_role", "role"),
     )
+

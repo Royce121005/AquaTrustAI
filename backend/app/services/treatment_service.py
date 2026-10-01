@@ -7,6 +7,8 @@ Coordinates deterministic canonicalization (atc-v1), SHA-256 hashing,
 ECDSA NIST P-256 digital signing, certificate generation, and DLT anchor registration.
 """
 
+import hashlib
+import os
 from datetime import datetime, timezone
 from decimal import Decimal
 from typing import Optional, Dict, Any, List, Tuple
@@ -25,7 +27,8 @@ from app.repositories.reading_repository import ReadingRepository
 from app.services.compliance_service import ComplianceService
 from app.dlt.canonicalizer import canonicalize_treatment_record
 from app.dlt.hasher import compute_sha256_hex
-from app.dlt.signer import generate_key_pair, sign_canonical_payload
+from app.dlt.signer import generate_key_pair, get_public_key_from_private_pem, sign_canonical_payload
+from app.dlt.gateway import dlt_gateway
 
 
 class TreatmentService:
@@ -40,24 +43,42 @@ class TreatmentService:
         treatment_repo = TreatmentRepository(db)
         signing_key = treatment_repo.get_signing_key(key_id)
 
-        if not signing_key or cls._cached_private_key is None:
-            priv_pem, pub_pem = generate_key_pair(key_id)
-            cls._cached_private_key = priv_pem
+        # 1. Resolve private key from cache, env, file, or deterministic generator
+        if cls._cached_private_key is None:
+            env_pem = os.getenv("DLT_SIGNING_PRIVATE_KEY_PEM")
+            key_file_path = os.getenv("DLT_SIGNING_PRIVATE_KEY_PATH") or os.getenv("DLT_SIGNING_KEY_FILE")
 
-            if not signing_key:
-                import hashlib
-                fp = hashlib.sha256(pub_pem.encode("utf-8")).hexdigest()
-                signing_key = SigningKey(
-                    key_id=key_id,
-                    algorithm="ES256",
-                    curve="P-256",
-                    public_key=pub_pem,
-                    fingerprint=fp,
-                    status="active",
-                    created_at=utc_now(),
-                )
-                treatment_repo.add_signing_key(signing_key)
-                db.flush()
+            if env_pem and env_pem.strip():
+                pem_str = env_pem.strip()
+                if "\\n" in pem_str and "\n" not in pem_str:
+                    pem_str = pem_str.replace("\\n", "\n")
+                cls._cached_private_key = pem_str
+            elif key_file_path and os.path.isfile(key_file_path):
+                try:
+                    with open(key_file_path, "r", encoding="utf-8") as f:
+                        cls._cached_private_key = f.read().strip()
+                except Exception:
+                    priv_pem, _ = generate_key_pair(key_id, deterministic=True)
+                    cls._cached_private_key = priv_pem
+            else:
+                priv_pem, _ = generate_key_pair(key_id, deterministic=True)
+                cls._cached_private_key = priv_pem
+
+        # 2. If signing_key does not exist in DB, register it cleanly
+        if not signing_key:
+            pub_pem = get_public_key_from_private_pem(cls._cached_private_key)
+            fp = hashlib.sha256(pub_pem.encode("utf-8")).hexdigest()
+            signing_key = SigningKey(
+                key_id=key_id,
+                algorithm="ES256",
+                curve="P-256",
+                public_key=pub_pem,
+                fingerprint=fp,
+                status="active",
+                created_at=utc_now(),
+            )
+            treatment_repo.add_signing_key(signing_key)
+            db.flush()
 
         return signing_key, cls._cached_private_key
 
@@ -73,13 +94,55 @@ class TreatmentService:
         reading_repo = ReadingRepository(db)
         treatment_repo = TreatmentRepository(db)
 
-        # 1. Fetch readings in window
-        readings = reading_repo.get_readings(
+        # 0. Check if an active/finalized treatment record already exists for this exact window
+        existing_record = treatment_repo.get_by_facility_and_period(facility_id, period_start, period_end)
+        if existing_record and existing_record.record_state == "finalized":
+            return existing_record
+
+        # 1. Fetch ALL readings in window without arbitrary truncation
+        readings = reading_repo.get_readings_in_window(
             facility_id=facility_id,
             start_time=period_start,
             end_time=period_end,
-            limit=1000,
         )
+
+        record_id = existing_record.record_id if existing_record else uuid4()
+
+        # Handle empty window (0 readings)
+        if len(readings) == 0:
+            provenance = {
+                "source_type": "telemetry",
+                "total_readings": 0,
+                "reading_ids": [],
+                "sensor_ids": [],
+                "parameter_coverage": [],
+                "aggregated_at": utc_now().isoformat(),
+            }
+            if existing_record:
+                treatment_record = existing_record
+                treatment_record.record_state = "draft"
+                treatment_record.quality_status = "insufficient_data"
+                treatment_record.anomaly_status = "insufficient_data"
+                treatment_record.compliance_status = "pending"
+                treatment_record.provenance = provenance
+            else:
+                treatment_record = TreatmentRecord(
+                    record_id=record_id,
+                    facility_id=facility_id,
+                    period_start=period_start,
+                    period_end=period_end,
+                    record_version=1,
+                    record_state="draft",
+                    quality_status="insufficient_data",
+                    anomaly_status="insufficient_data",
+                    compliance_status="pending",
+                    anchor_status="not_required",
+                    provenance=provenance,
+                    created_at=utc_now(),
+                )
+                treatment_repo.create(treatment_record)
+            db.flush()
+            return treatment_record
 
         # 2. Determine quality & anomaly statuses
         has_invalid = any(r.quality_status == "invalid" for r in readings)
@@ -87,34 +150,68 @@ class TreatmentService:
         quality_status = "invalid" if has_invalid else ("suspect" if has_suspect else "valid")
 
         has_anomalous = False
+        has_insufficient = False
         for r in readings:
             anom = reading_repo.get_anomaly_result(r.reading_id)
-            if anom and anom.anomaly_status == "anomalous":
-                has_anomalous = True
-                break
-        anomaly_status = "anomalous" if has_anomalous else "normal"
+            if anom:
+                if anom.anomaly_status == "anomalous":
+                    has_anomalous = True
+                elif anom.anomaly_status == "insufficient_data":
+                    has_insufficient = True
+        if has_anomalous:
+            anomaly_status = "anomalous"
+        elif has_insufficient:
+            anomaly_status = "insufficient_data"
+        else:
+            anomaly_status = "normal"
 
-        # 3. Create or update treatment record
-        record_id = uuid4()
-        treatment_record = TreatmentRecord(
-            record_id=record_id,
-            facility_id=facility_id,
-            period_start=period_start,
-            period_end=period_end,
-            record_version=1,
-            record_state="eligible_for_finalization",
-            quality_status=quality_status,
-            anomaly_status=anomaly_status,
-            compliance_status="pending",
-            anchor_status="not_required",
-            created_at=utc_now(),
-        )
-        treatment_repo.create(treatment_record)
+        # 3. Populate provenance
+        provenance = {
+            "source_type": "telemetry",
+            "total_readings": len(readings),
+            "reading_ids": [str(r.reading_id) for r in readings],
+            "sensor_ids": sorted(list(set(str(r.sensor_id) for r in readings if r.sensor_id))),
+            "parameter_coverage": sorted(list(set(r.parameter.upper() for r in readings if r.parameter))),
+            "aggregated_at": utc_now().isoformat(),
+        }
 
-        # 4. Evaluate compliance
+        # 4. Create or reuse treatment record
+        if existing_record:
+            treatment_record = existing_record
+            treatment_record.quality_status = quality_status
+            treatment_record.anomaly_status = anomaly_status
+            treatment_record.provenance = provenance
+        else:
+            treatment_record = TreatmentRecord(
+                record_id=record_id,
+                facility_id=facility_id,
+                period_start=period_start,
+                period_end=period_end,
+                record_version=1,
+                record_state="draft",
+                quality_status=quality_status,
+                anomaly_status=anomaly_status,
+                compliance_status="pending",
+                anchor_status="not_required",
+                provenance=provenance,
+                created_at=utc_now(),
+            )
+            treatment_repo.create(treatment_record)
+
+        # 5. Evaluate compliance
         ComplianceService.evaluate_treatment_record(db, treatment_record)
-        db.flush()
 
+        # 6. Determine record state
+        if (
+            quality_status == "valid"
+            and anomaly_status != "insufficient_data"
+            and treatment_record.compliance_status in ["compliant", "non_compliant"]
+        ):
+            treatment_record.record_state = "eligible_for_finalization"
+        else:
+            treatment_record.record_state = "draft"
+
+        db.flush()
         return treatment_record
 
     @classmethod
@@ -125,18 +222,39 @@ class TreatmentService:
         key_id: str = DEFAULT_KEY_ID,
     ) -> TreatmentRecord:
         """Atomic finalization transaction: freezes evidence snapshot, canonicalizes, hashes, signs, creates certificate and DLT anchor."""
-        if record.record_state == "finalized":
-            return record  # Idempotent
-
         treatment_repo = TreatmentRepository(db)
         reading_repo = ReadingRepository(db)
 
+        # Concurrency & Row Locking
+        query = db.query(TreatmentRecord).filter(TreatmentRecord.record_id == record.record_id)
+        if db.bind and db.bind.dialect.name != "sqlite":
+            query = query.with_for_update()
+        locked_record = query.first()
+        if locked_record:
+            record = locked_record
+
+        # Check: If record.record_state == "finalized": return record (idempotent).
+        if record.record_state == "finalized":
+            return record
+
+        # Enforce FINALIZATION_POLICY.md §4 matrix:
+        if record.quality_status in ["invalid", "suspect", "insufficient_data"]:
+            raise ValueError(f"Finalization rejected: Quality status is '{record.quality_status}' (must be 'valid')")
+
+        if record.anomaly_status == "insufficient_data":
+            raise ValueError("Finalization rejected: AI anomaly evidence is incomplete ('insufficient_data')")
+
+        if record.compliance_status in ["pending", "not_applicable"]:
+            raise ValueError(f"Finalization rejected: Compliance evaluation is '{record.compliance_status}' (must be 'compliant' or 'non_compliant')")
+
+        if record.record_state != "eligible_for_finalization":
+            raise ValueError(f"Finalization rejected: Record state is '{record.record_state}' (must be 'eligible_for_finalization')")
+
         # 1. Fetch all observations and compliance results to freeze evidence snapshot
-        readings = reading_repo.get_readings(
+        readings = reading_repo.get_readings_in_window(
             facility_id=record.facility_id,
             start_time=record.period_start,
             end_time=record.period_end,
-            limit=1000,
         )
         comp_res = treatment_repo.get_compliance_result(record.record_id)
 
@@ -150,6 +268,13 @@ class TreatmentService:
             "compliance_status": record.compliance_status,
             "compliance_results": comp_res.parameter_results if comp_res else {},
             "total_readings": len(readings),
+            "reading_ids": [str(r.reading_id) for r in readings],
+            "sensor_ids": sorted(list(set(str(r.sensor_id) for r in readings if r.sensor_id))),
+            "parameters": {
+                p: {"count": len([r for r in readings if r.parameter and r.parameter.upper() == p])}
+                for p in set(r.parameter.upper() for r in readings if r.parameter)
+            },
+            "provenance": record.provenance or {},
             "frozen_at": utc_now().isoformat(),
         }
 
@@ -164,6 +289,7 @@ class TreatmentService:
             "anomaly_status": record.anomaly_status,
             "compliance_status": record.compliance_status,
             "compliance_summary": comp_res.parameter_results if comp_res else {},
+            "provenance": record.provenance or {},
         }
         canonical_bytes = canonicalize_treatment_record(canonical_dict)
 
@@ -207,7 +333,16 @@ class TreatmentService:
         )
         treatment_repo.add_certificate(certificate)
 
-        # 7. Create DLT Anchor (pending state for Fabric Gateway)
+        # 7. Create DLT Anchor (and register with Fabric Gateway)
+        dlt_res = dlt_gateway.anchor_record(
+            record_id=record.record_id,
+            record_hash=canonical_hash,
+            facility_id=record.facility_id,
+            compliance_status=record.compliance_status,
+            signature_value=sig_value,
+            key_id=signing_key.key_id,
+        )
+
         anchor_id = uuid4()
         dlt_anchor = DLTAnchor(
             anchor_id=anchor_id,
@@ -218,7 +353,12 @@ class TreatmentService:
             canonical_hash=canonical_hash,
             compliance_status=record.compliance_status,
             signature_metadata={"algorithm": "ES256", "key_id": signing_key.key_id},
-            network_reference={"channel": "aquatrustchannel", "chaincode": "aquatrust-records"},
+            network_reference={
+                "channel": dlt_res.get("channel_id", "aquatrustchannel"),
+                "chaincode": dlt_res.get("chaincode", "aquatrust-records"),
+                "block_number": dlt_res.get("block_number"),
+            },
+            transaction_id=dlt_res.get("tx_id"),
             anchor_status="pending",
             created_at=utc_now(),
         )
@@ -231,7 +371,6 @@ class TreatmentService:
         record.certificate_id = cert_id
         record.anchor_status = "pending"
         record.evidence_snapshot = evidence_snapshot
-        record.canonical_payload = canonical_dict
         record.finalized_at = utc_now()
 
         # 9. Audit Trail

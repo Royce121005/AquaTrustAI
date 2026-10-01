@@ -12,6 +12,7 @@ from app.models.validation_result import ValidationResult
 from app.repositories.reading_repository import ReadingRepository
 from app.services.validation_service import ValidationService
 from app.schemas.validation import ValidationResponse, ValidationStatsResponse
+from app.core.security import get_current_user_claims, require_role
 
 router = APIRouter(tags=["Pre-AI Validation"])
 
@@ -20,6 +21,7 @@ router = APIRouter(tags=["Pre-AI Validation"])
     "/validation/stats",
     response_model=ValidationStatsResponse,
     summary="Get pre-AI validation quality statistics",
+    dependencies=[Depends(get_current_user_claims)],
 )
 def get_validation_stats(
     facility_id: Optional[UUID] = None,
@@ -54,6 +56,7 @@ def get_validation_stats(
     "/validation/readings/{reading_id}",
     response_model=ValidationResponse,
     summary="Execute deterministic validation on a reading",
+    dependencies=[Depends(require_role(["operator", "admin"]))],
 )
 def run_validation(reading_id: UUID, db: Session = Depends(get_db)):
     """Run deterministic pre-AI data-trust validation rules on an existing reading."""
@@ -80,6 +83,7 @@ def run_validation(reading_id: UUID, db: Session = Depends(get_db)):
     "/validation/readings/{reading_id}",
     response_model=ValidationResponse,
     summary="Get validation report for a reading",
+    dependencies=[Depends(get_current_user_claims)],
 )
 def get_validation_report(reading_id: UUID, db: Session = Depends(get_db)):
     """Fetch existing validation report for a reading."""
@@ -100,3 +104,4 @@ def get_validation_report(reading_id: UUID, db: Session = Depends(get_db)):
         validation_version=val_res.validation_version,
         validated_at=val_res.validated_at,
     )
+

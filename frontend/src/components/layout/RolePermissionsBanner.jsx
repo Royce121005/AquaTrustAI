@@ -29,7 +29,17 @@ export default function RolePermissionsBanner() {
   let allowed = []
   let restricted = []
 
-  if (permissions.isOperator) {
+  if (permissions.isAdmin) {
+    allowed = [
+      'Full administrative access to manage users, roles, and facilities',
+      'Override system setpoints, calibrations, and operational modes',
+      'Execute and verify DLT anchor batches and Merkle inclusion proofs',
+      'Configure security policies, audit retention, and API keys',
+    ]
+    restricted = [
+      'All critical interventions are permanently audited to the immutable ledger',
+    ]
+  } else if (permissions.isOperator) {
     allowed = [
       'Execute advisory pump & valve control actions',
       'Tune PID loop setpoints (AIT-201 DO)',

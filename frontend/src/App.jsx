@@ -3,6 +3,8 @@ import { ScanSearch } from 'lucide-react'
 import MainLayout from './layouts/MainLayout.jsx'
 import ErrorBoundary from './components/ui/ErrorBoundary.jsx'
 import EmptyState from './components/ui/EmptyState.jsx'
+import ProtectedRoute from './components/auth/ProtectedRoute.jsx'
+import LoginPage from './pages/auth/LoginPage.jsx'
 import DashboardPage from './pages/dashboard/DashboardPage.jsx'
 import AuditorPage from './pages/auditor/AuditorPage.jsx'
 import RegulatorPage from './pages/regulator/RegulatorPage.jsx'
@@ -30,12 +32,21 @@ export default function App() {
   return (
     <ErrorBoundary routeName="GlobalAppRoot">
       <Routes>
+        {/* Public Authentication Route */}
+        <Route path="/login" element={<LoginPage />} />
+
         {/* Public Standalone Verification Routes (No RBAC / No Layout) */}
         <Route path="/verify" element={<PublicVerifyPage />} />
         <Route path="/verify/:eventId" element={<PublicVerifyPage />} />
 
-        {/* Authenticated SCADA Workspace with MainLayout */}
-        <Route element={<MainLayout />}>
+        {/* Authenticated SCADA Workspace with ProtectedRoute & MainLayout */}
+        <Route
+          element={
+            <ProtectedRoute>
+              <MainLayout />
+            </ProtectedRoute>
+          }
+        >
           <Route path="/" element={<RootRedirect />} />
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/auditor" element={<AuditorPage />} />

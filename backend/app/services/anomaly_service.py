@@ -44,14 +44,48 @@ class AnomalyService:
                 limit=20,
             )
             for r in history:
-                if r.value is not None:
-                    engine.cache.update(stream_key, r.observed_at, float(r.value))
+                if r.value is not None and r.quality_status not in ["invalid", "insufficient_data"]:
+                    ts_str = r.observed_at.isoformat() if hasattr(r.observed_at, "isoformat") else str(r.observed_at)
+                    engine.cache.update(stream_key, ts_str, float(r.value))
 
     @classmethod
     def infer_reading(cls, db: Session, reading: Reading) -> AnomalyResult:
         """Run ML anomaly inference on an observation and persist outcome into anomaly_results."""
         engine = cls.get_engine()
         reading_repo = ReadingRepository(db)
+
+        # 0. Phase B2-IMP-01: Validation gating
+        # If reading quality status is invalid or insufficient_data, bypass ML engine to protect sliding window cache
+        if reading.quality_status in ["invalid", "insufficient_data"]:
+            anomaly_status = "insufficient_data"
+            anomaly_score = None
+            metadata = {
+                "skipped": True,
+                "reason": f"bypassed_due_to_quality_status_{reading.quality_status}",
+            }
+
+            existing = reading_repo.get_anomaly_result(reading.reading_id)
+            if existing:
+                existing.anomaly_status = anomaly_status
+                existing.anomaly_score = anomaly_score
+                existing.model_metadata = metadata
+                existing.inference_at = utc_now()
+                db.flush()
+                return existing
+
+            anom_res = AnomalyResult(
+                anomaly_result_id=uuid4(),
+                reading_id=reading.reading_id,
+                anomaly_status=anomaly_status,
+                anomaly_score=anomaly_score,
+                model_version=engine.model_version,
+                feature_set_version=engine.feature_set_version,
+                inference_at=utc_now(),
+                model_metadata=metadata,
+            )
+            reading_repo.add_anomaly_result(anom_res)
+            db.flush()
+            return anom_res
 
         # 1. Warm cache if needed
         cls.hydrate_stream_cache(

@@ -1,7 +1,7 @@
 """AquaTrust AI — Reading ORM Model."""
 
 from uuid import uuid4
-from sqlalchemy import Column, String, Numeric, ForeignKey, Index
+from sqlalchemy import Column, String, Numeric, ForeignKey, Index, UniqueConstraint
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 
@@ -28,11 +28,13 @@ class Reading(Base):
     ingestion_batch_id = Column(UUID(as_uuid=True), nullable=True)
     created_at = Column(UTCDateTime, nullable=False, default=utc_now)
 
-    # Compound & query indexes
+    # Compound, query, and uniqueness constraints
     __table_args__ = (
         Index("ix_readings_facility_observed", "facility_id", "observed_at"),
         Index("ix_readings_parameter_observed", "parameter", "observed_at"),
         Index("ix_readings_ingestion_batch", "ingestion_batch_id"),
+        Index("ix_readings_dedup_lookup", "facility_id", "parameter", "treatment_stage", "observed_at"),
+        UniqueConstraint("facility_id", "parameter", "treatment_stage", "observed_at", name="uq_readings_natural_key"),
     )
 
     # Relationships

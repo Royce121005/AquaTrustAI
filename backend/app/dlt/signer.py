@@ -13,7 +13,7 @@ import base64
 import hashlib
 import os
 from datetime import datetime, timezone
-from typing import Dict, Optional, Tuple
+from typing import Any, Dict, Optional, Tuple
 
 try:
     from cryptography.hazmat.primitives import hashes, serialization
@@ -25,6 +25,50 @@ try:
     CRYPTOGRAPHY_AVAILABLE = True
 except ImportError:
     CRYPTOGRAPHY_AVAILABLE = False
+
+_SECP256R1_ORDER = 0xFFFFFFFF00000000FFFFFFFFFFFFFFFFBCE6FAADA7179E84F3B9CAC2FC632551
+
+
+def get_public_key_from_private_pem(private_pem: str) -> str:
+    """Extracts or derives the PEM public key from an ECDSA PEM private key."""
+    if not CRYPTOGRAPHY_AVAILABLE or private_pem.startswith("MOCK_"):
+        return private_pem.replace("PRIVATE", "PUBLIC") if "PRIVATE" in private_pem else f"MOCK_PUBLIC_KEY_{private_pem[:16]}"
+
+    private_key = serialization.load_pem_private_key(private_pem.encode("utf-8"), password=None)
+    public_key = private_key.public_key()
+    return public_key.public_bytes(
+        encoding=serialization.Encoding.PEM,
+        format=serialization.PublicFormat.SubjectPublicKeyInfo,
+    ).decode("utf-8")
+
+
+def generate_key_pair(key_id: str = "default", deterministic: bool = True) -> Tuple[str, str]:
+    """Generates an ECDSA NIST P-256 private and public key pair in PEM format."""
+    if not CRYPTOGRAPHY_AVAILABLE:
+        priv = f"MOCK_PRIVATE_KEY_{key_id}"
+        pub = f"MOCK_PUBLIC_KEY_{key_id}"
+        return priv, pub
+
+    if deterministic:
+        seed_bytes = hashlib.sha256(f"AquaTrustAI_Signing_Key_Seed_{key_id}".encode("utf-8")).digest()
+        scalar = (int.from_bytes(seed_bytes, byteorder="big") % (_SECP256R1_ORDER - 1)) + 1
+        private_key = ec.derive_private_key(scalar, ec.SECP256R1())
+    else:
+        private_key = ec.generate_private_key(ec.SECP256R1())
+
+    private_pem = private_key.private_bytes(
+        encoding=serialization.Encoding.PEM,
+        format=serialization.PrivateFormat.PKCS8,
+        encryption_algorithm=serialization.NoEncryption(),
+    ).decode("utf-8")
+
+    public_key = private_key.public_key()
+    public_pem = public_key.public_bytes(
+        encoding=serialization.Encoding.PEM,
+        format=serialization.PublicFormat.SubjectPublicKeyInfo,
+    ).decode("utf-8")
+
+    return private_pem, public_pem
 
 
 class BaseSigningProvider(abc.ABC):
@@ -44,28 +88,71 @@ class BaseSigningProvider(abc.ABC):
 class SoftwareSigningProvider(BaseSigningProvider):
     """Software-based signing provider using PEM formatted ECDSA P-256 keys."""
 
-    def __init__(self, private_keys: Optional[Dict[str, str]] = None):
-        self._private_keys = private_keys or {}
-        self._public_keys: Dict[str, str] = {}
+    DEFAULT_KEY_ID = "key-ecdsa-p256-01"
 
-    def register_key_pair(self, key_id: str, private_pem: str, public_pem: str):
+    def __init__(
+        self,
+        private_keys: Optional[Dict[str, str]] = None,
+        default_key_id: str = DEFAULT_KEY_ID,
+    ):
+        self._private_keys: Dict[str, str] = dict(private_keys or {})
+        self._public_keys: Dict[str, str] = {}
+        self.default_key_id = default_key_id
+        self._load_from_environment()
+
+    def _load_from_environment(self) -> None:
+        """Load private keys from environment variables or local secret file if configured."""
+        env_pem = os.getenv("DLT_SIGNING_PRIVATE_KEY_PEM")
+        if env_pem and env_pem.strip():
+            pem_str = env_pem.strip()
+            if "\\n" in pem_str and "\n" not in pem_str:
+                pem_str = pem_str.replace("\\n", "\n")
+            try:
+                pub_str = get_public_key_from_private_pem(pem_str)
+                self.register_key_pair(self.default_key_id, pem_str, pub_str)
+            except Exception:
+                pass
+
+        key_file_path = os.getenv("DLT_SIGNING_PRIVATE_KEY_PATH") or os.getenv("DLT_SIGNING_KEY_FILE")
+        if key_file_path and os.path.isfile(key_file_path):
+            try:
+                with open(key_file_path, "r", encoding="utf-8") as f:
+                    file_pem = f.read().strip()
+                if file_pem:
+                    pub_str = get_public_key_from_private_pem(file_pem)
+                    self.register_key_pair(self.default_key_id, file_pem, pub_str)
+            except Exception:
+                pass
+
+    def register_key_pair(self, key_id: str, private_pem: str, public_pem: Optional[str] = None):
         self._private_keys[key_id] = private_pem
-        self._public_keys[key_id] = public_pem
+        if public_pem:
+            self._public_keys[key_id] = public_pem
+        else:
+            self._public_keys[key_id] = get_public_key_from_private_pem(private_pem)
 
     def sign(self, canonical_bytes: bytes, key_id: str) -> str:
         private_pem = self._private_keys.get(key_id)
         if not private_pem:
-            # If not pre-registered, generate or use fallback
-            priv, pub = generate_key_pair(key_id)
-            self.register_key_pair(key_id, priv, pub)
-            private_pem = priv
+            # If default key is loaded and matches or fallback
+            if len(self._private_keys) == 1 and self.default_key_id in self._private_keys:
+                private_pem = self._private_keys[self.default_key_id]
+            else:
+                priv, pub = generate_key_pair(key_id, deterministic=True)
+                self.register_key_pair(key_id, priv, pub)
+                private_pem = priv
 
         return sign_canonical_payload(canonical_bytes, private_pem)
 
     def get_public_key_pem(self, key_id: str) -> str:
         if key_id not in self._public_keys:
-            priv, pub = generate_key_pair(key_id)
-            self.register_key_pair(key_id, priv, pub)
+            if key_id in self._private_keys:
+                self._public_keys[key_id] = get_public_key_from_private_pem(self._private_keys[key_id])
+            elif len(self._public_keys) == 1 and self.default_key_id in self._public_keys:
+                return self._public_keys[self.default_key_id]
+            else:
+                priv, pub = generate_key_pair(key_id, deterministic=True)
+                self.register_key_pair(key_id, priv, pub)
         return self._public_keys[key_id]
 
 
@@ -129,7 +216,7 @@ class SigningKeyRegistry:
     """In-memory and persistent public verification-key registry."""
 
     def __init__(self):
-        self._registry: Dict[str, Dict[str, str]] = {}
+        self._registry: Dict[str, Dict[str, Any]] = {}
 
     def register_public_key(
         self,
@@ -138,7 +225,7 @@ class SigningKeyRegistry:
         algorithm: str = "ES256",
         curve: str = "P-256",
         status: str = "ACTIVE",
-    ) -> Dict[str, str]:
+    ) -> Dict[str, Any]:
         fingerprint = hashlib.sha256(public_key_pem.encode("utf-8")).hexdigest()
         entry = {
             "key_id": key_id,
@@ -146,42 +233,43 @@ class SigningKeyRegistry:
             "curve": curve,
             "public_key": public_key_pem,
             "fingerprint": fingerprint,
-            "status": status,
+            "status": status.upper() if isinstance(status, str) else "ACTIVE",
             "created_at": datetime.now(timezone.utc).isoformat(),
             "revoked_at": None,
         }
         self._registry[key_id] = entry
         return entry
 
-    def get_public_key(self, key_id: str) -> Optional[Dict[str, str]]:
+    def get_public_key(self, key_id: str) -> Optional[Dict[str, Any]]:
         return self._registry.get(key_id)
 
     def is_key_active(self, key_id: str) -> bool:
         entry = self.get_public_key(key_id)
-        return entry is not None and entry.get("status") == "ACTIVE"
+        if not entry:
+            return False
+        return str(entry.get("status", "")).upper() == "ACTIVE"
 
+    def revoke_key(self, key_id: str, reason: Optional[str] = None) -> bool:
+        entry = self._registry.get(key_id)
+        if entry:
+            entry["status"] = "REVOKED"
+            entry["revoked_at"] = datetime.now(timezone.utc).isoformat()
+            if reason:
+                entry["revocation_reason"] = reason
+            return True
+        return False
 
-def generate_key_pair(key_id: str) -> Tuple[str, str]:
-    """Generates an ECDSA NIST P-256 private and public key pair in PEM format."""
-    if not CRYPTOGRAPHY_AVAILABLE:
-        priv = f"MOCK_PRIVATE_KEY_{key_id}"
-        pub = f"MOCK_PUBLIC_KEY_{key_id}"
-        return priv, pub
-
-    private_key = ec.generate_private_key(ec.SECP256R1())
-    private_pem = private_key.private_bytes(
-        encoding=serialization.Encoding.PEM,
-        format=serialization.PrivateFormat.PKCS8,
-        encryption_algorithm=serialization.NoEncryption(),
-    ).decode("utf-8")
-
-    public_key = private_key.public_key()
-    public_pem = public_key.public_bytes(
-        encoding=serialization.Encoding.PEM,
-        format=serialization.PublicFormat.SubjectPublicKeyInfo,
-    ).decode("utf-8")
-
-    return private_pem, public_pem
+    def resolve_and_verify(
+        self,
+        key_id: str,
+        canonical_bytes: bytes,
+        signature_base64url: str,
+    ) -> bool:
+        """Resolve public key by key_id and verify signature."""
+        entry = self.get_public_key(key_id)
+        if not entry or not self.is_key_active(key_id):
+            return False
+        return verify_signature(canonical_bytes, signature_base64url, entry["public_key"])
 
 
 def sign_canonical_payload(canonical_bytes: bytes, private_key_pem: str) -> str:
