@@ -906,3 +906,197 @@ def test_finalization_concurrency_idempotency(db_session: Session, test_facility
     assert second_finalized.certificate_id == cert_1
     assert second_finalized.signature_id == sig_1
 
+
+def test_ph_instantaneous_excursion_fails_compliance(db_session: Session, test_facility):
+    """Verify instantaneous pH excursions fail compliance even when arithmetic mean is within 5.5-9.0."""
+    now = datetime.now(timezone.utc)
+    rules = ComplianceService.ensure_default_rules(db_session)
+
+    # 5 pH readings whose mean is (7.0*3 + 3.5 + 9.5) / 5 = 34.0 / 5 = 6.8 (nominally in [5.5, 9.0]),
+    # but individual values breach lower (3.5) and upper (9.5) limits.
+    readings = [
+        Reading(
+            reading_id=uuid4(),
+            facility_id=test_facility.facility_id,
+            observed_at=now - timedelta(minutes=50),
+            treatment_stage="final_effluent",
+            parameter="BOD",
+            value=Decimal("20.0"),
+            unit="mg/L",
+            quality_status="valid",
+        ),
+        Reading(
+            reading_id=uuid4(),
+            facility_id=test_facility.facility_id,
+            observed_at=now - timedelta(minutes=50),
+            treatment_stage="final_effluent",
+            parameter="COD",
+            value=Decimal("120.0"),
+            unit="mg/L",
+            quality_status="valid",
+        ),
+        Reading(
+            reading_id=uuid4(),
+            facility_id=test_facility.facility_id,
+            observed_at=now - timedelta(minutes=50),
+            treatment_stage="final_effluent",
+            parameter="TSS",
+            value=Decimal("25.0"),
+            unit="mg/L",
+            quality_status="valid",
+        ),
+        Reading(
+            reading_id=uuid4(),
+            facility_id=test_facility.facility_id,
+            observed_at=now - timedelta(minutes=50),
+            treatment_stage="final_effluent",
+            parameter="NH4_N",
+            value=Decimal("10.0"),
+            unit="mg/L",
+            quality_status="valid",
+        ),
+    ]
+
+    for ph_val in [Decimal("7.0"), Decimal("7.0"), Decimal("7.0"), Decimal("3.5"), Decimal("9.5")]:
+        readings.append(
+            Reading(
+                reading_id=uuid4(),
+                facility_id=test_facility.facility_id,
+                observed_at=now - timedelta(minutes=30),
+                treatment_stage="final_effluent",
+                parameter="PH",
+                value=ph_val,
+                unit="pH units",
+                quality_status="valid",
+            )
+        )
+
+    overall_status, param_results = ComplianceService.evaluate_readings(readings, rules)
+
+    # Compliance MUST fail because 3.5 < 5.5 and 9.5 > 9.0
+    assert overall_status == "non_compliant"
+    assert param_results["PH"]["status"] == "non_compliant"
+    assert param_results["PH"]["min_value"] == 3.5
+    assert param_results["PH"]["max_value"] == 9.5
+    assert param_results["PH"]["mean_value"] == 6.8
+    assert "falls below lower limit" in param_results["PH"]["reason"]
+
+
+def test_window_idempotency_api_endpoint(client: TestClient, db_session: Session, test_facility):
+    """Test that duplicate POST /treatment-records/finalize calls return HTTP 200 with identical record."""
+    now = datetime.now(timezone.utc)
+    window_start = now - timedelta(hours=4)
+    window_end = now
+
+    for p, val, unit in [
+        ("BOD", Decimal("18.0"), "mg/L"),
+        ("COD", Decimal("110.0"), "mg/L"),
+        ("TSS", Decimal("22.0"), "mg/L"),
+        ("PH", Decimal("7.4"), "pH units"),
+        ("NH4_N", Decimal("9.0"), "mg/L"),
+    ]:
+        r = Reading(
+            reading_id=uuid4(),
+            facility_id=test_facility.facility_id,
+            observed_at=window_start + timedelta(minutes=30),
+            treatment_stage="final_effluent",
+            parameter=p,
+            value=val,
+            unit=unit,
+            quality_status="valid",
+        )
+        db_session.add(r)
+    db_session.commit()
+
+    payload = {
+        "facility_id": str(test_facility.facility_id),
+        "period_start": window_start.isoformat(),
+        "period_end": window_end.isoformat(),
+        "key_id": "key-ecdsa-p256-01",
+    }
+
+    # 1. First finalize call: creates new finalized record (HTTP 201)
+    resp1 = client.post("/api/v1/treatment-records/finalize", json=payload)
+    assert resp1.status_code == 201
+    data1 = resp1.json()
+    assert data1["record_state"] == "finalized"
+    rec_id1 = data1["record_id"]
+    hash1 = data1["canonical_hash"]
+    cert_id1 = data1["certificate_id"]
+
+    # 2. Second finalize call with identical facility & window: returns HTTP 200 idempotently
+    resp2 = client.post("/api/v1/treatment-records/finalize", json=payload)
+    assert resp2.status_code == 200
+    data2 = resp2.json()
+    assert data2["record_id"] == rec_id1
+    assert data2["canonical_hash"] == hash1
+    assert data2["certificate_id"] == cert_id1
+
+    # Verify database has exactly 1 treatment record row
+    records = db_session.query(TreatmentRecord).filter(
+        TreatmentRecord.facility_id == test_facility.facility_id
+    ).all()
+    assert len(records) == 1
+
+
+def test_list_certificates_api_endpoint(client: TestClient, db_session: Session, test_facility):
+    """Test GET /api/v1/certificates endpoint with pagination and filtering."""
+    now = datetime.now(timezone.utc)
+    window_start = now - timedelta(hours=3)
+    window_end = now
+
+    for p, val, unit in [
+        ("BOD", Decimal("19.0"), "mg/L"),
+        ("COD", Decimal("115.0"), "mg/L"),
+        ("TSS", Decimal("24.0"), "mg/L"),
+        ("PH", Decimal("7.1"), "pH units"),
+        ("NH4_N", Decimal("8.5"), "mg/L"),
+    ]:
+        r = Reading(
+            reading_id=uuid4(),
+            facility_id=test_facility.facility_id,
+            observed_at=window_start + timedelta(minutes=20),
+            treatment_stage="final_effluent",
+            parameter=p,
+            value=val,
+            unit=unit,
+            quality_status="valid",
+        )
+        db_session.add(r)
+    db_session.commit()
+
+    # Finalize window to generate certificate
+    fin_resp = client.post(
+        "/api/v1/treatment-records/finalize",
+        json={
+            "facility_id": str(test_facility.facility_id),
+            "period_start": window_start.isoformat(),
+            "period_end": window_end.isoformat(),
+        },
+    )
+    assert fin_resp.status_code == 201
+
+    # Query all certificates
+    list_resp = client.get("/api/v1/certificates")
+    assert list_resp.status_code == 200
+    certs = list_resp.json()
+    assert len(certs) >= 1
+
+    cert = certs[0]
+    assert cert["facility_id"] == str(test_facility.facility_id)
+    assert cert["compliance_status"] == "compliant"
+    assert cert["quality_status"] == "valid"
+    assert cert["status"] == "valid"
+
+    # Filter by facility_id
+    fac_resp = client.get(f"/api/v1/certificates?facility_id={test_facility.facility_id}")
+    assert fac_resp.status_code == 200
+    assert len(fac_resp.json()) >= 1
+
+    # Filter by unknown facility
+    unknown_id = uuid4()
+    empty_resp = client.get(f"/api/v1/certificates?facility_id={unknown_id}")
+    assert empty_resp.status_code == 200
+    assert len(empty_resp.json()) == 0
+
+

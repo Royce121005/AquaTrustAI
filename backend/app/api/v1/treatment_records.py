@@ -2,7 +2,7 @@
 
 from typing import Optional, List
 from uuid import UUID
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+from fastapi import APIRouter, Depends, HTTPException, status, Query, Response
 from sqlalchemy.orm import Session
 
 from app.db.session import get_db
@@ -28,9 +28,18 @@ router = APIRouter(tags=["Treatment Records & Finalization"])
 )
 def finalize_treatment_window(
     payload: TreatmentRecordFinalizeRequest,
+    response: Response,
     db: Session = Depends(get_db),
 ):
     """Aggregate readings, evaluate compliance, and finalize an immutable treatment record."""
+    treatment_repo = TreatmentRepository(db)
+    existing_record = treatment_repo.get_by_facility_and_period(
+        facility_id=payload.facility_id,
+        period_start=payload.period_start,
+        period_end=payload.period_end,
+    )
+    already_finalized = bool(existing_record and existing_record.record_state == "finalized")
+
     try:
         record = TreatmentService.aggregate_window(
             db=db,
@@ -52,6 +61,9 @@ def finalize_treatment_window(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail=str(err),
         )
+
+    if already_finalized:
+        response.status_code = status.HTTP_200_OK
 
     return TreatmentRecordResponse(
         record_id=finalized.record_id,
