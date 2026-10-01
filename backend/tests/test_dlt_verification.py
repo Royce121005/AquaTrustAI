@@ -26,10 +26,39 @@ from app.dlt.correction import create_corrected_record_bundle
 FIXTURES_PATH = Path(__file__).resolve().parent.parent.parent / "dlt" / "fixtures" / "sample_treatment_record.json"
 
 
+SAMPLE_TREATMENT_RECORD_DATA = {
+    "record_id": "rec_stp_001_20260927_001",
+    "facility_id": "STP-KORAMANGALA-01",
+    "period_start": "2026-09-27T00:00:00Z",
+    "period_end": "2026-09-27T06:00:00Z",
+    "record_version": 1,
+    "record_state": "finalized",
+    "quality_status": "VALID",
+    "anomaly_status": "NORMAL",
+    "compliance_status": "COMPLIANT",
+    "provenance": {
+        "source_dataset_ids": ["bangalore_clean_v1", "uci_etp_v1"],
+        "model_version": "isolation_forest_v1.0.0",
+        "rule_version": "CPCB_STP_2023_v1",
+    },
+    "evidence_snapshot": {
+        "parameters": [
+            {"parameter": "BOD", "value": 18.5, "unit": "mg/L", "threshold_max": 20.0, "compliance": "PASS"},
+            {"parameter": "COD", "value": 85.0, "unit": "mg/L", "threshold_max": 250.0, "compliance": "PASS"},
+            {"parameter": "pH", "value": 7.4, "unit": "pH", "threshold_min": 6.5, "threshold_max": 9.0, "compliance": "PASS"},
+            {"parameter": "TSS", "value": 24.0, "unit": "mg/L", "threshold_max": 30.0, "compliance": "PASS"},
+        ]
+    },
+    "finalized_at": "2026-09-27T06:05:00Z",
+}
+
+
 @pytest.fixture
 def sample_record():
-    with open(FIXTURES_PATH, "r", encoding="utf-8") as f:
-        return json.load(f)
+    if FIXTURES_PATH.exists():
+        with open(FIXTURES_PATH, "r", encoding="utf-8") as f:
+            return json.load(f)
+    return SAMPLE_TREATMENT_RECORD_DATA.copy()
 
 
 class TestCanonicalization:
