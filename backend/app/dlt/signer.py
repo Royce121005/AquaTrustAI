@@ -50,6 +50,12 @@ def generate_key_pair(key_id: str = "default", deterministic: bool = True) -> Tu
         return priv, pub
 
     if deterministic:
+        env = (os.getenv("ENVIRONMENT") or os.getenv("APP_ENV") or "").lower()
+        if env in ("production", "prod"):
+            raise ValueError(
+                f"Deterministic key derivation via static seed is strictly forbidden in production for key '{key_id}'. "
+                "Provide a secure key via DLT_SIGNING_PRIVATE_KEY_PEM or a Hardware Security Module (HSM)."
+            )
         seed_bytes = hashlib.sha256(f"AquaTrustAI_Signing_Key_Seed_{key_id}".encode("utf-8")).digest()
         scalar = (int.from_bytes(seed_bytes, byteorder="big") % (_SECP256R1_ORDER - 1)) + 1
         private_key = ec.derive_private_key(scalar, ec.SECP256R1())

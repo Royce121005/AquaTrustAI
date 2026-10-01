@@ -192,8 +192,19 @@ class VerifierService:
             )
         )
 
+        superseding_rec = db.query(TreatmentRecord).filter(
+            TreatmentRecord.supersedes_record_id == record.record_id
+        ).first()
+        is_superseded = bool(record.record_state == "superseded_by_correction" or superseding_rec)
+        superseding_record_id = superseding_rec.record_id if superseding_rec else None
+
         return {
             "record_id": record.record_id,
+            "record_version": record.record_version,
+            "record_state": record.record_state,
+            "is_superseded": is_superseded,
+            "superseding_record_id": superseding_record_id,
+            "certificate_id": record.certificate_id,
             "overall_verdict": overall_verdict,
             "verification_timestamp": utc_now(),
             "stages": stages,

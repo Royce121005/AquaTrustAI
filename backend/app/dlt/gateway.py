@@ -37,9 +37,32 @@ class FabricDLTGateway:
         self.peer_endpoint = peer_endpoint or os.getenv("DLT_PEER_ENDPOINT", self.DEFAULT_PEER_ENDPOINT)
         self.channel_name = channel_name or os.getenv("DLT_CHANNEL_NAME", self.CHANNEL_NAME)
         self.chaincode_name = chaincode_name or os.getenv("DLT_CHAINCODE_NAME", self.CHAINCODE_NAME)
+        self._storage_path = os.getenv("DLT_MOCK_LEDGER_PATH", os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "aquatrust_mock_ledger.json"))
         self._mock_ledger: Dict[str, Dict[str, Any]] = {}
         self._block_height: int = 1000
         self._status: str = "connected" if self.mode in ("live", "simulation") else "degraded"
+        self._load_ledger()
+
+    def _load_ledger(self) -> None:
+        """Load persisted ledger entries from disk in simulation mode."""
+        if self._storage_path and os.path.exists(self._storage_path):
+            try:
+                with open(self._storage_path, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                    self._mock_ledger.update(data.get("entries", {}))
+                    self._block_height = max(self._block_height, data.get("block_height", 1000))
+            except Exception:
+                pass
+
+    def _save_ledger(self) -> None:
+        """Persist current ledger entries to disk to ensure survival across process restarts."""
+        if self._storage_path:
+            try:
+                os.makedirs(os.path.dirname(os.path.abspath(self._storage_path)), exist_ok=True)
+                with open(self._storage_path, "w", encoding="utf-8") as f:
+                    json.dump({"block_height": self._block_height, "entries": self._mock_ledger}, f)
+            except Exception:
+                pass
 
     @property
     def is_connected(self) -> bool:
@@ -67,6 +90,11 @@ class FabricDLTGateway:
         """Reset mock ledger state for test isolation."""
         self._mock_ledger.clear()
         self._block_height = 1000
+        if self._storage_path and os.path.exists(self._storage_path):
+            try:
+                os.remove(self._storage_path)
+            except Exception:
+                pass
 
     def anchor_record(
         self,
@@ -99,6 +127,7 @@ class FabricDLTGateway:
 
         self._mock_ledger[str(record_id)] = dlt_record
         self._mock_ledger[tx_id] = dlt_record
+        self._save_ledger()
 
         return dlt_record
 
@@ -133,6 +162,7 @@ class FabricDLTGateway:
         self._mock_ledger[f"correction:{original_record_id}"] = correction_record
         self._mock_ledger[f"correction:{corrected_record_id}"] = correction_record
         self._mock_ledger[tx_id] = correction_record
+        self._save_ledger()
 
         return correction_record
 
@@ -188,6 +218,7 @@ class FabricDLTGateway:
 
         self._mock_ledger[batch_id] = batch_record
         self._mock_ledger[tx_id] = batch_record
+        self._save_ledger()
 
         return batch_record
 
@@ -208,6 +239,18 @@ class FabricDLTGateway:
     def query_transaction(self, tx_id: str) -> Optional[Dict[str, Any]]:
         """Query transaction by transaction ID."""
         return self._mock_ledger.get(tx_id)
+
+    def query_anchor_by_hash(self, canonical_hash: str) -> Optional[Dict[str, Any]]:
+        """Query anchored ledger state by canonical hash (mirrors GetAnchorByHash)."""
+        if not canonical_hash:
+            return None
+        target = canonical_hash.lower()
+        for k, v in self._mock_ledger.items():
+            if isinstance(v, dict):
+                rec_hash = (v.get("record_hash") or v.get("canonical_hash") or "").lower()
+                if rec_hash == target and v.get("docType") in ("record_anchor", "anchor"):
+                    return v
+        return None
 
     @classmethod
     def to_dlt_compliance_status(cls, app_status: str) -> str:

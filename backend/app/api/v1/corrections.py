@@ -1,6 +1,6 @@
 """AquaTrust AI — Append-Only Corrections Router."""
 
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 from uuid import UUID, uuid4
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
@@ -20,6 +20,20 @@ from app.core.security import get_current_user_claims, require_role
 router = APIRouter(tags=["Append-Only Lineage & Corrections"])
 
 
+def _resolve_actor_uuid(identifier: Optional[str], claims: Optional[Dict[str, Any]] = None) -> UUID:
+    """Deterministically resolves actor string or JWT claim identity into a consistent UUID."""
+    actor = identifier
+    if not actor and claims:
+        actor = claims.get("user_id") or claims.get("sub") or claims.get("username")
+    if not actor:
+        return uuid4()
+    try:
+        return UUID(str(actor))
+    except (ValueError, AttributeError):
+        import uuid
+        return uuid.uuid5(uuid.NAMESPACE_DNS, str(actor))
+
+
 @router.post(
     "/corrections/propose",
     response_model=CorrectionResponse,
@@ -27,10 +41,14 @@ router = APIRouter(tags=["Append-Only Lineage & Corrections"])
     summary="Propose an append-only correction for a finalized record",
     dependencies=[Depends(require_role(["operator", "auditor", "regulatory_stakeholder", "admin"]))],
 )
-def propose_correction(payload: ProposeCorrectionRequest, db: Session = Depends(get_db)):
+def propose_correction(
+    payload: ProposeCorrectionRequest,
+    db: Session = Depends(get_db),
+    claims: Dict[str, Any] = Depends(require_role(["operator", "auditor", "regulatory_stakeholder", "admin"])),
+):
     """Propose a correction without mutating the original record."""
     try:
-        proposer_uuid = uuid4()
+        proposer_uuid = _resolve_actor_uuid(payload.proposer_id, claims)
         corr = CorrectionService.propose_correction(
             db=db,
             original_record_id=payload.original_record_id,
@@ -69,10 +87,11 @@ def authorize_correction(
     correction_id: UUID,
     payload: AuthorizeCorrectionRequest,
     db: Session = Depends(get_db),
+    claims: Dict[str, Any] = Depends(require_role(["auditor", "regulatory_stakeholder", "admin"])),
 ):
     """Authorize a proposed correction."""
     try:
-        auth_uuid = uuid4()
+        auth_uuid = _resolve_actor_uuid(payload.authorized_by, claims)
         new_record = CorrectionService.authorize_correction(
             db=db,
             correction_id=correction_id,

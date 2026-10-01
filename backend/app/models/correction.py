@@ -21,7 +21,7 @@ class Correction(Base):
     reason = Column(String, nullable=False)
     proposed_changes = Column(JSONField, nullable=False, default=dict)
     status = Column(String, nullable=False, default="pending")  # 'pending', 'authorized', 'rejected', 'applied'
-    corrected_record_id = Column(UUID(as_uuid=True), ForeignKey("treatment_records.record_id", ondelete="SET NULL"), nullable=True)
+    corrected_record_id = Column(UUID(as_uuid=True), ForeignKey("treatment_records.record_id", ondelete="RESTRICT"), nullable=True)
     new_certificate_id = Column(UUID(as_uuid=True), nullable=True)
     new_hash = Column(String(64), nullable=True)
     new_signature_id = Column(UUID(as_uuid=True), nullable=True)

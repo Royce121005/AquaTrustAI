@@ -220,6 +220,8 @@ class TreatmentService:
         db: Session,
         record: TreatmentRecord,
         key_id: str = DEFAULT_KEY_ID,
+        actor_id: Optional[UUID] = None,
+        actor_role: Optional[str] = None,
     ) -> TreatmentRecord:
         """Atomic finalization transaction: freezes evidence snapshot, canonicalizes, hashes, signs, creates certificate and DLT anchor."""
         treatment_repo = TreatmentRepository(db)
@@ -376,6 +378,8 @@ class TreatmentService:
         # 9. Audit Trail
         audit = AuditLog(
             audit_log_id=uuid4(),
+            actor_id=actor_id,
+            actor_role=actor_role,
             action="RECORD_FINALIZED",
             resource_type="treatment_record",
             resource_id=record.record_id,

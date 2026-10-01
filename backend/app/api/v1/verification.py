@@ -37,6 +37,11 @@ def verify_record(record_id: UUID, db: Session = Depends(get_db)):
 
     return VerificationResultResponse(
         record_id=result["record_id"],
+        record_version=result.get("record_version", 1),
+        record_state=result.get("record_state", "finalized"),
+        is_superseded=result.get("is_superseded", False),
+        superseding_record_id=result.get("superseding_record_id"),
+        certificate_id=result.get("certificate_id"),
         overall_verdict=result["overall_verdict"],
         verification_timestamp=result["verification_timestamp"],
         stages=result["stages"],
@@ -69,6 +74,11 @@ def verify_record_public(record_id: UUID, db: Session = Depends(get_db)):
 
     return VerificationResultResponse(
         record_id=result["record_id"],
+        record_version=result.get("record_version", 1),
+        record_state=result.get("record_state", "finalized"),
+        is_superseded=result.get("is_superseded", False),
+        superseding_record_id=result.get("superseding_record_id"),
+        certificate_id=result.get("certificate_id"),
         overall_verdict=result["overall_verdict"],
         verification_timestamp=result["verification_timestamp"],
         stages=result["stages"],
@@ -86,6 +96,23 @@ def verify_record_public(record_id: UUID, db: Session = Depends(get_db)):
 def verify_record_public_get(record_id: UUID, db: Session = Depends(get_db)):
     """GET alias for public unauthenticated record verification."""
     return verify_record_public(record_id=record_id, db=db)
+
+
+@router.get(
+    "/verification/public/verify-certificate/{certificate_id}",
+    response_model=VerificationResultResponse,
+    summary="Public verification of compliance certificate and underlying treatment record by certificate ID (unauthenticated)",
+)
+def verify_certificate_public(certificate_id: UUID, db: Session = Depends(get_db)):
+    """Resolves certificate_id to its treatment record and returns the complete 4-stage verification result."""
+    treatment_repo = TreatmentRepository(db)
+    cert = treatment_repo.get_certificate(certificate_id)
+    if not cert:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Certificate {certificate_id} not found",
+        )
+    return verify_record_public(record_id=cert.record_id, db=db)
 
 
 @router.post(

@@ -37,7 +37,7 @@ def create_corrected_record_bundle(
     new_version = current_version + 1
 
     # Generate new record IDs
-    corrected_id = f"{original_id}_v{new_version}"
+    corrected_id = str(uuid.uuid4())
     correction_id = str(uuid.uuid4())
     now_iso = datetime.now(timezone.utc).isoformat()
 

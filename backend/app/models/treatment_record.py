@@ -29,7 +29,7 @@ class TreatmentRecord(Base):
     canonical_hash = Column(String(64), nullable=True)
     signature_id = Column(UUID(as_uuid=True), nullable=True)
     anchor_status = Column(String, nullable=False, default="not_required")  # 'not_required', 'pending', 'submitted', 'confirmed', 'failed', 'rejected'
-    supersedes_record_id = Column(UUID(as_uuid=True), ForeignKey("treatment_records.record_id", ondelete="SET NULL"), nullable=True)
+    supersedes_record_id = Column(UUID(as_uuid=True), ForeignKey("treatment_records.record_id", ondelete="RESTRICT"), nullable=True)
     created_at = Column(UTCDateTime, nullable=False, default=utc_now)
     finalized_at = Column(UTCDateTime, nullable=True)
 

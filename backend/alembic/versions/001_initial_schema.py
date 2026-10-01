@@ -148,7 +148,7 @@ def upgrade() -> None:
         sa.Column('canonical_hash', sa.String(length=64), nullable=True),
         sa.Column('signature_id', postgresql.UUID(as_uuid=True), nullable=True),
         sa.Column('anchor_status', sa.String(), nullable=False, server_default='not_required'),
-        sa.Column('supersedes_record_id', postgresql.UUID(as_uuid=True), sa.ForeignKey('treatment_records.record_id', ondelete='SET NULL'), nullable=True),
+        sa.Column('supersedes_record_id', postgresql.UUID(as_uuid=True), sa.ForeignKey('treatment_records.record_id', ondelete='RESTRICT'), nullable=True),
         sa.Column('created_at', sa.DateTime(timezone=True), nullable=False),
         sa.Column('finalized_at', sa.DateTime(timezone=True), nullable=True),
     )
@@ -187,7 +187,7 @@ def upgrade() -> None:
     op.create_table(
         'cryptographic_artifacts',
         sa.Column('signature_id', postgresql.UUID(as_uuid=True), primary_key=True),
-        sa.Column('record_id', postgresql.UUID(as_uuid=True), sa.ForeignKey('treatment_records.record_id', ondelete='CASCADE'), unique=True, nullable=False),
+        sa.Column('record_id', postgresql.UUID(as_uuid=True), sa.ForeignKey('treatment_records.record_id', ondelete='RESTRICT'), unique=True, nullable=False),
         sa.Column('canonicalization_version', sa.String(), nullable=False, server_default='atc-v1'),
         sa.Column('hash_algorithm', sa.String(), nullable=False, server_default='SHA-256'),
         sa.Column('canonical_hash', sa.String(length=64), nullable=False),
@@ -202,7 +202,7 @@ def upgrade() -> None:
     op.create_table(
         'dlt_anchors',
         sa.Column('anchor_id', postgresql.UUID(as_uuid=True), primary_key=True),
-        sa.Column('record_id', postgresql.UUID(as_uuid=True), sa.ForeignKey('treatment_records.record_id', ondelete='CASCADE'), unique=True, nullable=False),
+        sa.Column('record_id', postgresql.UUID(as_uuid=True), sa.ForeignKey('treatment_records.record_id', ondelete='RESTRICT'), unique=True, nullable=False),
         sa.Column('certificate_id', postgresql.UUID(as_uuid=True), sa.ForeignKey('certificates.certificate_id', ondelete='SET NULL'), nullable=True),
         sa.Column('facility_id', postgresql.UUID(as_uuid=True), sa.ForeignKey('facilities.facility_id', ondelete='CASCADE'), nullable=False),
         sa.Column('event_timestamp', sa.DateTime(timezone=True), nullable=False),
@@ -230,7 +230,7 @@ def upgrade() -> None:
         sa.Column('reason', sa.String(), nullable=False),
         sa.Column('proposed_changes', postgresql.JSONB(astext_type=sa.Text()), nullable=False),
         sa.Column('status', sa.String(), nullable=False, server_default='pending'),
-        sa.Column('corrected_record_id', postgresql.UUID(as_uuid=True), sa.ForeignKey('treatment_records.record_id', ondelete='SET NULL'), nullable=True),
+        sa.Column('corrected_record_id', postgresql.UUID(as_uuid=True), sa.ForeignKey('treatment_records.record_id', ondelete='RESTRICT'), nullable=True),
         sa.Column('new_certificate_id', postgresql.UUID(as_uuid=True), nullable=True),
         sa.Column('new_hash', sa.String(length=64), nullable=True),
         sa.Column('new_signature_id', postgresql.UUID(as_uuid=True), nullable=True),

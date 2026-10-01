@@ -236,11 +236,33 @@ def test_public_unauthenticated_verification_endpoint(unauthenticated_client: Te
     assert data["record_id"] == str(finalized_record.record_id)
     assert data["overall_verdict"] == "VERIFIED"
     assert data["stages"]["stage_4_dlt_anchor"]["status"] == "passed"
+    assert data["record_version"] == 1
+    assert data["is_superseded"] is False
+    assert data["certificate_id"] == str(finalized_record.certificate_id)
 
-    # Non-existent record returns 404
+    # Test GET public certificate verification endpoint
+    cert_resp = unauthenticated_client.get(f"/api/v1/verification/public/verify-certificate/{finalized_record.certificate_id}")
+    assert cert_resp.status_code == 200
+    cert_data = cert_resp.json()
+    assert cert_data["record_id"] == str(finalized_record.record_id)
+    assert cert_data["overall_verdict"] == "VERIFIED"
+    assert cert_data["certificate_id"] == str(finalized_record.certificate_id)
+
+    # Non-existent record / cert returns 404
     fake_id = uuid4()
     resp_404 = unauthenticated_client.post(f"/api/v1/verification/public/verify/{fake_id}")
     assert resp_404.status_code == 404
+
+    fake_cert_404 = unauthenticated_client.get(f"/api/v1/verification/public/verify-certificate/{fake_id}")
+    assert fake_cert_404.status_code == 404
+
+
+def test_production_key_derivation_guard(monkeypatch):
+    """Test that static seed deterministic key derivation is strictly blocked in production."""
+    from app.dlt.signer import generate_key_pair
+    monkeypatch.setenv("ENVIRONMENT", "production")
+    with pytest.raises(ValueError, match="strictly forbidden in production"):
+        generate_key_pair("prod-key-01", deterministic=True)
 
 
 def test_dlt_gateway_correction_link_and_status():
@@ -331,6 +353,25 @@ def test_append_only_correction_lifecycle(client: TestClient, db_session: Sessio
     corr = db_session.query(Correction).filter(Correction.correction_id == UUID(correction_id)).first()
     assert corr.new_dlt_anchor_id is not None
 
+    # Verify raw historical readings were NOT mutated in place; new append-only reading was created
+    old_bod = db_session.query(Reading).filter(
+        Reading.facility_id == finalized_record.facility_id,
+        Reading.parameter == "BOD",
+        Reading.quality_status == "suspect",
+    ).first()
+    assert old_bod is not None
+    assert old_bod.value == Decimal("20.0")
+    assert old_bod.provenance.get("superseded_by_correction_id") == correction_id
+
+    new_bod = db_session.query(Reading).filter(
+        Reading.facility_id == finalized_record.facility_id,
+        Reading.parameter == "BOD",
+        Reading.quality_status == "valid",
+        Reading.source == "correction",
+    ).first()
+    assert new_bod is not None
+    assert new_bod.value == Decimal("18.0")
+
     # Verify DLT gateway recorded the correction link
     link = dlt_gateway.query_correction_link(finalized_record.record_id, UUID(superseding_record_id))
     assert link is not None
@@ -347,6 +388,19 @@ def test_append_only_correction_lifecycle(client: TestClient, db_session: Sessio
     assert chain_data["chain"][0]["record_state"] == "superseded_by_correction"
     assert chain_data["chain"][1]["record_id"] == superseding_record_id
     assert chain_data["chain"][1]["record_state"] == "finalized"
+
+    # 4. Verify that verification endpoint exposes is_superseded flag and version
+    v_orig = client.post(f"/api/v1/verification/public/verify/{finalized_record.record_id}").json()
+    assert v_orig["is_superseded"] is True
+    assert v_orig["superseding_record_id"] == superseding_record_id
+    assert v_orig["record_version"] == 1
+    assert v_orig["record_state"] == "superseded_by_correction"
+
+    v_new = client.post(f"/api/v1/verification/public/verify/{superseding_record_id}").json()
+    assert v_new["is_superseded"] is False
+    assert v_new["superseding_record_id"] is None
+    assert v_new["record_version"] == 2
+    assert v_new["record_state"] == "finalized"
 
 
 def test_dlt_anchor_and_reconciliation(client: TestClient, db_session: Session, finalized_record):

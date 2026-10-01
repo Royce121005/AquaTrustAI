@@ -1,6 +1,6 @@
 """AquaTrust AI — Treatment Records Router."""
 
-from typing import Optional, List
+from typing import Optional, List, Dict, Any
 from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, status, Query, Response
 from sqlalchemy.orm import Session
@@ -30,6 +30,7 @@ def finalize_treatment_window(
     payload: TreatmentRecordFinalizeRequest,
     response: Response,
     db: Session = Depends(get_db),
+    claims: Dict[str, Any] = Depends(require_role(["operator", "admin"])),
 ):
     """Aggregate readings, evaluate compliance, and finalize an immutable treatment record."""
     treatment_repo = TreatmentRepository(db)
@@ -39,6 +40,18 @@ def finalize_treatment_window(
         period_end=payload.period_end,
     )
     already_finalized = bool(existing_record and existing_record.record_state == "finalized")
+
+    raw_actor = claims.get("user_id") or claims.get("sub") or claims.get("username")
+    actor_uuid = None
+    if raw_actor:
+        try:
+            actor_uuid = UUID(str(raw_actor))
+        except (ValueError, AttributeError):
+            import uuid
+            actor_uuid = uuid.uuid5(uuid.NAMESPACE_DNS, str(raw_actor))
+    actor_role = claims.get("role")
+    if hasattr(actor_role, "value"):
+        actor_role = actor_role.value
 
     try:
         record = TreatmentService.aggregate_window(
@@ -52,6 +65,8 @@ def finalize_treatment_window(
             db=db,
             record=record,
             key_id=payload.key_id or "key-ecdsa-p256-01",
+            actor_id=actor_uuid,
+            actor_role=actor_role,
         )
         db.commit()
         db.refresh(finalized)

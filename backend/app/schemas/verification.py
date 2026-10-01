@@ -15,6 +15,11 @@ class StageVerificationDetail(BaseModel):
 
 class VerificationResultResponse(BaseModel):
     record_id: UUID
+    record_version: Optional[int] = 1
+    record_state: Optional[str] = "finalized"
+    is_superseded: bool = False
+    superseding_record_id: Optional[UUID] = None
+    certificate_id: Optional[UUID] = None
     overall_verdict: str  # "VERIFIED", "TAMPER_DETECTED", "SIGNATURE_INVALID", "DLT_MISMATCH", "UNVERIFIED"
     verification_timestamp: datetime
     stages: Dict[str, StageVerificationDetail]

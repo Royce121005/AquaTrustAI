@@ -16,6 +16,7 @@ EXCLUDED_FIELDS = {
     "anchor_status",
     "signature_id",
     "canonical_hash",
+    "record_state",
     "created_at",
     "updated_at",
     "id",  # Internal DB surrogate primary key if present

@@ -10,9 +10,17 @@ from app.db.base import utc_now
 from app.db.session import get_db
 from app.models.dlt_anchor import DLTAnchor
 from app.models.treatment_record import TreatmentRecord
+from app.models.cryptographic_artifact import CryptographicArtifact
 from app.repositories.treatment_repository import TreatmentRepository
 from app.dlt.gateway import dlt_gateway
-from app.schemas.dlt import DLTAnchorResponse, DLTReconcileResponse
+from app.schemas.dlt import (
+    DLTAnchorResponse,
+    DLTReconcileResponse,
+    DLTBatchAnchorRequest,
+    DLTBatchAnchorResponse,
+    DLTBatchVerifyRequest,
+    DLTBatchVerifyResponse,
+)
 from app.core.security import get_current_user_claims, require_role
 
 router = APIRouter(tags=["Distributed Ledger (DLT) Anchors"])
@@ -75,13 +83,17 @@ def reconcile_anchor(record_id: UUID, db: Session = Depends(get_db)):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Anchor for record {record_id} not found")
 
     prev_status = anchor.anchor_status
+    crypto_art = db.query(CryptographicArtifact).filter(CryptographicArtifact.record_id == anchor.record_id).first()
+    sig_value = crypto_art.signature_value if crypto_art else "sample_signature_b64"
+    key_id = crypto_art.key_id if crypto_art else "key-ecdsa-p256-01"
+
     dlt_res = dlt_gateway.anchor_record(
         record_id=anchor.record_id,
         record_hash=anchor.canonical_hash,
         facility_id=anchor.facility_id,
         compliance_status=anchor.compliance_status,
-        signature_value="sample_signature_b64",
-        key_id="key-ecdsa-p256-01",
+        signature_value=sig_value,
+        key_id=key_id,
     )
 
     anchor.anchor_status = "anchored"
@@ -101,6 +113,59 @@ def reconcile_anchor(record_id: UUID, db: Session = Depends(get_db)):
         current_status=anchor.anchor_status,
         transaction_id=anchor.transaction_id,
         reconciled=True,
+    )
+
+
+@router.get(
+    "/dlt/anchors/hash/{canonical_hash}",
+    summary="Query DLT anchor by canonical SHA-256 hash",
+    dependencies=[Depends(get_current_user_claims)],
+)
+def get_anchor_by_hash(canonical_hash: str):
+    """Lookup anchor by canonical hash across ledger state."""
+    anchor = dlt_gateway.query_anchor_by_hash(canonical_hash)
+    if not anchor:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"No anchor found matching canonical hash {canonical_hash}")
+    return anchor
+
+
+@router.post(
+    "/dlt/batch-anchor",
+    response_model=DLTBatchAnchorResponse,
+    summary="Anchor a batch of telemetry hashes via RFC 6962 Merkle tree",
+    dependencies=[Depends(require_role(["operator", "admin"]))],
+)
+def anchor_batch(payload: DLTBatchAnchorRequest):
+    """Computes Merkle root and anchors batch to DLT ledger."""
+    try:
+        res = dlt_gateway.anchor_batch(
+            batch_id=payload.batch_id,
+            record_hashes=payload.record_hashes,
+            facility_id=payload.facility_id,
+            key_id=payload.key_id or "key-ecdsa-p256-01",
+        )
+        return DLTBatchAnchorResponse(**res)
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
+
+@router.post(
+    "/dlt/batch-verify",
+    response_model=DLTBatchVerifyResponse,
+    summary="Verify whether a telemetry hash is included in an anchored Merkle batch",
+)
+def verify_batch_leaf(payload: DLTBatchVerifyRequest):
+    """Verifies Merkle audit inclusion proof without fetching whole batch."""
+    is_valid = dlt_gateway.verify_batch_leaf(payload.batch_id, payload.leaf_hash)
+    batch = dlt_gateway.query_transaction(payload.batch_id) or dlt_gateway._mock_ledger.get(payload.batch_id)
+    root = batch.get("merkle_root") if batch else None
+
+    return DLTBatchVerifyResponse(
+        batch_id=payload.batch_id,
+        leaf_hash=payload.leaf_hash,
+        verified=is_valid,
+        merkle_root=root,
+        message="Leaf hash cryptographically verified in batch" if is_valid else "Leaf hash not found or proof invalid",
     )
 
 

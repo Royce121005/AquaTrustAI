@@ -9,7 +9,7 @@ Enforces immutable provenance and append-only governance:
 5. An immutable correction link is committed to the Hyperledger Fabric DLT ledger.
 """
 
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from decimal import Decimal
 from typing import Dict, Any, List, Optional
 from uuid import UUID, uuid4
@@ -94,30 +94,57 @@ class CorrectionService:
         # 1. Mark original record as superseded
         original_record.record_state = "superseded_by_correction"
 
-        # 2. Update readings if parameters were provided
+        # 2. Append corrected readings without mutating historical raw telemetry in-place
         param_delta = correction.proposed_changes.get("parameters", {}) if correction.proposed_changes else {}
         for param, val in param_delta.items():
             existing = db.query(Reading).filter(
                 Reading.facility_id == original_record.facility_id,
                 Reading.treatment_stage == "final_effluent",
                 Reading.parameter == param,
-                Reading.observed_at == original_record.period_start,
+                Reading.observed_at >= original_record.period_start,
+                Reading.observed_at <= original_record.period_end,
             ).first()
             if existing:
-                existing.value = Decimal(str(val))
-                existing.quality_status = "valid"
-                existing.provenance = {"correction_id": str(correction.correction_id), "supersedes": str(original_record.record_id)}
+                # Retain raw historical observation value, mark status suspect to exclude from new compliance
+                existing.quality_status = "suspect"
+                existing.provenance = {
+                    **(existing.provenance or {}),
+                    "superseded_by_correction_id": str(correction.correction_id),
+                }
+                # Insert append-only corrected reading with distinct microsecond offset to respect uq_readings_natural_key
+                r = Reading(
+                    reading_id=uuid4(),
+                    facility_id=original_record.facility_id,
+                    sensor_id=existing.sensor_id,
+                    observed_at=existing.observed_at + timedelta(microseconds=1000),
+                    treatment_stage="final_effluent",
+                    parameter=param,
+                    value=Decimal(str(val)),
+                    unit=existing.unit,
+                    source="correction",
+                    quality_status="valid",
+                    provenance={
+                        "correction_id": str(correction.correction_id),
+                        "supersedes_reading_id": str(existing.reading_id),
+                        "original_value": str(existing.value),
+                    },
+                )
+                db.add(r)
             else:
                 r = Reading(
                     reading_id=uuid4(),
                     facility_id=original_record.facility_id,
-                    observed_at=original_record.period_start,
+                    observed_at=original_record.period_start + timedelta(microseconds=1000),
                     treatment_stage="final_effluent",
                     parameter=param,
                     value=Decimal(str(val)),
                     unit="mg/L" if param != "PH" else "pH units",
+                    source="correction",
                     quality_status="valid",
-                    provenance={"correction_id": str(correction.correction_id), "supersedes": str(original_record.record_id)},
+                    provenance={
+                        "correction_id": str(correction.correction_id),
+                        "supersedes": str(original_record.record_id),
+                    },
                 )
                 db.add(r)
         db.flush()
