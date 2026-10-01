@@ -6,6 +6,7 @@ from datetime import datetime
 from sqlalchemy.orm import Session
 from sqlalchemy import select, desc
 
+from app.db.base import utc_now
 from app.models.treatment_record import TreatmentRecord
 from app.models.compliance_result import ComplianceResult
 from app.models.compliance_rule import ComplianceRule
@@ -52,13 +53,45 @@ class TreatmentRepository(BaseRepository[TreatmentRecord]):
         stmt = stmt.order_by(desc(TreatmentRecord.period_start)).offset(skip).limit(limit)
         return list(self.db.scalars(stmt).all())
 
-    # Compliance rules and results
-    def get_active_compliance_rules(self, stage: str = "final_effluent") -> List[ComplianceRule]:
-        """Fetch active environmental compliance rules."""
-        stmt = select(ComplianceRule).where(
-            ComplianceRule.active == True,
-            (ComplianceRule.stage_scope == stage) | (ComplianceRule.stage_scope.is_(None)),
+    def get_by_facility_and_period(
+        self,
+        facility_id: UUID,
+        period_start: datetime,
+        period_end: datetime,
+    ) -> Optional[TreatmentRecord]:
+        """Fetch existing treatment record for exact facility and time window (excluding superseded)."""
+        stmt = (
+            select(TreatmentRecord)
+            .where(
+                TreatmentRecord.facility_id == facility_id,
+                TreatmentRecord.period_start == period_start,
+                TreatmentRecord.period_end == period_end,
+                TreatmentRecord.record_state != "superseded_by_correction",
+            )
+            .order_by(desc(TreatmentRecord.created_at))
         )
+        return self.db.scalars(stmt).first()
+
+    # Compliance rules and results
+    def get_active_compliance_rules(
+        self,
+        stage: Optional[str] = "final_effluent",
+        period_start: Optional[datetime] = None,
+        period_end: Optional[datetime] = None,
+    ) -> List[ComplianceRule]:
+        """Fetch active environmental compliance rules with stage and temporal filtering."""
+        ref_start = period_start or utc_now()
+        ref_end = period_end or utc_now()
+
+        conditions = [
+            ComplianceRule.active == True,
+            ComplianceRule.effective_from <= ref_start,
+            (ComplianceRule.effective_to.is_(None)) | (ComplianceRule.effective_to >= ref_end),
+        ]
+        if stage is not None:
+            conditions.append((ComplianceRule.stage_scope == stage) | (ComplianceRule.stage_scope.is_(None)))
+
+        stmt = select(ComplianceRule).where(*conditions)
         return list(self.db.scalars(stmt).all())
 
     def add_compliance_result(self, compliance_result: ComplianceResult) -> ComplianceResult:
@@ -87,6 +120,22 @@ class TreatmentRepository(BaseRepository[TreatmentRecord]):
         """Fetch certificate associated with a treatment record."""
         stmt = select(Certificate).where(Certificate.record_id == record_id)
         return self.db.scalars(stmt).first()
+
+    def list_certificates(
+        self,
+        facility_id: Optional[UUID] = None,
+        status: Optional[str] = None,
+        skip: int = 0,
+        limit: int = 50,
+    ) -> List[Certificate]:
+        """List certificates with optional filtering."""
+        stmt = select(Certificate)
+        if facility_id:
+            stmt = stmt.join(TreatmentRecord, Certificate.record_id == TreatmentRecord.record_id).where(TreatmentRecord.facility_id == facility_id)
+        if status:
+            stmt = stmt.where(Certificate.status == status)
+        stmt = stmt.order_by(desc(Certificate.issued_at)).offset(skip).limit(limit)
+        return list(self.db.scalars(stmt).all())
 
     # Signing keys & Cryptographic artifacts
     def get_signing_key(self, key_id: str) -> Optional[SigningKey]:

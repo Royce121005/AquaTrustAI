@@ -6,6 +6,7 @@ from typing import Optional, List
 from uuid import UUID, uuid4
 from fastapi import APIRouter, Depends, HTTPException, Header, status, Query
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import IntegrityError
 
 from app.db.session import get_db
 from app.db.base import utc_now
@@ -15,6 +16,7 @@ from app.repositories.facility_repository import FacilityRepository
 from app.repositories.reading_repository import ReadingRepository
 from app.services.validation_service import ValidationService
 from app.services.anomaly_service import AnomalyService
+from app.core.security import get_current_user_claims, require_role
 from app.schemas.ingestion import (
     ReadingIngestRequest,
     ReadingIngestResponse,
@@ -31,12 +33,14 @@ router = APIRouter(tags=["Telemetry Ingestion"])
     response_model=ReadingIngestResponse,
     status_code=status.HTTP_201_CREATED,
     summary="Ingest a single telemetry reading",
+    dependencies=[Depends(require_role(["operator", "admin"]))],
 )
 @router.post(
     "/telemetry/ingest",
     response_model=ReadingIngestResponse,
     status_code=status.HTTP_201_CREATED,
     include_in_schema=False,
+    dependencies=[Depends(require_role(["operator", "admin"]))],
 )
 def ingest_reading(
     payload: ReadingIngestRequest,
@@ -58,8 +62,45 @@ def ingest_reading(
         fac_repo.create(facility)
         db.flush()
 
+    # Sensor integrity verification
+    if payload.sensor_id:
+        sensor = fac_repo.get_sensor(payload.sensor_id)
+        if not sensor or sensor.facility_id != payload.facility_id:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="Sensor not found or not associated with facility",
+            )
+
     reading_repo = ReadingRepository(db)
+
+    # Idempotency & deduplication lookup
+    existing = reading_repo.get_by_idempotency_or_time_key(
+        facility_id=payload.facility_id,
+        parameter=payload.parameter,
+        treatment_stage=payload.treatment_stage,
+        observed_at=payload.observed_at,
+        idempotency_key=idempotency_key,
+    )
+    if existing:
+        anom_res = reading_repo.get_anomaly_result(existing.reading_id)
+        return ReadingIngestResponse(
+            reading_id=existing.reading_id,
+            facility_id=existing.facility_id,
+            parameter=existing.parameter,
+            value=existing.value,
+            unit=existing.unit,
+            observed_at=existing.observed_at,
+            quality_status=existing.quality_status,
+            anomaly_status=anom_res.anomaly_status if anom_res else "insufficient_data",
+            anomaly_score=anom_res.anomaly_score if anom_res else None,
+            ingested_at=existing.created_at,
+        )
+
     reading_id = uuid4()
+    provenance = dict(payload.provenance or {})
+    if idempotency_key:
+        provenance["idempotency_key"] = idempotency_key
+
     reading = Reading(
         reading_id=reading_id,
         facility_id=payload.facility_id,
@@ -70,7 +111,7 @@ def ingest_reading(
         value=payload.value,
         unit=payload.unit,
         source=payload.source,
-        provenance=payload.provenance or {},
+        provenance=provenance,
         quality_status="pending",
     )
     reading_repo.create(reading)
@@ -81,8 +122,34 @@ def ingest_reading(
     # 2. AI Anomaly Inference
     anom_res = AnomalyService.infer_reading(db, reading)
 
-    db.commit()
-    db.refresh(reading)
+    try:
+        db.commit()
+        db.refresh(reading)
+    except IntegrityError:
+        db.rollback()
+        # Concurrency collision occurred; retrieve and return existing observation
+        existing = reading_repo.get_by_idempotency_or_time_key(
+            facility_id=payload.facility_id,
+            parameter=payload.parameter,
+            treatment_stage=payload.treatment_stage,
+            observed_at=payload.observed_at,
+            idempotency_key=idempotency_key,
+        )
+        if existing:
+            anom_res = reading_repo.get_anomaly_result(existing.reading_id)
+            return ReadingIngestResponse(
+                reading_id=existing.reading_id,
+                facility_id=existing.facility_id,
+                parameter=existing.parameter,
+                value=existing.value,
+                unit=existing.unit,
+                observed_at=existing.observed_at,
+                quality_status=existing.quality_status,
+                anomaly_status=anom_res.anomaly_status if anom_res else "insufficient_data",
+                anomaly_score=anom_res.anomaly_score if anom_res else None,
+                ingested_at=existing.created_at,
+            )
+        raise
 
     return ReadingIngestResponse(
         reading_id=reading.reading_id,
@@ -103,12 +170,14 @@ def ingest_reading(
     response_model=BatchIngestResponse,
     status_code=status.HTTP_201_CREATED,
     summary="Ingest a batch of telemetry readings",
+    dependencies=[Depends(require_role(["operator", "admin"]))],
 )
 @router.post(
     "/telemetry/ingest/batch",
     response_model=BatchIngestResponse,
     status_code=status.HTTP_201_CREATED,
     include_in_schema=False,
+    dependencies=[Depends(require_role(["operator", "admin"]))],
 )
 def ingest_batch(
     payload: BatchIngestRequest,
@@ -132,7 +201,30 @@ def ingest_batch(
     created_ids: List[UUID] = []
 
     for r_in in payload.readings:
+        # Sensor integrity verification
+        if r_in.sensor_id:
+            sensor = fac_repo.get_sensor(r_in.sensor_id)
+            if not sensor or sensor.facility_id != payload.facility_id:
+                raise HTTPException(
+                    status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                    detail="Sensor not found or not associated with facility",
+                )
+
+        # Idempotency & deduplication lookup
+        idempotency_key = r_in.provenance.get("idempotency_key") if r_in.provenance else None
+        existing = reading_repo.get_by_idempotency_or_time_key(
+            facility_id=payload.facility_id,
+            parameter=r_in.parameter,
+            treatment_stage=r_in.treatment_stage,
+            observed_at=r_in.observed_at,
+            idempotency_key=idempotency_key,
+        )
+        if existing:
+            created_ids.append(existing.reading_id)
+            continue
+
         reading_id = uuid4()
+        provenance = dict(r_in.provenance or {})
         reading = Reading(
             reading_id=reading_id,
             facility_id=payload.facility_id,
@@ -143,7 +235,7 @@ def ingest_batch(
             value=r_in.value,
             unit=r_in.unit,
             source=r_in.source,
-            provenance=r_in.provenance or {},
+            provenance=provenance,
             ingestion_batch_id=payload.batch_id,
             quality_status="pending",
         )
@@ -152,7 +244,23 @@ def ingest_batch(
         AnomalyService.infer_reading(db, reading)
         created_ids.append(reading_id)
 
-    db.commit()
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        # Recover reading IDs if partial duplicates hit unique constraint
+        created_ids = []
+        for r_in in payload.readings:
+            idempotency_key = r_in.provenance.get("idempotency_key") if r_in.provenance else None
+            existing = reading_repo.get_by_idempotency_or_time_key(
+                facility_id=payload.facility_id,
+                parameter=r_in.parameter,
+                treatment_stage=r_in.treatment_stage,
+                observed_at=r_in.observed_at,
+                idempotency_key=idempotency_key,
+            )
+            if existing:
+                created_ids.append(existing.reading_id)
 
     return BatchIngestResponse(
         batch_id=payload.batch_id or uuid4(),
@@ -168,11 +276,13 @@ def ingest_batch(
     "/readings",
     response_model=List[ReadingResponse],
     summary="Query telemetry readings",
+    dependencies=[Depends(get_current_user_claims)],
 )
 @router.get(
     "/telemetry/readings",
     response_model=List[ReadingResponse],
     include_in_schema=False,
+    dependencies=[Depends(get_current_user_claims)],
 )
 def get_readings(
     facility_id: Optional[UUID] = None,
@@ -223,11 +333,13 @@ def get_readings(
     "/readings/{reading_id}",
     response_model=ReadingResponse,
     summary="Get single reading by UUID",
+    dependencies=[Depends(get_current_user_claims)],
 )
 @router.get(
     "/telemetry/readings/{reading_id}",
     response_model=ReadingResponse,
     include_in_schema=False,
+    dependencies=[Depends(get_current_user_claims)],
 )
 def get_reading(
     reading_id: UUID,

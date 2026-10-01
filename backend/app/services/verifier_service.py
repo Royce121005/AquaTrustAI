@@ -4,7 +4,7 @@ Executes a 4-stage independent trust verification pipeline:
 Stage 1: Canonical Hash Integrity (reconstructs canonical atc-v1 payload and verifies SHA-256 hash)
 Stage 2: Signature Authenticity (recovers public key and validates ECDSA ES256 signature)
 Stage 3: Certificate Cross-Consistency (validates certificate hash and linkage against treatment record)
-Stage 4: DLT Ledger Anchor Verification (validates ledger hash against local evidence hash)
+Stage 4: DLT Ledger Anchor Verification (validates ledger anchor existence, hash match, and status against DLT network)
 """
 
 from typing import Dict, Any, Optional
@@ -21,6 +21,7 @@ from app.repositories.treatment_repository import TreatmentRepository
 from app.dlt.canonicalizer import canonicalize_treatment_record
 from app.dlt.hasher import compute_sha256_hex
 from app.dlt.signer import verify_signature
+from app.dlt.gateway import dlt_gateway
 
 
 class VerifierService:
@@ -55,6 +56,12 @@ class VerifierService:
         canonical_bytes = None
 
         comp_res = treatment_repo.get_compliance_result(record.record_id)
+        compliance_summary = None
+        if record.evidence_snapshot and isinstance(record.evidence_snapshot, dict):
+            compliance_summary = record.evidence_snapshot.get("compliance_results")
+        if compliance_summary is None and comp_res:
+            compliance_summary = comp_res.parameter_results
+
         payload = {
             "record_id": str(record.record_id),
             "facility_id": str(record.facility_id),
@@ -64,7 +71,8 @@ class VerifierService:
             "quality_status": record.quality_status,
             "anomaly_status": record.anomaly_status,
             "compliance_status": record.compliance_status,
-            "compliance_summary": comp_res.parameter_results if comp_res else {},
+            "compliance_summary": compliance_summary or {},
+            "provenance": record.provenance or {},
         }
         canonical_bytes = canonicalize_treatment_record(payload)
         recalculated_hash = compute_sha256_hex(canonical_bytes)
@@ -114,8 +122,9 @@ class VerifierService:
         # Stage 3: Certificate Consistency
         stage3_pass = False
         cert = treatment_repo.get_certificate_by_record_id(record.record_id)
-        if cert and cert.canonical_hash.lower() == record.canonical_hash.lower() and cert.status == "valid":
-            stage3_pass = True
+        if cert and cert.canonical_hash and record.canonical_hash:
+            if cert.canonical_hash.lower() == record.canonical_hash.lower() and cert.status == "valid":
+                stage3_pass = True
 
         stages["stage_3_certificate_consistency"] = {
             "stage_name": "Certificate Cross-Consistency",
@@ -123,7 +132,7 @@ class VerifierService:
             "details": {
                 "certificate_id": str(cert.certificate_id) if cert else None,
                 "certificate_status": cert.status if cert else "missing",
-                "hash_match": (cert.canonical_hash.lower() == record.canonical_hash.lower()) if cert else False,
+                "hash_match": (cert.canonical_hash.lower() == record.canonical_hash.lower()) if (cert and cert.canonical_hash and record.canonical_hash) else False,
             },
         }
         if not stage3_pass:
@@ -135,20 +144,41 @@ class VerifierService:
             DLTAnchor.record_id == record.record_id
         ).first()
 
+        ledger_anchor = dlt_gateway.query_record_anchor(record.record_id)
         dlt_tx_id = None
-        if anchor:
-            dlt_tx_id = anchor.transaction_id
-            if anchor.canonical_hash.lower() == record.canonical_hash.lower():
+        anchor_status = "missing"
+        error_detail = None
+
+        if ledger_anchor:
+            dlt_tx_id = ledger_anchor.get("tx_id")
+            anchor_status = ledger_anchor.get("status", "unknown")
+            ledger_hash = ledger_anchor.get("record_hash") or ledger_anchor.get("canonical_hash")
+
+            hash_matches = bool(ledger_hash and record.canonical_hash and ledger_hash.lower() == record.canonical_hash.lower())
+            status_valid = anchor_status in ("anchored", "confirmed", "valid")
+
+            if hash_matches and status_valid:
                 stage4_pass = True
+            else:
+                if not hash_matches:
+                    error_detail = f"DLT ledger anchor hash mismatch: expected '{record.canonical_hash}', got '{ledger_hash}'"
+                elif not status_valid:
+                    error_detail = f"DLT ledger anchor status mismatch: status '{anchor_status}' is invalid"
+        else:
+            if anchor:
+                dlt_tx_id = anchor.transaction_id
+                anchor_status = anchor.anchor_status
+            error_detail = "Record anchor not found on DLT ledger network"
 
         stages["stage_4_dlt_anchor"] = {
             "stage_name": "DLT Ledger Anchor Verification",
             "status": "passed" if stage4_pass else "failed",
             "details": {
                 "anchor_id": str(anchor.anchor_id) if anchor else None,
-                "anchor_status": anchor.anchor_status if anchor else "missing",
+                "anchor_status": anchor_status,
                 "transaction_id": dlt_tx_id,
                 "ledger_match": stage4_pass,
+                "error": error_detail if not stage4_pass else None,
             },
         }
         if not stage4_pass:
@@ -156,7 +186,9 @@ class VerifierService:
 
         overall_verdict = "VERIFIED" if all_passed else (
             "TAMPER_DETECTED" if not stage1_pass else (
-                "SIGNATURE_INVALID" if not stage2_pass else "DLT_MISMATCH"
+                "SIGNATURE_INVALID" if not stage2_pass else (
+                    "CERTIFICATE_INVALID" if not stage3_pass else "DLT_MISMATCH"
+                )
             )
         )
 

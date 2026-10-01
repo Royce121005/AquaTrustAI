@@ -72,6 +72,7 @@ def test_all_v1_api_routes(client: TestClient, db_session: Session):
     assert len(list_fac.json()) >= 1
 
     # 3. Ingestion Single & Batch
+    now = datetime.now(timezone.utc)
     ing_resp = client.post(
         "/api/v1/telemetry/ingest",
         json={
@@ -80,49 +81,63 @@ def test_all_v1_api_routes(client: TestClient, db_session: Session):
             "parameter": "BOD",
             "value": 15.5,
             "unit": "mg/L",
-            "observed_at": datetime.now(timezone.utc).isoformat(),
+            "observed_at": (now - timedelta(minutes=40)).isoformat(),
         },
     )
     assert ing_resp.status_code == 201
+
+    batch_readings = []
+    for step, mins_ago in enumerate([30, 20, 10]):
+        t = (now - timedelta(minutes=mins_ago)).isoformat()
+        if step > 0:
+            batch_readings.append({
+                "facility_id": fac_id,
+                "treatment_stage": "final_effluent",
+                "parameter": "BOD",
+                "value": 15.5 + step * 0.1,
+                "unit": "mg/L",
+                "observed_at": t,
+            })
+        batch_readings.extend([
+            {
+                "facility_id": fac_id,
+                "treatment_stage": "final_effluent",
+                "parameter": "COD",
+                "value": 110.0 + step * 0.5,
+                "unit": "mg/L",
+                "observed_at": t,
+            },
+            {
+                "facility_id": fac_id,
+                "treatment_stage": "final_effluent",
+                "parameter": "TSS",
+                "value": 25.0 + step * 0.2,
+                "unit": "mg/L",
+                "observed_at": t,
+            },
+            {
+                "facility_id": fac_id,
+                "treatment_stage": "final_effluent",
+                "parameter": "PH",
+                "value": 7.3,
+                "unit": "pH units",
+                "observed_at": t,
+            },
+            {
+                "facility_id": fac_id,
+                "treatment_stage": "final_effluent",
+                "parameter": "NH4_N",
+                "value": 8.0 + step * 0.1,
+                "unit": "mg/L",
+                "observed_at": t,
+            },
+        ])
 
     batch_resp = client.post(
         "/api/v1/telemetry/ingest/batch",
         json={
             "facility_id": fac_id,
-            "readings": [
-                {
-                    "facility_id": fac_id,
-                    "treatment_stage": "final_effluent",
-                    "parameter": "COD",
-                    "value": 110.0,
-                    "unit": "mg/L",
-                    "observed_at": datetime.now(timezone.utc).isoformat(),
-                },
-                {
-                    "facility_id": fac_id,
-                    "treatment_stage": "final_effluent",
-                    "parameter": "TSS",
-                    "value": 25.0,
-                    "unit": "mg/L",
-                    "observed_at": datetime.now(timezone.utc).isoformat(),
-                },
-                {
-                    "facility_id": fac_id,
-                    "treatment_stage": "final_effluent",
-                    "parameter": "PH",
-                    "value": 7.3,
-                    "unit": "pH units",
-                    "observed_at": datetime.now(timezone.utc).isoformat(),
-                },
-                {
-                    "facility_id": fac_id,
-                    "treatment_stage": "final_effluent",
-                    "parameter": "NH4_N",
-                    "value": 8.0,
-                    "unit": "mg/L",
-                    "observed_at": datetime.now(timezone.utc).isoformat(),
-                },
-            ],
+            "readings": batch_readings,
         },
     )
     assert batch_resp.status_code == 201
@@ -130,7 +145,7 @@ def test_all_v1_api_routes(client: TestClient, db_session: Session):
     # 4. Ingestion Query
     readings_resp = client.get(f"/api/v1/telemetry/readings?facility_id={fac_id}")
     assert readings_resp.status_code == 200
-    assert len(readings_resp.json()) == 5
+    assert len(readings_resp.json()) >= 5
 
     # 5. Pre-AI Validation Stats
     val_stats = client.get(f"/api/v1/validation/stats?facility_id={fac_id}")

@@ -34,7 +34,7 @@ class HealthResponse(BaseModel):
     summary="Service Health Check",
     description="Returns backend operational status and database readiness.",
 )
-async def get_health() -> Dict[str, Any]:
+def get_health() -> Dict[str, Any]:
     """Health check endpoint accessible without authentication."""
     db_ok = check_db_connection()
     return {

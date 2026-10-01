@@ -29,12 +29,16 @@ from app.models import (
     Correction,
     AuditLog,
     User,
+    ExperimentRun,
+    ExperimentMetric,
 )
 from app.repositories import (
     FacilityRepository,
     ReadingRepository,
     TreatmentRepository,
     UserRepository,
+    AuditLogRepository,
+    ExperimentRepository,
 )
 
 
@@ -431,3 +435,63 @@ def test_transaction_rollback_on_failure(db_session: Session):
     # Ensure original user remains intact
     assert user_repo.get_by_username("operator_alice") is not None
     assert user_repo.count() == 1
+
+
+def test_audit_log_repository(db_session: Session):
+    """Verify AuditLog persistence and multi-attribute filtering via AuditLogRepository."""
+    audit_repo = AuditLogRepository(db_session)
+    actor_id = uuid.uuid4()
+    record_id = uuid.uuid4()
+
+    entry = audit_repo.log_event(
+        action="RECORD_FINALIZED",
+        resource_type="treatment_record",
+        actor_id=actor_id,
+        actor_role="operator",
+        resource_id=record_id,
+        request_id="req-test-audit-001",
+        outcome="success",
+        metadata={"canonical_hash": "a" * 64},
+    )
+    db_session.commit()
+
+    assert entry.audit_log_id is not None
+    events = audit_repo.list_events(action="RECORD_FINALIZED")
+    assert len(events) == 1
+    assert events[0].actor_role == "operator"
+    assert events[0].resource_id == record_id
+
+
+def test_experiment_repository(db_session: Session):
+    """Verify ExperimentRun and ExperimentMetric persistence via ExperimentRepository."""
+    exp_repo = ExperimentRepository(db_session)
+    run_id = uuid.uuid4()
+
+    run = ExperimentRun(
+        experiment_run_id=run_id,
+        experiment_name="hybrid_vs_centralized_benchmark",
+        architecture_variant="hybrid",
+        workload_size=500,
+        scenario_id="peak_inflow_stress",
+        seed=42,
+        status="running",
+    )
+    exp_repo.create(run)
+
+    metric = exp_repo.record_metric(
+        experiment_run_id=run_id,
+        metric_name="throughput_eps",
+        metric_value=Decimal("1250.500000"),
+        unit="eps",
+        percentile="p95",
+        sample_count=500,
+        metadata={"batch_size": 25},
+    )
+    db_session.commit()
+
+    fetched_run = exp_repo.get_run_with_metrics(run_id)
+    assert fetched_run is not None
+    assert fetched_run.workload_size == 500
+    assert len(fetched_run.metrics) == 1
+    assert fetched_run.metrics[0].metric_value == Decimal("1250.500000")
+

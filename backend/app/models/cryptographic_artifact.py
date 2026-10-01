@@ -15,7 +15,7 @@ class CryptographicArtifact(Base):
     __tablename__ = "cryptographic_artifacts"
 
     signature_id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
-    record_id = Column(UUID(as_uuid=True), ForeignKey("treatment_records.record_id", ondelete="CASCADE"), unique=True, nullable=False)
+    record_id = Column(UUID(as_uuid=True), ForeignKey("treatment_records.record_id", ondelete="RESTRICT"), unique=True, nullable=False)
     canonicalization_version = Column(String, nullable=False, default="atc-v1")
     hash_algorithm = Column(String, nullable=False, default="SHA-256")
     canonical_hash = Column(String(64), nullable=False)

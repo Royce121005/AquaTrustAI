@@ -1,14 +1,13 @@
 """AquaTrust AI — Immutable Audit Log Router."""
 
-from typing import Optional, List
+from typing import Optional
 from uuid import UUID
 from fastapi import APIRouter, Depends, Query
-from sqlalchemy.orm import Session
-from sqlalchemy import select, desc
 
-from app.db.session import get_db
-from app.models.audit_log import AuditLog
+from app.repositories.audit_repository import AuditLogRepository
+from app.repositories.deps import get_audit_repository
 from app.schemas.audit import AuditLogResponse, AuditLogListResponse
+from app.core.security import require_role
 
 router = APIRouter(tags=["Security & Compliance Audit Logs"])
 
@@ -17,6 +16,7 @@ router = APIRouter(tags=["Security & Compliance Audit Logs"])
     "/audit-events",
     response_model=AuditLogListResponse,
     summary="Query audit log entries with action, actor, and resource filters",
+    dependencies=[Depends(require_role(["auditor", "regulatory_stakeholder", "admin"]))],
 )
 def list_audit_events(
     action: Optional[str] = None,
@@ -24,19 +24,21 @@ def list_audit_events(
     actor_id: Optional[UUID] = None,
     skip: int = Query(0, ge=0),
     limit: int = Query(50, ge=1, le=100),
-    db: Session = Depends(get_db),
+    audit_repo: AuditLogRepository = Depends(get_audit_repository),
 ):
     """Retrieve structured audit trail entries."""
-    query = select(AuditLog)
-    if action:
-        query = query.where(AuditLog.action == action)
-    if resource_type:
-        query = query.where(AuditLog.resource_type == resource_type)
-    if actor_id:
-        query = query.where(AuditLog.actor_id == actor_id)
-
-    query = query.order_by(desc(AuditLog.created_at)).offset(skip).limit(limit)
-    rows = list(db.scalars(query).all())
+    rows = audit_repo.list_events(
+        action=action,
+        resource_type=resource_type,
+        actor_id=actor_id,
+        skip=skip,
+        limit=limit,
+    )
+    total_count = audit_repo.count_events(
+        action=action,
+        resource_type=resource_type,
+        actor_id=actor_id,
+    )
 
     logs = [
         AuditLogResponse(
@@ -54,6 +56,6 @@ def list_audit_events(
     ]
 
     return AuditLogListResponse(
-        total_count=len(logs),
+        total_count=total_count,
         logs=logs,
     )

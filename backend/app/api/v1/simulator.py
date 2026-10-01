@@ -1,6 +1,6 @@
 import asyncio
 from datetime import datetime, timezone
-from fastapi import APIRouter, HTTPException, status, WebSocket, WebSocketDisconnect
+from fastapi import APIRouter, Depends, HTTPException, status, WebSocket, WebSocketDisconnect
 from app.services.simulator_service import SimulatorService
 from app.schemas.simulator import (
     SimulatorStartRequest,
@@ -8,6 +8,7 @@ from app.schemas.simulator import (
     SimulatorStatusResponse,
     AnomalyInjectionRequest,
 )
+from app.core.security import get_current_user_claims, require_role
 
 router = APIRouter(prefix="/simulator", tags=["Telemetry Simulator Bridge"])
 
@@ -15,6 +16,7 @@ router = APIRouter(prefix="/simulator", tags=["Telemetry Simulator Bridge"])
 @router.post(
     "/start",
     summary="Start synthetic telemetry stream simulation",
+    dependencies=[Depends(require_role(["operator", "admin"]))],
 )
 def start_simulator(payload: SimulatorStartRequest = SimulatorStartRequest()):
     """Starts runtime synthetic telemetry stream generator."""
@@ -24,6 +26,8 @@ def start_simulator(payload: SimulatorStartRequest = SimulatorStartRequest()):
         facility_name=payload.facility_name or "Bharwara STP Lucknow",
         interval_seconds=payload.interval_seconds,
         seed=payload.seed,
+        use_http_bridge=payload.use_http_bridge,
+        bridge_endpoint=payload.bridge_endpoint,
     )
     return result
 
@@ -31,6 +35,7 @@ def start_simulator(payload: SimulatorStartRequest = SimulatorStartRequest()):
 @router.post(
     "/stop",
     summary="Stop synthetic telemetry stream simulation",
+    dependencies=[Depends(require_role(["operator", "admin"]))],
 )
 def stop_simulator(payload: SimulatorStopRequest = SimulatorStopRequest()):
     """Stops runtime synthetic telemetry generator."""
@@ -42,6 +47,7 @@ def stop_simulator(payload: SimulatorStopRequest = SimulatorStopRequest()):
     "/status",
     response_model=SimulatorStatusResponse,
     summary="Get simulator status",
+    dependencies=[Depends(get_current_user_claims)],
 )
 def get_simulator_status():
     """Retrieve real-time generator status."""
@@ -53,6 +59,7 @@ def get_simulator_status():
 @router.post(
     "/inject-anomaly",
     summary="Inject anomaly scenario into active simulation",
+    dependencies=[Depends(require_role(["operator", "admin"]))],
 )
 def inject_anomaly(payload: AnomalyInjectionRequest):
     """Inject a physical or sensor anomaly into the running stream."""
@@ -65,6 +72,7 @@ def inject_anomaly(payload: AnomalyInjectionRequest):
         )
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
 
 
 @router.websocket("/stream")

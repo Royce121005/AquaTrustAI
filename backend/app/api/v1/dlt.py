@@ -13,7 +13,7 @@ from app.models.treatment_record import TreatmentRecord
 from app.repositories.treatment_repository import TreatmentRepository
 from app.dlt.gateway import dlt_gateway
 from app.schemas.dlt import DLTAnchorResponse, DLTReconcileResponse
-from app.core.security import require_role
+from app.core.security import get_current_user_claims, require_role
 
 router = APIRouter(tags=["Distributed Ledger (DLT) Anchors"])
 
@@ -22,6 +22,7 @@ router = APIRouter(tags=["Distributed Ledger (DLT) Anchors"])
     "/dlt/anchors",
     response_model=List[DLTAnchorResponse],
     summary="List DLT anchors across treatment records",
+    dependencies=[Depends(get_current_user_claims)],
 )
 def list_dlt_anchors(
     facility_id: Optional[UUID] = None,
@@ -65,7 +66,7 @@ def list_dlt_anchors(
     "/dlt/anchors/{record_id}/reconcile",
     response_model=DLTReconcileResponse,
     summary="Reconcile local pending anchor with DLT network",
-    dependencies=[Depends(require_role(["operator", "admin"]))],
+    dependencies=[Depends(require_role(["auditor", "regulatory_stakeholder", "admin"]))],
 )
 def reconcile_anchor(record_id: UUID, db: Session = Depends(get_db)):
     """Submits pending anchor to Fabric DLT Gateway and transitions state to anchored."""
@@ -106,6 +107,7 @@ def reconcile_anchor(record_id: UUID, db: Session = Depends(get_db)):
 @router.get(
     "/dlt/transactions/{tx_id}",
     summary="Query DLT transaction by transaction ID",
+    dependencies=[Depends(get_current_user_claims)],
 )
 def get_dlt_transaction(tx_id: str):
     """Query transaction details from DLT ledger."""
@@ -113,3 +115,4 @@ def get_dlt_transaction(tx_id: str):
     if not tx:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Transaction {tx_id} not found on DLT ledger")
     return tx
+

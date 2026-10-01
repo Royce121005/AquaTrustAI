@@ -18,3 +18,9 @@ class CertificateResponse(BaseModel):
     signature_id: UUID
     dlt_anchor_id: Optional[UUID] = None
     status: str
+    facility_id: Optional[UUID] = None
+    period_start: Optional[datetime] = None
+    period_end: Optional[datetime] = None
+    quality_status: Optional[str] = None
+    anomaly_status: Optional[str] = None
+    compliance_status: Optional[str] = None

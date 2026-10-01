@@ -3,6 +3,7 @@
 Handles request correlation tracking (X-Request-ID) and security headers.
 """
 
+import re
 import time
 import uuid
 from typing import Callable
@@ -13,14 +14,18 @@ from app.core.logging import correlation_id_ctx, get_logger
 
 logger = get_logger("aquatrust.middleware")
 
+SAFE_REQUEST_ID_REGEX = re.compile(r"^[a-zA-Z0-9_\-\.]{1,64}$")
+
 
 class RequestIDMiddleware(BaseHTTPMiddleware):
     """Middleware to enforce and propagate X-Request-ID header and logging context."""
 
     async def dispatch(self, request: Request, call_next: Callable) -> Response:
-        # Extract X-Request-ID or generate a new UUID4
-        request_id = request.headers.get("X-Request-ID")
-        if not request_id:
+        # Extract and sanitize X-Request-ID or generate a new UUID4
+        raw_request_id = request.headers.get("X-Request-ID")
+        if raw_request_id and SAFE_REQUEST_ID_REGEX.match(raw_request_id):
+            request_id = raw_request_id
+        else:
             request_id = str(uuid.uuid4())
 
         # Store in request state and context var

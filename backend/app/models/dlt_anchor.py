@@ -15,7 +15,7 @@ class DLTAnchor(Base):
     __tablename__ = "dlt_anchors"
 
     anchor_id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
-    record_id = Column(UUID(as_uuid=True), ForeignKey("treatment_records.record_id", ondelete="CASCADE"), unique=True, nullable=False)
+    record_id = Column(UUID(as_uuid=True), ForeignKey("treatment_records.record_id", ondelete="RESTRICT"), unique=True, nullable=False)
     certificate_id = Column(UUID(as_uuid=True), ForeignKey("certificates.certificate_id", ondelete="SET NULL"), nullable=True)
     facility_id = Column(UUID(as_uuid=True), ForeignKey("facilities.facility_id", ondelete="CASCADE"), nullable=False)
     event_timestamp = Column(UTCDateTime, nullable=False, default=utc_now)

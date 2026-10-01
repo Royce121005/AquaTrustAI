@@ -1,9 +1,9 @@
 """AquaTrust AI — Checkpoint 4 Test Suite.
 
 Tests for:
-- M2-16: Fabric DLT Gateway (Dual Mode, Anchoring, Reconciliation)
-- M2-17: Independent Cryptographic Verifier (4-Stage Verification & Tamper Detection)
-- M2-18: Verification API Endpoints (/verify-record, /verify-proof, /keys)
+- M2-16: Fabric DLT Gateway (Dual Mode, Anchoring, Reconciliation, Correction Links, Status Management)
+- M2-17: Independent Cryptographic Verifier (4-Stage Verification & Tamper Detection with DLT Gateway check)
+- M2-18: Verification API Endpoints (/verify-record, /verify-proof, /keys, /public/verify)
 - M2-19: Append-Only Correction Service & Lineage (/corrections/propose, /authorize, /chain)
 - M2-20: Audit Trail & DLT Anchor API Endpoints (/audit-events, /dlt/anchors)
 """
@@ -31,7 +31,7 @@ from app.services.compliance_service import ComplianceService
 from app.services.treatment_service import TreatmentService
 from app.services.verifier_service import VerifierService
 from app.services.correction_service import CorrectionService
-from app.dlt.gateway import dlt_gateway
+from app.dlt.gateway import FabricDLTGateway, dlt_gateway
 from app.core.security import get_current_user_claims
 
 
@@ -114,6 +114,18 @@ def client(db_session: Session):
     app.dependency_overrides.clear()
 
 
+@pytest.fixture
+def unauthenticated_client(db_session: Session):
+    def override_get_db():
+        yield db_session
+
+    app.dependency_overrides[get_db] = override_get_db
+    # Do not override get_current_user_claims to ensure true unauthenticated requests
+    with TestClient(app) as test_client:
+        yield test_client
+    app.dependency_overrides.clear()
+
+
 def test_independent_verification_pipeline(db_session: Session, finalized_record):
     """Test 4-stage independent trust verification."""
     # 1. Verification of legitimate finalized record
@@ -133,6 +145,39 @@ def test_independent_verification_pipeline(db_session: Session, finalized_record
     assert tamper_res["overall_verdict"] == "TAMPER_DETECTED"
     assert tamper_res["tamper_detected"] is True
     assert tamper_res["stages"]["stage_1_hash_integrity"]["status"] == "failed"
+
+
+def test_dlt_ledger_anchor_stage4_failure_modes(db_session: Session, finalized_record):
+    """Test Stage 4 fails if DLT ledger anchor is missing or contains mismatched hash."""
+    rec_id = finalized_record.record_id
+
+    # 1. Simulate anchor missing from DLT gateway
+    gateway_backup = dlt_gateway._mock_ledger.pop(str(rec_id), None)
+    try:
+        res = VerifierService.verify_treatment_record(db_session, rec_id)
+        assert res["stages"]["stage_4_dlt_anchor"]["status"] == "failed"
+        assert res["stages"]["stage_4_dlt_anchor"]["details"]["ledger_match"] is False
+        assert "not found" in (res["stages"]["stage_4_dlt_anchor"]["details"]["error"] or "").lower()
+        assert res["overall_verdict"] == "DLT_MISMATCH"
+
+        # 2. Simulate anchor with mismatched hash on DLT gateway
+        dlt_gateway._mock_ledger[str(rec_id)] = {
+            "tx_id": "tx_tampered",
+            "block_number": 1050,
+            "channel_id": "aquatrustchannel",
+            "chaincode": "aquatrust-records",
+            "record_id": str(rec_id),
+            "record_hash": "0" * 64,  # Mismatched hash
+            "status": "anchored",
+        }
+        res_mismatch = VerifierService.verify_treatment_record(db_session, rec_id)
+        assert res_mismatch["stages"]["stage_4_dlt_anchor"]["status"] == "failed"
+        assert res_mismatch["stages"]["stage_4_dlt_anchor"]["details"]["ledger_match"] is False
+        assert "mismatch" in (res_mismatch["stages"]["stage_4_dlt_anchor"]["details"]["error"] or "").lower()
+        assert res_mismatch["overall_verdict"] == "DLT_MISMATCH"
+    finally:
+        if gateway_backup:
+            dlt_gateway._mock_ledger[str(rec_id)] = gateway_backup
 
 
 def test_verification_api_endpoints(client: TestClient, db_session: Session, finalized_record):
@@ -166,6 +211,7 @@ def test_verification_api_endpoints(client: TestClient, db_session: Session, fin
         "anomaly_status": finalized_record.anomaly_status,
         "compliance_status": finalized_record.compliance_status,
         "compliance_summary": finalized_record.compliance_results[0].parameter_results if finalized_record.compliance_results else {},
+        "provenance": finalized_record.provenance or {},
     }
 
     proof_resp = client.post(
@@ -180,6 +226,61 @@ def test_verification_api_endpoints(client: TestClient, db_session: Session, fin
     )
     assert proof_resp.status_code == 200
     assert proof_resp.json()["verdict"] == "VALID"
+
+
+def test_public_unauthenticated_verification_endpoint(unauthenticated_client: TestClient, finalized_record):
+    """Test public unauthenticated verification endpoint without JWT token."""
+    resp = unauthenticated_client.post(f"/api/v1/verification/public/verify/{finalized_record.record_id}")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["record_id"] == str(finalized_record.record_id)
+    assert data["overall_verdict"] == "VERIFIED"
+    assert data["stages"]["stage_4_dlt_anchor"]["status"] == "passed"
+
+    # Non-existent record returns 404
+    fake_id = uuid4()
+    resp_404 = unauthenticated_client.post(f"/api/v1/verification/public/verify/{fake_id}")
+    assert resp_404.status_code == 404
+
+
+def test_dlt_gateway_correction_link_and_status():
+    """Test FabricDLTGateway correction link recording and status management."""
+    gateway = FabricDLTGateway(mode="simulation")
+    assert gateway.is_connected is True
+
+    status_info = gateway.get_status()
+    assert status_info["mode"] == "simulation"
+    assert status_info["status"] == "connected"
+    assert status_info["channel"] == "aquatrustchannel"
+    assert status_info["chaincode"] == "aquatrust-records"
+
+    # Record correction link on DLT
+    orig_id = uuid4()
+    corr_id = uuid4()
+    reason = "Optical sensor BOD calibration adjustment"
+    link_res = gateway.record_correction_link(
+        original_record_id=orig_id,
+        corrected_record_id=corr_id,
+        reason=reason,
+    )
+
+    assert link_res["docType"] == "correction_link"
+    assert link_res["original_record_id"] == str(orig_id)
+    assert link_res["corrected_record_id"] == str(corr_id)
+    assert link_res["reason"] == reason
+    assert link_res["status"] == "anchored"
+    assert link_res["tx_id"] is not None
+    assert link_res["block_number"] > 1000
+
+    # Query correction link
+    queried = gateway.query_correction_link(orig_id, corr_id)
+    assert queried is not None
+    assert queried["tx_id"] == link_res["tx_id"]
+
+    # Test status change
+    gateway.set_status("degraded")
+    assert gateway.is_connected is False
+    assert gateway.get_status()["status"] == "degraded"
 
 
 def test_append_only_correction_lifecycle(client: TestClient, db_session: Session, finalized_record):
@@ -225,6 +326,17 @@ def test_append_only_correction_lifecycle(client: TestClient, db_session: Sessio
     assert new_rec["record_state"] == "finalized"
     assert new_rec["supersedes_record_id"] == str(finalized_record.record_id)
     assert new_rec["canonical_hash"] != finalized_record.canonical_hash
+
+    # Verify correction entity has new_dlt_anchor_id
+    corr = db_session.query(Correction).filter(Correction.correction_id == UUID(correction_id)).first()
+    assert corr.new_dlt_anchor_id is not None
+
+    # Verify DLT gateway recorded the correction link
+    link = dlt_gateway.query_correction_link(finalized_record.record_id, UUID(superseding_record_id))
+    assert link is not None
+    assert link["docType"] == "correction_link"
+    assert link["original_record_id"] == str(finalized_record.record_id)
+    assert link["corrected_record_id"] == superseding_record_id
 
     # 3. Query Lineage Provenance Chain
     chain_resp = client.get(f"/api/v1/corrections/chain/{superseding_record_id}")

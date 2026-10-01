@@ -15,6 +15,7 @@ from app.schemas.correction import (
     CorrectionChainResponse,
     CorrectionChainNode,
 )
+from app.core.security import get_current_user_claims, require_role
 
 router = APIRouter(tags=["Append-Only Lineage & Corrections"])
 
@@ -24,6 +25,7 @@ router = APIRouter(tags=["Append-Only Lineage & Corrections"])
     response_model=CorrectionResponse,
     status_code=status.HTTP_201_CREATED,
     summary="Propose an append-only correction for a finalized record",
+    dependencies=[Depends(require_role(["operator", "auditor", "regulatory_stakeholder", "admin"]))],
 )
 def propose_correction(payload: ProposeCorrectionRequest, db: Session = Depends(get_db)):
     """Propose a correction without mutating the original record."""
@@ -61,6 +63,7 @@ def propose_correction(payload: ProposeCorrectionRequest, db: Session = Depends(
     "/corrections/{correction_id}/authorize",
     response_model=CorrectionResponse,
     summary="Authorize correction: marks original superseded and generates new versioned record",
+    dependencies=[Depends(require_role(["auditor", "regulatory_stakeholder", "admin"]))],
 )
 def authorize_correction(
     correction_id: UUID,
@@ -100,6 +103,7 @@ def authorize_correction(
     "/corrections/chain/{record_id}",
     response_model=CorrectionChainResponse,
     summary="Get complete append-only provenance chain for a treatment record",
+    dependencies=[Depends(get_current_user_claims)],
 )
 def get_correction_chain(record_id: UUID, db: Session = Depends(get_db)):
     """Fetch complete immutable lineage history."""
@@ -125,3 +129,4 @@ def get_correction_chain(record_id: UUID, db: Session = Depends(get_db)):
         total_versions=len(chain_records),
         chain=nodes,
     )
+

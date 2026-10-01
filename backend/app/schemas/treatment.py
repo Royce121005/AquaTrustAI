@@ -31,6 +31,7 @@ class TreatmentRecordResponse(BaseModel):
     signature_id: Optional[UUID] = None
     anchor_status: str
     supersedes_record_id: Optional[UUID] = None
+    provenance: Optional[Dict[str, Any]] = None
     evidence_snapshot: Optional[Dict[str, Any]] = None
     created_at: datetime
     finalized_at: Optional[datetime] = None

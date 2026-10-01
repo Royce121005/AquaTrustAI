@@ -8,7 +8,9 @@ from sqlalchemy.orm import Session
 from app.db.session import get_db
 from app.models.treatment_record import TreatmentRecord
 from app.repositories.treatment_repository import TreatmentRepository
+from app.repositories.deps import get_treatment_repository
 from app.services.treatment_service import TreatmentService
+from app.core.security import get_current_user_claims, require_role
 from app.schemas.treatment import (
     TreatmentRecordFinalizeRequest,
     TreatmentRecordResponse,
@@ -22,26 +24,34 @@ router = APIRouter(tags=["Treatment Records & Finalization"])
     response_model=TreatmentRecordResponse,
     status_code=status.HTTP_201_CREATED,
     summary="Aggregate and finalize a treatment window",
+    dependencies=[Depends(require_role(["operator", "admin"]))],
 )
 def finalize_treatment_window(
     payload: TreatmentRecordFinalizeRequest,
     db: Session = Depends(get_db),
 ):
     """Aggregate readings, evaluate compliance, and finalize an immutable treatment record."""
-    record = TreatmentService.aggregate_window(
-        db=db,
-        facility_id=payload.facility_id,
-        period_start=payload.period_start,
-        period_end=payload.period_end,
-    )
+    try:
+        record = TreatmentService.aggregate_window(
+            db=db,
+            facility_id=payload.facility_id,
+            period_start=payload.period_start,
+            period_end=payload.period_end,
+        )
 
-    finalized = TreatmentService.finalize_record(
-        db=db,
-        record=record,
-        key_id=payload.key_id or "key-ecdsa-p256-01",
-    )
-    db.commit()
-    db.refresh(finalized)
+        finalized = TreatmentService.finalize_record(
+            db=db,
+            record=record,
+            key_id=payload.key_id or "key-ecdsa-p256-01",
+        )
+        db.commit()
+        db.refresh(finalized)
+    except ValueError as err:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=str(err),
+        )
 
     return TreatmentRecordResponse(
         record_id=finalized.record_id,
@@ -58,6 +68,7 @@ def finalize_treatment_window(
         signature_id=finalized.signature_id,
         anchor_status=finalized.anchor_status,
         supersedes_record_id=finalized.supersedes_record_id,
+        provenance=finalized.provenance,
         evidence_snapshot=finalized.evidence_snapshot,
         created_at=finalized.created_at,
         finalized_at=finalized.finalized_at,
@@ -68,6 +79,7 @@ def finalize_treatment_window(
     "/treatment-records",
     response_model=List[TreatmentRecordResponse],
     summary="List treatment records",
+    dependencies=[Depends(get_current_user_claims)],
 )
 def list_treatment_records(
     facility_id: Optional[UUID] = None,
@@ -75,10 +87,9 @@ def list_treatment_records(
     compliance_status: Optional[str] = None,
     skip: int = Query(0, ge=0),
     limit: int = Query(50, ge=1, le=100),
-    db: Session = Depends(get_db),
+    treatment_repo: TreatmentRepository = Depends(get_treatment_repository),
 ):
     """Query treatment records with state and compliance filtering."""
-    treatment_repo = TreatmentRepository(db)
     records = treatment_repo.list_records(
         facility_id=facility_id,
         record_state=record_state,
@@ -102,6 +113,7 @@ def list_treatment_records(
             signature_id=r.signature_id,
             anchor_status=r.anchor_status,
             supersedes_record_id=r.supersedes_record_id,
+            provenance=r.provenance,
             evidence_snapshot=r.evidence_snapshot,
             created_at=r.created_at,
             finalized_at=r.finalized_at,
@@ -114,10 +126,13 @@ def list_treatment_records(
     "/treatment-records/{record_id}",
     response_model=TreatmentRecordResponse,
     summary="Get treatment record details",
+    dependencies=[Depends(get_current_user_claims)],
 )
-def get_treatment_record(record_id: UUID, db: Session = Depends(get_db)):
+def get_treatment_record(
+    record_id: UUID,
+    treatment_repo: TreatmentRepository = Depends(get_treatment_repository),
+):
     """Retrieve detailed treatment record by UUID."""
-    treatment_repo = TreatmentRepository(db)
     r = treatment_repo.get_by_id(record_id)
     if not r:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Treatment record {record_id} not found")
@@ -137,7 +152,9 @@ def get_treatment_record(record_id: UUID, db: Session = Depends(get_db)):
         signature_id=r.signature_id,
         anchor_status=r.anchor_status,
         supersedes_record_id=r.supersedes_record_id,
+        provenance=r.provenance,
         evidence_snapshot=r.evidence_snapshot,
         created_at=r.created_at,
         finalized_at=r.finalized_at,
     )
+

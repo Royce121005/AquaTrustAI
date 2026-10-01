@@ -18,6 +18,8 @@ from app.schemas.verification import (
     PublicKeyResponse,
 )
 
+from app.core.security import get_current_user_claims
+
 router = APIRouter(tags=["Cryptographic Verification & Trust"])
 
 
@@ -25,6 +27,7 @@ router = APIRouter(tags=["Cryptographic Verification & Trust"])
     "/verification/verify-record/{record_id}",
     response_model=VerificationResultResponse,
     summary="Execute 4-stage independent trust verification on a treatment record",
+    dependencies=[Depends(get_current_user_claims)],
 )
 def verify_record(record_id: UUID, db: Session = Depends(get_db)):
     """Re-computes atc-v1 canonical hash, checks ECDSA signature, certificate and DLT ledger anchor."""
@@ -47,9 +50,42 @@ def verify_record(record_id: UUID, db: Session = Depends(get_db)):
     "/verification/records/{record_id}",
     response_model=VerificationResultResponse,
     summary="Alias for verify-record to match frontend contract",
+    dependencies=[Depends(get_current_user_claims)],
 )
 def verify_record_alias(record_id: UUID, db: Session = Depends(get_db)):
     return verify_record(record_id=record_id, db=db)
+
+
+@router.post(
+    "/verification/public/verify/{record_id}",
+    response_model=VerificationResultResponse,
+    summary="Public independent 4-stage trust verification on a treatment record (unauthenticated)",
+)
+def verify_record_public(record_id: UUID, db: Session = Depends(get_db)):
+    """Public unauthenticated endpoint allowing external verifiers, auditors, and regulators to verify records without internal JWT login."""
+    result = VerifierService.verify_treatment_record(db, record_id)
+    if result.get("overall_verdict") == "RECORD_NOT_FOUND":
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Treatment record {record_id} not found")
+
+    return VerificationResultResponse(
+        record_id=result["record_id"],
+        overall_verdict=result["overall_verdict"],
+        verification_timestamp=result["verification_timestamp"],
+        stages=result["stages"],
+        canonical_hash=result["canonical_hash"],
+        dlt_tx_id=result.get("dlt_tx_id"),
+        tamper_details=result.get("tamper_details"),
+    )
+
+
+@router.get(
+    "/verification/public/verify/{record_id}",
+    response_model=VerificationResultResponse,
+    summary="Public independent 4-stage trust verification on a treatment record via GET (unauthenticated)",
+)
+def verify_record_public_get(record_id: UUID, db: Session = Depends(get_db)):
+    """GET alias for public unauthenticated record verification."""
+    return verify_record_public(record_id=record_id, db=db)
 
 
 @router.post(

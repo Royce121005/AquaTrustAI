@@ -20,16 +20,53 @@ from app.dlt.merkle import MerkleTree
 
 
 class FabricDLTGateway:
-    """Gateway orchestrating anchoring, ledger state verification, and mock ledger queries."""
+    """Gateway orchestrating anchoring, ledger state verification, mock ledger queries, and correction links."""
 
     CHANNEL_NAME = "aquatrustchannel"
     CHAINCODE_NAME = "aquatrust-records"
     DEFAULT_PEER_ENDPOINT = "peer0.org1.aquatrust.internal:7051"
 
-    def __init__(self, mode: Optional[str] = None):
+    def __init__(
+        self,
+        mode: Optional[str] = None,
+        peer_endpoint: Optional[str] = None,
+        channel_name: Optional[str] = None,
+        chaincode_name: Optional[str] = None,
+    ):
         self.mode = mode or os.getenv("DLT_GATEWAY_MODE", "simulation")
+        self.peer_endpoint = peer_endpoint or os.getenv("DLT_PEER_ENDPOINT", self.DEFAULT_PEER_ENDPOINT)
+        self.channel_name = channel_name or os.getenv("DLT_CHANNEL_NAME", self.CHANNEL_NAME)
+        self.chaincode_name = chaincode_name or os.getenv("DLT_CHAINCODE_NAME", self.CHAINCODE_NAME)
         self._mock_ledger: Dict[str, Dict[str, Any]] = {}
         self._block_height: int = 1000
+        self._status: str = "connected" if self.mode in ("live", "simulation") else "degraded"
+
+    @property
+    def is_connected(self) -> bool:
+        """Return True if gateway is operational."""
+        return self._status in ("connected", "online", "ready")
+
+    def get_status(self) -> Dict[str, Any]:
+        """Return detailed status and configuration of the gateway."""
+        return {
+            "mode": self.mode,
+            "status": self._status,
+            "is_connected": self.is_connected,
+            "peer_endpoint": self.peer_endpoint,
+            "channel": self.channel_name,
+            "chaincode": self.chaincode_name,
+            "block_height": self._block_height,
+            "anchored_entries_count": len(self._mock_ledger),
+        }
+
+    def set_status(self, status: str) -> None:
+        """Update gateway operational status (e.g., 'connected', 'degraded', 'offline')."""
+        self._status = status
+
+    def reset_ledger(self) -> None:
+        """Reset mock ledger state for test isolation."""
+        self._mock_ledger.clear()
+        self._block_height = 1000
 
     def anchor_record(
         self,
@@ -48,8 +85,9 @@ class FabricDLTGateway:
         dlt_record = {
             "tx_id": tx_id,
             "block_number": self._block_height,
-            "channel_id": self.CHANNEL_NAME,
-            "chaincode": self.CHAINCODE_NAME,
+            "channel_id": self.channel_name,
+            "chaincode": self.chaincode_name,
+            "docType": "record_anchor",
             "record_id": str(record_id),
             "record_hash": record_hash,
             "facility_id": str(facility_id),
@@ -63,6 +101,50 @@ class FabricDLTGateway:
         self._mock_ledger[tx_id] = dlt_record
 
         return dlt_record
+
+    def record_correction_link(
+        self,
+        original_record_id: UUID,
+        corrected_record_id: UUID,
+        reason: str,
+    ) -> Dict[str, Any]:
+        """
+        Record an append-only correction linkage on the DLT ledger.
+        Commits docType='correction_link' with transaction ID, block number, and audit references.
+        """
+        self._block_height += 1
+        tx_raw = f"correction:{original_record_id}:{corrected_record_id}:{self._block_height}:{time.time()}"
+        tx_id = hashlib.sha256(tx_raw.encode("utf-8")).hexdigest()
+
+        correction_record = {
+            "tx_id": tx_id,
+            "block_number": self._block_height,
+            "channel_id": self.channel_name,
+            "chaincode": self.chaincode_name,
+            "docType": "correction_link",
+            "original_record_id": str(original_record_id),
+            "corrected_record_id": str(corrected_record_id),
+            "reason": reason,
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "status": "anchored",
+        }
+
+        self._mock_ledger[f"correction:{original_record_id}:{corrected_record_id}"] = correction_record
+        self._mock_ledger[f"correction:{original_record_id}"] = correction_record
+        self._mock_ledger[f"correction:{corrected_record_id}"] = correction_record
+        self._mock_ledger[tx_id] = correction_record
+
+        return correction_record
+
+    def query_correction_link(
+        self,
+        original_record_id: UUID,
+        corrected_record_id: Optional[UUID] = None,
+    ) -> Optional[Dict[str, Any]]:
+        """Query correction link on the DLT ledger."""
+        if corrected_record_id:
+            return self._mock_ledger.get(f"correction:{original_record_id}:{corrected_record_id}")
+        return self._mock_ledger.get(f"correction:{original_record_id}")
 
     def anchor_batch(
         self,
@@ -91,8 +173,9 @@ class FabricDLTGateway:
         batch_record = {
             "tx_id": tx_id,
             "block_number": self._block_height,
-            "channel_id": self.CHANNEL_NAME,
-            "chaincode": self.CHAINCODE_NAME,
+            "channel_id": self.channel_name,
+            "chaincode": self.chaincode_name,
+            "docType": "batch_anchor",
             "batch_id": batch_id,
             "merkle_root": merkle_root,
             "leaf_count": len(record_hashes),

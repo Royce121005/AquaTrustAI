@@ -1,6 +1,5 @@
-"""AquaTrust AI — Simulator Background Runner & Bridge Service."""
-
 import asyncio
+import httpx
 from datetime import datetime, timezone
 from decimal import Decimal
 from typing import Optional, Dict, Any, List
@@ -12,7 +11,8 @@ from app.models.reading import Reading
 from app.repositories.facility_repository import FacilityRepository
 from app.repositories.reading_repository import ReadingRepository
 from app.services.validation_service import ValidationService
-from app.services.anomaly_service import AnomalyService
+from app.core.security import create_access_token
+from app.models.user import UserRole
 from backend.app.simulator.engine import AquaTrustRuntimeSimulator
 from backend.app.simulator.schemas import FacilityStreamConfig
 
@@ -28,6 +28,8 @@ class SimulatorService:
         self.active_facility_id: Optional[UUID] = None
         self.active_facility_name: Optional[str] = None
         self.interval_seconds: float = 1.0
+        self.use_http_bridge: bool = False
+        self.bridge_endpoint: Optional[str] = None
         self.steps_generated: int = 0
         self.readings_ingested: int = 0
         self.current_scenario: str = "baseline_normal"
@@ -46,6 +48,8 @@ class SimulatorService:
         facility_name: str = "Bharwara STP Lucknow",
         interval_seconds: float = 1.0,
         seed: int = 42,
+        use_http_bridge: bool = False,
+        bridge_endpoint: Optional[str] = None,
     ) -> Dict[str, Any]:
         """Start the background telemetry generator."""
         if self.is_running:
@@ -54,6 +58,8 @@ class SimulatorService:
         self.active_facility_id = facility_id or uuid4()
         self.active_facility_name = facility_name
         self.interval_seconds = interval_seconds
+        self.use_http_bridge = use_http_bridge
+        self.bridge_endpoint = bridge_endpoint
 
         config = FacilityStreamConfig(
             facility_id=str(self.active_facility_id),
@@ -74,6 +80,7 @@ class SimulatorService:
             "facility_id": str(self.active_facility_id),
             "facility_name": self.active_facility_name,
             "interval_seconds": self.interval_seconds,
+            "use_http_bridge": self.use_http_bridge,
         }
 
     def stop(self) -> Dict[str, Any]:
@@ -133,6 +140,7 @@ class SimulatorService:
             "steps_generated": self.steps_generated,
             "readings_ingested": self.readings_ingested,
             "current_scenario": self.current_scenario,
+            "use_http_bridge": self.use_http_bridge,
             "last_tick_at": self.last_tick_at,
         }
 
@@ -145,50 +153,83 @@ class SimulatorService:
                 self.steps_generated += 1
                 self.last_tick_at = datetime.now(timezone.utc).isoformat()
 
-                # 2. Ingest into database
-                db = SessionLocal()
-                try:
-                    # Ensure facility exists in DB
-                    fac_repo = FacilityRepository(db)
-                    fac = fac_repo.get_by_id(self.active_facility_id)
-                    if not fac:
-                        fac = Facility(
-                            facility_id=self.active_facility_id,
-                            facility_name=self.active_facility_name or "Simulated STP",
-                            facility_type="municipal_stp",
-                            location={"city": "Simulated City"},
-                            capacity=Decimal("100.000000"),
-                            capacity_unit="MLD",
-                            status="active",
-                        )
-                        fac_repo.create(fac)
+                if self.use_http_bridge:
+                    endpoint = self.bridge_endpoint or "http://127.0.0.1:8000/api/v1/telemetry/ingest"
+                    token = create_access_token({
+                        "sub": "simulator_service",
+                        "username": "simulator_service",
+                        "role": UserRole.OPERATOR.value,
+                        "facility_id": str(self.active_facility_id),
+                    })
+                    async with httpx.AsyncClient(timeout=10.0) as client:
+                        for r in readings:
+                            payload = {
+                                "facility_id": str(self.active_facility_id),
+                                "observed_at": r.timestamp.isoformat(),
+                                "treatment_stage": str(r.measurement_stage),
+                                "parameter": str(r.parameter),
+                                "value": float(r.value) if r.value is not None else None,
+                                "unit": str(r.unit),
+                                "source": "simulated",
+                            }
+                            try:
+                                resp = await client.post(
+                                    endpoint,
+                                    json=payload,
+                                    headers={
+                                        "Idempotency-Key": f"sim-{r.reading_id}",
+                                        "Authorization": f"Bearer {token}",
+                                    },
+                                )
+                                if resp.status_code in (200, 201):
+                                    self.readings_ingested += 1
+                            except Exception:
+                                pass
+                else:
+                    # 2. Ingest into database
+                    db = SessionLocal()
+                    try:
+                        # Ensure facility exists in DB
+                        fac_repo = FacilityRepository(db)
+                        fac = fac_repo.get_by_id(self.active_facility_id)
+                        if not fac:
+                            fac = Facility(
+                                facility_id=self.active_facility_id,
+                                facility_name=self.active_facility_name or "Simulated STP",
+                                facility_type="municipal_stp",
+                                location={"city": "Simulated City"},
+                                capacity=Decimal("100.000000"),
+                                capacity_unit="MLD",
+                                status="active",
+                            )
+                            fac_repo.create(fac)
+                            db.commit()
+
+                        reading_repo = ReadingRepository(db)
+                        for r in readings:
+                            reading_row = Reading(
+                                reading_id=r.reading_id,
+                                facility_id=self.active_facility_id,
+                                observed_at=r.timestamp,
+                                treatment_stage=str(r.measurement_stage),
+                                parameter=str(r.parameter),
+                                value=Decimal(f"{r.value:.6f}") if r.value is not None else None,
+                                unit=str(r.unit),
+                                source="simulated",
+                                quality_status="pending",
+                            )
+                            reading_repo.create(reading_row)
+
+                            # Validate & Anomaly detect
+                            ValidationService.validate_reading(db, reading_row)
+                            AnomalyService.infer_reading(db, reading_row)
+                            self.readings_ingested += 1
+
                         db.commit()
-
-                    reading_repo = ReadingRepository(db)
-                    for r in readings:
-                        reading_row = Reading(
-                            reading_id=r.reading_id,
-                            facility_id=self.active_facility_id,
-                            observed_at=r.timestamp,
-                            treatment_stage=str(r.measurement_stage),
-                            parameter=str(r.parameter),
-                            value=Decimal(f"{r.value:.6f}") if r.value is not None else None,
-                            unit=str(r.unit),
-                            source="simulated",
-                            quality_status="pending",
-                        )
-                        reading_repo.create(reading_row)
-
-                        # Validate & Anomaly detect
-                        ValidationService.validate_reading(db, reading_row)
-                        AnomalyService.infer_reading(db, reading_row)
-                        self.readings_ingested += 1
-
-                    db.commit()
-                except Exception as e:
-                    db.rollback()
-                finally:
-                    db.close()
+                    except Exception as e:
+                        db.rollback()
+                    finally:
+                        db.close()
 
                 await asyncio.sleep(self.interval_seconds)
         except asyncio.CancelledError:

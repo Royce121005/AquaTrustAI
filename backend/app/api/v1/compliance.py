@@ -18,6 +18,7 @@ from app.schemas.compliance import (
     ComplianceEvaluateResponse,
     ComplianceSummaryResponse,
 )
+from app.core.security import get_current_user_claims, require_role
 
 router = APIRouter(tags=["Environmental Compliance"])
 
@@ -26,6 +27,7 @@ router = APIRouter(tags=["Environmental Compliance"])
     "/compliance/rules",
     response_model=List[ComplianceRuleResponse],
     summary="List active environmental compliance rules",
+    dependencies=[Depends(get_current_user_claims)],
 )
 def get_compliance_rules(db: Session = Depends(get_db)):
     """List active CPCB / EPA discharge standard rules."""
@@ -52,6 +54,7 @@ def get_compliance_rules(db: Session = Depends(get_db)):
     "/compliance/evaluate",
     response_model=ComplianceEvaluateResponse,
     summary="Evaluate environmental compliance for a treatment record",
+    dependencies=[Depends(require_role(["auditor", "regulatory_stakeholder", "admin"]))],
 )
 def evaluate_compliance(payload: ComplianceEvaluateRequest, db: Session = Depends(get_db)):
     """Evaluate compliance for a treatment record."""
@@ -84,6 +87,7 @@ def evaluate_compliance(payload: ComplianceEvaluateRequest, db: Session = Depend
     "/compliance/summary",
     response_model=ComplianceSummaryResponse,
     summary="Get environmental compliance summary metrics",
+    dependencies=[Depends(get_current_user_claims)],
 )
 def get_compliance_summary(db: Session = Depends(get_db)):
     """Compliance summary supporting frontend compliance.js."""
@@ -113,3 +117,4 @@ def get_compliance_summary(db: Session = Depends(get_db)):
         cpcb_standard_version="CPCB_2021",
         recent_evaluations=events,
     )
+
