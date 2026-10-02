@@ -1,169 +1,233 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from './context/AuthContext';
-import { RoleGuard } from './components/common/RoleGuard';
-import { MainLayout } from './layouts/MainLayout';
+import { ProtectedRoute, RoleGuard } from './components/common/RouteGuard';
+import { AppShell } from './components/layout/AppShell';
 
+// Pages
 import { LoginPage } from './pages/LoginPage';
-import { OperatorDashboard } from './pages/OperatorDashboard';
-import { AuditorWorkspace } from './pages/AuditorWorkspace';
-import { RegulatorConsole } from './pages/RegulatorConsole';
-import { AdminOverview } from './pages/AdminOverview';
-import { PublicVerifyPage } from './pages/PublicVerifyPage';
-import { MonitoringSensorsPage } from './pages/MonitoringSensorsPage';
-import { AiInsightsPage } from './pages/AiInsightsPage';
-import { SettingsPage } from './pages/SettingsPage';
-import { AuditTrailPage } from './pages/AuditTrailPage';
-import { ProcessMimic } from './components/operator/ProcessMimic';
-import { AlarmAnnunciatorBar, CalibrationWizard } from './components/operator/AlarmAndCalibration';
+import { DashboardPage } from './pages/DashboardPage';
+import { FacilitiesPage } from './pages/FacilitiesPage';
+import { FacilityDetailPage } from './pages/FacilityDetailPage';
+import { FacilityCreatePage } from './pages/FacilityCreatePage';
+import { TelemetryPage } from './pages/TelemetryPage';
+import { ReadingDetailPage } from './pages/ReadingDetailPage';
+import { ValidationPage } from './pages/ValidationPage';
+import { AnomaliesPage } from './pages/AnomaliesPage';
+import { CompliancePage } from './pages/CompliancePage';
+import { TreatmentRecordsPage } from './pages/TreatmentRecordsPage';
+import { TreatmentRecordDetailPage } from './pages/TreatmentRecordDetailPage';
+import { FinalizationPage } from './pages/FinalizationPage';
+import { CertificatesPage } from './pages/CertificatesPage';
+import { CertificateDetailPage } from './pages/CertificateDetailPage';
+import { VerificationPage } from './pages/VerificationPage';
+import { PublicVerificationPage } from './pages/PublicVerificationPage';
+import { CorrectionsPage } from './pages/CorrectionsPage';
+import { CorrectionChainPage } from './pages/CorrectionChainPage';
+import { BlockchainPage } from './pages/BlockchainPage';
+import { TransactionDetailPage } from './pages/TransactionDetailPage';
+import { MerkleBatchPage } from './pages/MerkleBatchPage';
+import { AuditPage } from './pages/AuditPage';
+import { SimulatorPage } from './pages/SimulatorPage';
+import { SystemStatusPage } from './pages/SystemStatusPage';
+import { UserRegistrationPage } from './pages/UserRegistrationPage';
+import { NotFoundState } from './components/common/States';
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 export const App: React.FC = () => {
   return (
-    <AuthProvider>
-      <BrowserRouter>
-        <Routes>
-          {/* Public Authentication & Verification Routes */}
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/verify" element={<PublicVerifyPage />} />
-          <Route path="/verify/:certificateId" element={<PublicVerifyPage />} />
-
-          {/* Protected Role-Based Application Shell */}
-          <Route element={<MainLayout />}>
-            {/* Operator Specific Routes */}
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <BrowserRouter>
+          <Routes>
+            {/* Public Unauthenticated Routes */}
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/verify/:recordId" element={<PublicVerificationPage mode="record" />} />
             <Route
-              path="/dashboard"
-              element={
-                <RoleGuard allowedRoles={['operator', 'admin']}>
-                  <OperatorDashboard />
-                </RoleGuard>
-              }
-            />
-            <Route
-              path="/process"
-              element={
-                <RoleGuard allowedRoles={['operator', 'admin']}>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                    <AlarmAnnunciatorBar />
-                    <ProcessMimic interactive={true} />
-                  </div>
-                </RoleGuard>
-              }
-            />
-            <Route
-              path="/alarms"
-              element={
-                <RoleGuard allowedRoles={['operator', 'admin']}>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                    <AlarmAnnunciatorBar />
-                    <CalibrationWizard />
-                  </div>
-                </RoleGuard>
-              }
-            />
-            <Route
-              path="/monitoring"
-              element={
-                <RoleGuard allowedRoles={['operator', 'admin']}>
-                  <MonitoringSensorsPage />
-                </RoleGuard>
-              }
-            />
-            <Route
-              path="/insights"
-              element={
-                <RoleGuard allowedRoles={['operator', 'admin']}>
-                  <AiInsightsPage />
-                </RoleGuard>
-              }
-            />
-            <Route
-              path="/compliance"
-              element={
-                <RoleGuard allowedRoles={['operator', 'admin', 'auditor']}>
-                  <AuditorWorkspace />
-                </RoleGuard>
-              }
+              path="/public/verify/certificate/:certificateId"
+              element={<PublicVerificationPage mode="certificate" />}
             />
 
-            {/* Auditor Specific Routes */}
+            {/* Protected Operational Shell */}
             <Route
-              path="/auditor"
               element={
-                <RoleGuard allowedRoles={['auditor', 'admin']}>
-                  <AuditorWorkspace />
-                </RoleGuard>
+                <ProtectedRoute>
+                  <AppShell />
+                </ProtectedRoute>
               }
-            />
-            <Route
-              path="/blockchain"
-              element={
-                <RoleGuard allowedRoles={['auditor', 'regulator', 'regulatory_stakeholder', 'admin']}>
-                  <AuditorWorkspace />
-                </RoleGuard>
-              }
-            />
-            <Route
-              path="/blockchain/verify"
-              element={
-                <RoleGuard allowedRoles={['auditor', 'regulator', 'regulatory_stakeholder', 'admin']}>
-                  <AuditorWorkspace />
-                </RoleGuard>
-              }
-            />
-            <Route
-              path="/audit"
-              element={
-                <RoleGuard allowedRoles={['auditor', 'admin']}>
-                  <AuditTrailPage />
-                </RoleGuard>
-              }
-            />
+            >
+              <Route path="/" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/dashboard" element={<DashboardPage />} />
 
-            {/* Regulator Specific Routes */}
-            <Route
-              path="/regulator"
-              element={
-                <RoleGuard allowedRoles={['regulator', 'regulatory_stakeholder', 'admin']}>
-                  <RegulatorConsole />
-                </RoleGuard>
-              }
-            />
-            <Route
-              path="/compliance/reports"
-              element={
-                <RoleGuard allowedRoles={['regulator', 'regulatory_stakeholder', 'auditor', 'admin']}>
-                  <RegulatorConsole />
-                </RoleGuard>
-              }
-            />
+              {/* Facilities */}
+              <Route path="/facilities" element={<FacilitiesPage />} />
+              <Route path="/facilities/:facilityId" element={<FacilityDetailPage />} />
 
-            {/* Admin Specific Routes */}
-            <Route
-              path="/admin"
-              element={
-                <RoleGuard allowedRoles={['admin']}>
-                  <AdminOverview />
-                </RoleGuard>
-              }
-            />
+              {/* Telemetry & Validation */}
+              <Route
+                path="/readings"
+                element={
+                  <RoleGuard allowedRoles={['operator', 'auditor', 'admin']}>
+                    <TelemetryPage />
+                  </RoleGuard>
+                }
+              />
+              <Route path="/readings/:readingId" element={<ReadingDetailPage />} />
+              <Route
+                path="/validation"
+                element={
+                  <RoleGuard allowedRoles={['operator', 'admin']}>
+                    <ValidationPage />
+                  </RoleGuard>
+                }
+              />
 
-            {/* Common Settings Route */}
-            <Route
-              path="/settings"
-              element={
-                <RoleGuard allowedRoles={['operator', 'auditor', 'regulator', 'regulatory_stakeholder', 'admin']}>
-                  <SettingsPage />
-                </RoleGuard>
-              }
-            />
-          </Route>
+              {/* AI Anomalies */}
+              <Route
+                path="/anomalies"
+                element={
+                  <RoleGuard allowedRoles={['operator', 'auditor', 'admin']}>
+                    <AnomaliesPage />
+                  </RoleGuard>
+                }
+              />
+              <Route path="/anomalies/:readingId" element={<ReadingDetailPage />} />
 
-          {/* Root Fallback Redirect */}
-          <Route path="*" element={<Navigate to="/dashboard" replace />} />
-        </Routes>
-      </BrowserRouter>
-    </AuthProvider>
+              {/* Environmental Compliance */}
+              <Route path="/compliance" element={<CompliancePage />} />
+
+              {/* Treatment Records & Finalization */}
+              <Route path="/treatment-records" element={<TreatmentRecordsPage />} />
+              <Route path="/treatment-records/:recordId" element={<TreatmentRecordDetailPage />} />
+              <Route
+                path="/finalization"
+                element={
+                  <RoleGuard allowedRoles={['operator', 'admin']}>
+                    <FinalizationPage />
+                  </RoleGuard>
+                }
+              />
+
+              {/* Digital Certificates */}
+              <Route
+                path="/certificates"
+                element={
+                  <RoleGuard allowedRoles={['auditor', 'regulatory_stakeholder', 'admin']}>
+                    <CertificatesPage />
+                  </RoleGuard>
+                }
+              />
+              <Route path="/certificates/:certificateId" element={<CertificateDetailPage />} />
+
+              {/* Cryptographic Verification */}
+              <Route path="/verification" element={<VerificationPage />} />
+
+              {/* Append-Only Lineage & Corrections */}
+              <Route path="/corrections" element={<CorrectionsPage />} />
+              <Route path="/corrections/:recordId" element={<CorrectionChainPage />} />
+
+              {/* DLT Ledger & Merkle Batches */}
+              <Route
+                path="/blockchain"
+                element={
+                  <RoleGuard allowedRoles={['auditor', 'regulatory_stakeholder', 'admin']}>
+                    <BlockchainPage />
+                  </RoleGuard>
+                }
+              />
+              <Route path="/blockchain/transactions/:txId" element={<TransactionDetailPage />} />
+              <Route
+                path="/blockchain/merkle"
+                element={
+                  <RoleGuard allowedRoles={['operator', 'admin']}>
+                    <MerkleBatchPage />
+                  </RoleGuard>
+                }
+              />
+
+              {/* Forensic Audit Log (Auditor, Regulator, Admin) */}
+              <Route
+                path="/audit"
+                element={
+                  <RoleGuard allowedRoles={['auditor', 'regulatory_stakeholder', 'admin']}>
+                    <AuditPage />
+                  </RoleGuard>
+                }
+              />
+
+              {/* Telemetry Simulator (Operator, Admin) */}
+              <Route
+                path="/simulator"
+                element={
+                  <RoleGuard allowedRoles={['operator', 'admin']}>
+                    <SimulatorPage />
+                  </RoleGuard>
+                }
+              />
+
+              {/* System Infrastructure Status (Admin Only) */}
+              <Route
+                path="/system-status"
+                element={
+                  <RoleGuard allowedRoles={['admin']}>
+                    <SystemStatusPage />
+                  </RoleGuard>
+                }
+              />
+
+              {/* Admin Management (Admin Only) */}
+              <Route
+                path="/admin"
+                element={
+                  <RoleGuard allowedRoles={['admin']}>
+                    <SystemStatusPage />
+                  </RoleGuard>
+                }
+              />
+              <Route
+                path="/admin/users/new"
+                element={
+                  <RoleGuard allowedRoles={['admin']}>
+                    <UserRegistrationPage />
+                  </RoleGuard>
+                }
+              />
+              <Route
+                path="/admin/facilities/new"
+                element={
+                  <RoleGuard allowedRoles={['admin']}>
+                    <FacilityCreatePage />
+                  </RoleGuard>
+                }
+              />
+
+              {/* Fallback inside shell */}
+              <Route
+                path="*"
+                element={
+                  <NotFoundState
+                    title="404 - View Not Found"
+                    message="The requested operational route does not exist in the AquaTrust AI system."
+                  />
+                }
+              />
+            </Route>
+
+            {/* Fallback global */}
+            <Route path="*" element={<Navigate to="/dashboard" replace />} />
+          </Routes>
+        </BrowserRouter>
+      </AuthProvider>
+    </QueryClientProvider>
   );
 };
-
 export default App;
