@@ -1,0 +1,467 @@
+{
+  "Environment": [
+    {
+      "test": "PostgreSQL Database Connection",
+      "command": "check_db_connection()",
+      "expected": "connected (True)",
+      "actual": "True",
+      "status": "PASS",
+      "severity": "CRITICAL",
+      "details": {}
+    },
+    {
+      "test": "Hyperledger Fabric Gateway Health",
+      "command": "FabricBlockchainService().health()",
+      "expected": "online: True",
+      "actual": "{'mode': 'FABRIC', 'online': True, 'channel': 'aquatrust-channel', 'chaincode': 'aquatrust-records'}",
+      "status": "PASS",
+      "severity": "HIGH",
+      "details": {}
+    }
+  ],
+  "Auth": [
+    {
+      "test": "Login operator",
+      "command": "POST /api/v1/auth/login (operator)",
+      "expected": "HTTP 200 + token",
+      "actual": "HTTP 200",
+      "status": "PASS",
+      "severity": "CRITICAL",
+      "details": {}
+    },
+    {
+      "test": "Login auditor",
+      "command": "POST /api/v1/auth/login (auditor)",
+      "expected": "HTTP 200 + token",
+      "actual": "HTTP 200",
+      "status": "PASS",
+      "severity": "CRITICAL",
+      "details": {}
+    },
+    {
+      "test": "Login regulator",
+      "command": "POST /api/v1/auth/login (regulator)",
+      "expected": "HTTP 200 + token",
+      "actual": "HTTP 200",
+      "status": "PASS",
+      "severity": "CRITICAL",
+      "details": {}
+    },
+    {
+      "test": "Login admin",
+      "command": "POST /api/v1/auth/login (admin)",
+      "expected": "HTTP 200 + token",
+      "actual": "HTTP 200",
+      "status": "PASS",
+      "severity": "CRITICAL",
+      "details": {}
+    },
+    {
+      "test": "Invalid Username",
+      "command": "POST /api/v1/auth/login",
+      "expected": "HTTP 401",
+      "actual": "HTTP 401",
+      "status": "PASS",
+      "severity": "HIGH",
+      "details": {}
+    },
+    {
+      "test": "Invalid Password",
+      "command": "POST /api/v1/auth/login",
+      "expected": "HTTP 401",
+      "actual": "HTTP 401",
+      "status": "PASS",
+      "severity": "HIGH",
+      "details": {}
+    },
+    {
+      "test": "Missing Credentials Payload",
+      "command": "POST /api/v1/auth/login",
+      "expected": "HTTP 422",
+      "actual": "HTTP 422",
+      "status": "PASS",
+      "severity": "MEDIUM",
+      "details": {}
+    },
+    {
+      "test": "Malformed JWT Token",
+      "command": "GET /api/v1/auth/me",
+      "expected": "HTTP 401",
+      "actual": "HTTP 401",
+      "status": "PASS",
+      "severity": "HIGH",
+      "details": {}
+    },
+    {
+      "test": "Expired JWT Token Rejection",
+      "command": "GET /api/v1/auth/me",
+      "expected": "HTTP 401",
+      "actual": "HTTP 401",
+      "status": "PASS",
+      "severity": "HIGH",
+      "details": {}
+    },
+    {
+      "test": "Tampered JWT Signature Rejection",
+      "command": "GET /api/v1/auth/me",
+      "expected": "HTTP 401",
+      "actual": "HTTP 401",
+      "status": "PASS",
+      "severity": "CRITICAL",
+      "details": {}
+    },
+    {
+      "test": "Token Logout Endpoint",
+      "command": "POST /api/v1/auth/logout",
+      "expected": "HTTP 200",
+      "actual": "HTTP 200",
+      "status": "PASS",
+      "severity": "HIGH",
+      "details": {}
+    },
+    {
+      "test": "Revoked Token Reuse Prevention",
+      "command": "GET /api/v1/auth/me (revoked)",
+      "expected": "HTTP 401",
+      "actual": "HTTP 401",
+      "status": "PASS",
+      "severity": "CRITICAL",
+      "details": {}
+    }
+  ],
+  "RBAC": [
+    {
+      "test": "Anonymous Denied: /api/v1/facilities",
+      "command": "GET /api/v1/facilities",
+      "expected": "HTTP 401",
+      "actual": "HTTP 401",
+      "status": "PASS",
+      "severity": "HIGH",
+      "details": {}
+    },
+    {
+      "test": "Anonymous Denied: /api/v1/readings",
+      "command": "GET /api/v1/readings",
+      "expected": "HTTP 401",
+      "actual": "HTTP 401",
+      "status": "PASS",
+      "severity": "HIGH",
+      "details": {}
+    },
+    {
+      "test": "Anonymous Denied: /api/v1/treatment-records/finalize",
+      "command": "POST /api/v1/treatment-records/finalize",
+      "expected": "HTTP 401",
+      "actual": "HTTP 401",
+      "status": "PASS",
+      "severity": "HIGH",
+      "details": {}
+    },
+    {
+      "test": "Anonymous Denied: /api/v1/corrections/propose",
+      "command": "POST /api/v1/corrections/propose",
+      "expected": "HTTP 401",
+      "actual": "HTTP 401",
+      "status": "PASS",
+      "severity": "HIGH",
+      "details": {}
+    },
+    {
+      "test": "Anonymous Denied: /api/v1/corrections/00000000-0000-0000-0000-000000000000/authorize",
+      "command": "POST /api/v1/corrections/00000000-0000-0000-0000-000000000000/authorize",
+      "expected": "HTTP 401",
+      "actual": "HTTP 401",
+      "status": "PASS",
+      "severity": "HIGH",
+      "details": {}
+    },
+    {
+      "test": "Anonymous Denied: /api/v1/audit-events",
+      "command": "GET /api/v1/audit-events",
+      "expected": "HTTP 401",
+      "actual": "HTTP 401",
+      "status": "PASS",
+      "severity": "HIGH",
+      "details": {}
+    },
+    {
+      "test": "Anonymous Denied: /api/v1/auth/register",
+      "command": "POST /api/v1/auth/register",
+      "expected": "HTTP 401",
+      "actual": "HTTP 401",
+      "status": "PASS",
+      "severity": "HIGH",
+      "details": {}
+    },
+    {
+      "test": "Operator Prohibited from User Registration",
+      "command": "POST /api/v1/auth/register (Operator)",
+      "expected": "HTTP 403",
+      "actual": "HTTP 403",
+      "status": "PASS",
+      "severity": "CRITICAL",
+      "details": {}
+    },
+    {
+      "test": "Operator Prohibited from Authorizing Correction",
+      "command": "POST /api/v1/corrections/{id}/authorize (Operator)",
+      "expected": "HTTP 403",
+      "actual": "HTTP 403",
+      "status": "PASS",
+      "severity": "CRITICAL",
+      "details": {}
+    },
+    {
+      "test": "Public Route Unauthenticated: /health",
+      "command": "GET /health",
+      "expected": "HTTP 200 or 404 (No 401)",
+      "actual": "HTTP 200",
+      "status": "PASS",
+      "severity": "MEDIUM",
+      "details": {}
+    },
+    {
+      "test": "Public Route Unauthenticated: /api/v1/health",
+      "command": "GET /api/v1/health",
+      "expected": "HTTP 200 or 404 (No 401)",
+      "actual": "HTTP 200",
+      "status": "PASS",
+      "severity": "MEDIUM",
+      "details": {}
+    },
+    {
+      "test": "Public Route Unauthenticated: /api/v1/verification/public/verify/00000000-0000-0000-0000-000000000000",
+      "command": "GET /api/v1/verification/public/verify/00000000-0000-0000-0000-000000000000",
+      "expected": "HTTP 200 or 404 (No 401)",
+      "actual": "HTTP 404",
+      "status": "PASS",
+      "severity": "MEDIUM",
+      "details": {}
+    }
+  ],
+  "Ingestion": [
+    {
+      "test": "Valid Reading Ingestion",
+      "command": "POST /api/v1/ingestion/readings (Valid BOD)",
+      "expected": "HTTP 201",
+      "actual": "HTTP 201",
+      "status": "PASS",
+      "severity": "HIGH",
+      "details": {}
+    },
+    {
+      "test": "Deterministic Boundary Invalidation (pH=18)",
+      "command": "POST /ingestion/readings",
+      "expected": "quality_status == 'invalid'",
+      "actual": "invalid",
+      "status": "PASS",
+      "severity": "HIGH",
+      "details": {}
+    },
+    {
+      "test": "Future Timestamp Flagged Invalid",
+      "command": "POST /ingestion/readings (Future Timestamp)",
+      "expected": "quality_status == 'invalid' or FUTURE flag",
+      "actual": "status=invalid, flags=['FUTURE_TIMESTAMP_ERROR']",
+      "status": "PASS",
+      "severity": "HIGH",
+      "details": {}
+    },
+    {
+      "test": "Unknown Facility Auto-Provisioning Behavior",
+      "command": "POST /ingestion/readings (Unknown Facility)",
+      "expected": "Auto-provisions facility (architecture feature)",
+      "actual": "HTTP 201 (auto-created facility)",
+      "status": "PASS",
+      "severity": "MEDIUM",
+      "details": {
+        "note": "Backend automatically creates facility row for telemetry onboarding"
+      }
+    }
+  ],
+  "ML": [
+    {
+      "test": "Engine Initialization",
+      "command": "AquaTrustAnomalyInferenceEngine()",
+      "expected": "Model version loaded",
+      "actual": "iforest_v2.2.1",
+      "status": "PASS",
+      "severity": "CRITICAL",
+      "details": {}
+    },
+    {
+      "test": "Inference Score Determinism",
+      "command": "predict(x) == predict(x)",
+      "expected": "Deterministic scores",
+      "actual": "0.201873 == 0.202105",
+      "status": "FAIL",
+      "severity": "HIGH",
+      "details": {}
+    },
+    {
+      "test": "Extreme Surge Anomaly Flagging",
+      "command": "predict(BOD=850)",
+      "expected": "anomaly_status == 'anomalous'",
+      "actual": "anomalous (score=-0.238874)",
+      "status": "PASS",
+      "severity": "HIGH",
+      "details": {}
+    }
+  ],
+  "Compliance": [
+    {
+      "test": "CPCB Rules Catalog Loaded",
+      "command": "GET /api/v1/compliance/rules",
+      "expected": ">= 5 regulatory rules",
+      "actual": "5 rules",
+      "status": "PASS",
+      "severity": "HIGH",
+      "details": {}
+    },
+    {
+      "test": "Compliant Effluent Evaluation",
+      "command": "POST /api/v1/compliance/evaluate",
+      "expected": "overall_status == 'compliant'",
+      "actual": "None",
+      "status": "FAIL",
+      "severity": "HIGH",
+      "details": {}
+    },
+    {
+      "test": "Discharge Violation Detection",
+      "command": "POST /api/v1/compliance/evaluate (BOD=80)",
+      "expected": "overall_status == 'non_compliant'",
+      "actual": "None",
+      "status": "FAIL",
+      "severity": "HIGH",
+      "details": {}
+    }
+  ],
+  "Crypto": [
+    {
+      "test": "RFC Deterministic Canonicalization & Exclusions",
+      "command": "canonicalize_treatment_record(x)",
+      "expected": "Deterministic, mutable fields pruned",
+      "actual": "identical=True, id_pruned=True",
+      "status": "PASS",
+      "severity": "CRITICAL",
+      "details": {}
+    },
+    {
+      "test": "SHA-256 Avalanche Effect",
+      "command": "compute_canonical_hash(tampered)",
+      "expected": "Hash completely differs",
+      "actual": "4bb5c7e04a4da55e != 19a1c85d3966ee5d",
+      "status": "PASS",
+      "severity": "CRITICAL",
+      "details": {}
+    },
+    {
+      "test": "ECDSA ES256 Signature Lifecycle",
+      "command": "sign() -> verify()",
+      "expected": "Valid for exact bytes, invalid for tampered",
+      "actual": "valid=True, tampered_rejected=True",
+      "status": "PASS",
+      "severity": "CRITICAL",
+      "details": {}
+    },
+    {
+      "test": "RFC 6962 Merkle Audit Proofs",
+      "command": "MerkleTree.verify_proof()",
+      "expected": "5/5 proofs verified, tamper rejected",
+      "actual": "all_valid=True, tamper_rejected=True",
+      "status": "PASS",
+      "severity": "HIGH",
+      "details": {}
+    }
+  ],
+  "DLT": [
+    {
+      "test": "Live Hyperledger Fabric Anchor Commit",
+      "command": "gateway.anchor_record()",
+      "expected": "status == 'anchored', real tx_id returned",
+      "actual": "status=anchored, tx_id=ff585c68accb254a9812d584570bf41d5ef9eb3ba3f5b83d667efaa500e5331f",
+      "status": "PASS",
+      "severity": "CRITICAL",
+      "details": {}
+    },
+    {
+      "test": "Live Hyperledger Fabric Anchor Query",
+      "command": "gateway.query_record_anchor()",
+      "expected": "Record found on ledger with matching hash",
+      "actual": "found=True",
+      "status": "PASS",
+      "severity": "CRITICAL",
+      "details": {}
+    },
+    {
+      "test": "Fabric Ledger Immutability Conflict Rejection",
+      "command": "gateway.anchor_record(same_id, different_hash)",
+      "expected": "status == 'failed' (rejected by endorsement)",
+      "actual": "status=failed",
+      "status": "PASS",
+      "severity": "CRITICAL",
+      "details": {}
+    }
+  ],
+  "Verification": [
+    {
+      "test": "4-Stage Independent Verification Pipeline",
+      "command": "POST /api/v1/verification/verify-record/b9dfaa4f-80ce-43ac-a5cb-f7536418724d",
+      "expected": "VERIFIED across all 4 cryptographic stages",
+      "actual": "verdict=VERIFIED",
+      "status": "PASS",
+      "severity": "CRITICAL",
+      "details": {}
+    },
+    {
+      "test": "Public Zero-Auth Verification Portal",
+      "command": "GET /api/v1/verification/public/verify/b9dfaa4f-80ce-43ac-a5cb-f7536418724d",
+      "expected": "HTTP 200 + VERIFIED",
+      "actual": "HTTP 200, verdict=VERIFIED",
+      "status": "PASS",
+      "severity": "HIGH",
+      "details": {}
+    }
+  ],
+  "Correction": [
+    {
+      "test": "Propose Append-Only Correction",
+      "command": "POST /api/v1/corrections/propose",
+      "expected": "HTTP 201 + pending status",
+      "actual": "HTTP 201, status=pending",
+      "status": "PASS",
+      "severity": "HIGH",
+      "details": {}
+    },
+    {
+      "test": "Authorize Append-Only Correction (Auditor)",
+      "command": "POST /api/v1/corrections/{id}/authorize",
+      "expected": "HTTP 200 + superseding record generated",
+      "actual": "HTTP 200, new_id=764b7208-25b9-4da2-84ab-c7ccf6ce73d5",
+      "status": "PASS",
+      "severity": "CRITICAL",
+      "details": {}
+    },
+    {
+      "test": "Provenance Lineage Integrity",
+      "command": "GET /api/v1/corrections/chain/{id}",
+      "expected": "Original marked superseded, new version active",
+      "actual": "versions_count=3, orig_superseded=False",
+      "status": "FAIL",
+      "severity": "CRITICAL",
+      "details": {}
+    }
+  ],
+  "Performance": [
+    {
+      "test": "Concurrent Compliance Summary (20 reqs)",
+      "command": "20 concurrent GET /compliance/summary",
+      "expected": "Average latency < 200ms",
+      "actual": "avg=524.39ms, total_wall_time=0.82s",
+      "status": "PARTIAL",
+      "severity": "MEDIUM",
+      "details": {}
+    }
+  ]
+}
