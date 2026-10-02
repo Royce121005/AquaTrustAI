@@ -77,6 +77,18 @@ class Settings(BaseSettings):
             return v.replace("postgres://", "postgresql://", 1)
         return v
 
+    @field_validator("JWT_SECRET_KEY", mode="after")
+    @classmethod
+    def validate_jwt_secret(cls, v: str) -> str:
+        """Enforce strong JWT secret key when running in production."""
+        env = os.environ.get("APP_ENV", "development").lower()
+        if env == "production":
+            if not v or "do-not-use" in v or len(v) < 32:
+                raise ValueError(
+                    "CRITICAL SECURITY VIOLATION: JWT_SECRET_KEY must be securely configured with at least 32 characters in production!"
+                )
+        return v
+
     @field_validator("CORS_ORIGINS", mode="before")
     @classmethod
     def assemble_cors_origins(cls, v: Union[str, List[str]]) -> List[str]:

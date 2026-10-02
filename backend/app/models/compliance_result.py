@@ -23,6 +23,7 @@ class ComplianceResult(Base):
 
     __table_args__ = (
         Index("ix_compliance_results_record_id", "treatment_record_id"),
+        Index("idx_compliance_results_status_date", "compliance_status", "evaluated_at"),
     )
 
     # Relationships

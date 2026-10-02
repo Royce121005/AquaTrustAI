@@ -17,6 +17,7 @@ from app.repositories.reading_repository import ReadingRepository
 from app.services.validation_service import ValidationService
 from app.services.anomaly_service import AnomalyService
 from app.core.security import get_current_user_claims, require_role
+from app.core.rate_limit import rate_limit_ingestion
 from app.schemas.ingestion import (
     ReadingIngestRequest,
     ReadingIngestResponse,
@@ -33,14 +34,14 @@ router = APIRouter(tags=["Telemetry Ingestion"])
     response_model=ReadingIngestResponse,
     status_code=status.HTTP_201_CREATED,
     summary="Ingest a single telemetry reading",
-    dependencies=[Depends(require_role(["operator", "admin"]))],
+    dependencies=[Depends(require_role(["operator", "admin"])), Depends(rate_limit_ingestion)],
 )
 @router.post(
     "/telemetry/ingest",
     response_model=ReadingIngestResponse,
     status_code=status.HTTP_201_CREATED,
     include_in_schema=False,
-    dependencies=[Depends(require_role(["operator", "admin"]))],
+    dependencies=[Depends(require_role(["operator", "admin"])), Depends(rate_limit_ingestion)],
 )
 def ingest_reading(
     payload: ReadingIngestRequest,
@@ -51,7 +52,12 @@ def ingest_reading(
     fac_repo = FacilityRepository(db)
     facility = fac_repo.get_by_id(payload.facility_id)
     if not facility:
-        # Create facility if not found to support seamless onboarding
+        if settings.APP_ENV == "production":
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Facility {payload.facility_id} is not registered in the system.",
+            )
+        # Create facility in development/test to support seamless onboarding
         facility = Facility(
             facility_id=payload.facility_id,
             facility_name=f"Facility {str(payload.facility_id)[:8]}",
