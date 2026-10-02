@@ -10,7 +10,7 @@ import os
 import threading
 import hashlib
 from datetime import datetime, timezone
-from typing import Optional, Dict, Any, List
+from typing import Optional, Dict, Any, List, Union
 from uuid import UUID
 
 from app.dlt.blockchain_service import FabricBlockchainService, SimulationBlockchainService
@@ -275,7 +275,7 @@ class FabricDLTGateway:
         self,
         batch_id: Optional[str],
         record_hashes: List[str],
-        facility_id: UUID,
+        facility_id: Union[UUID, str],
         key_id: str = "key-ecdsa-p256-01",
         record_ids: Optional[List[str]] = None,
     ) -> Dict[str, Any]:

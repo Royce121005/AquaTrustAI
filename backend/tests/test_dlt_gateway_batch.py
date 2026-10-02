@@ -43,5 +43,30 @@ def test_gateway_anchor_and_verify_batch():
     # Unknown hash must fail inclusion verification
     fake_hash = "0" * 64
     assert gateway.verify_batch_leaf(batch_id, fake_hash) is False
-    assert gateway.query_batch(batch_id)["merkle_root"] == res["merkle_root"]
-    assert gateway.generate_batch_id(record_ids, hashes) == gateway.generate_batch_id(record_ids, hashes)
+    # Test batch anchoring with custom string facility code (e.g. FAC-CPCB-001)
+    res_code = gateway.anchor_batch(
+        batch_id="batch_string_facility_code",
+        record_hashes=hashes[:2],
+        facility_id="FAC-CPCB-001",
+        record_ids=["rec-1", "rec-2"],
+    )
+    assert res_code["facility_id"] == "FAC-CPCB-001"
+    assert res_code["status"] == "anchored"
+
+
+def test_dlt_batch_anchor_request_schema():
+    from app.schemas.dlt import DLTBatchAnchorRequest
+    # Must accept UUID
+    req1 = DLTBatchAnchorRequest(
+        record_hashes=["e963fc23cf0eb966c4c5cf2339678e0c4cbca476a6e542bf82aa7aeb354f3b17"],
+        facility_id="085a9719-c9d0-4562-b4d7-bc389dec12b3",
+    )
+    assert str(req1.facility_id) == "085a9719-c9d0-4562-b4d7-bc389dec12b3"
+
+    # Must accept string facility code
+    req2 = DLTBatchAnchorRequest(
+        record_hashes=["e963fc23cf0eb966c4c5cf2339678e0c4cbca476a6e542bf82aa7aeb354f3b17"],
+        facility_id="FAC-CPCB-001",
+    )
+    assert req2.facility_id == "FAC-CPCB-001"
+

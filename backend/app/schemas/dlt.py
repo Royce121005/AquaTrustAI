@@ -1,7 +1,7 @@
 """AquaTrust AI — DLT Schemas."""
 
 from datetime import datetime
-from typing import Optional, Dict, Any, List
+from typing import Optional, Dict, Any, List, Union
 from uuid import UUID
 from pydantic import BaseModel, Field
 
@@ -38,7 +38,7 @@ class DLTBatchAnchorRequest(BaseModel):
     batch_id: Optional[str] = None
     record_hashes: List[str]
     record_ids: Optional[List[str]] = None
-    facility_id: UUID
+    facility_id: Union[UUID, str]
     key_id: Optional[str] = "key-ecdsa-p256-01"
 
 
