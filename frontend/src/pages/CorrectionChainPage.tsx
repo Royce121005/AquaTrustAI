@@ -74,6 +74,7 @@ export const CorrectionChainPage: React.FC = () => {
   const authorizeMutation = useMutation({
     mutationFn: (corrId: string) =>
       authorizeCorrectionApi(corrId, {
+        authorized_by: user?.user_id || user?.username || 'authorized_auditor',
         comments: authComments || undefined,
         key_id: 'key-ecdsa-p256-01',
       }),
