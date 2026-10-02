@@ -1,5 +1,6 @@
 import asyncio
 import os
+import logging
 import httpx
 from datetime import datetime, timezone
 from decimal import Decimal
@@ -9,14 +10,22 @@ from uuid import UUID, uuid4
 from app.core.config import get_settings
 from app.db.session import SessionLocal
 from app.models.facility import Facility
+from app.models.sensor import Sensor
 from app.models.reading import Reading
 from app.repositories.facility_repository import FacilityRepository
 from app.repositories.reading_repository import ReadingRepository
 from app.services.validation_service import ValidationService
+from app.services.anomaly_service import AnomalyService
 from app.core.security import create_access_token
 from app.models.user import UserRole
-from backend.app.simulator.engine import AquaTrustRuntimeSimulator
-from backend.app.simulator.schemas import FacilityStreamConfig
+try:
+    from backend.app.simulator.engine import AquaTrustRuntimeSimulator
+    from backend.app.simulator.schemas import FacilityStreamConfig
+except ImportError:
+    from app.simulator.engine import AquaTrustRuntimeSimulator
+    from app.simulator.schemas import FacilityStreamConfig
+
+logger = logging.getLogger("aquatrust.simulator")
 
 
 class SimulatorService:
@@ -57,8 +66,9 @@ class SimulatorService:
         if self.is_running:
             return {"status": "already_running", "facility_id": str(self.active_facility_id)}
 
-        self.active_facility_id = facility_id or uuid4()
-        self.active_facility_name = facility_name
+        BHARWARA_ID = UUID("085a9719-c9d0-4562-b4d7-bc389dec12b3")
+        self.active_facility_id = facility_id or BHARWARA_ID
+        self.active_facility_name = facility_name or "Bharwara STP Lucknow"
         self.interval_seconds = interval_seconds
         self.use_http_bridge = use_http_bridge
         self.bridge_endpoint = bridge_endpoint
@@ -66,6 +76,7 @@ class SimulatorService:
         config = FacilityStreamConfig(
             facility_id=str(self.active_facility_id),
             random_seed=seed,
+            simulation_start_time=datetime.now(timezone.utc),
         )
         self.simulator = AquaTrustRuntimeSimulator(config=config, enable_ai_inference=False)
         self.is_running = True
@@ -75,7 +86,11 @@ class SimulatorService:
             loop = asyncio.get_running_loop()
             self._task = loop.create_task(self._run_loop())
         except RuntimeError:
-            self._task = None
+            try:
+                loop = asyncio.get_event_loop()
+                self._task = loop.create_task(self._run_loop())
+            except Exception:
+                self._task = None
 
         return {
             "status": "started",
@@ -123,7 +138,11 @@ class SimulatorService:
             raise ValueError("Simulator is not currently running.")
 
         target_scenario = self.SCENARIO_ALIASES.get(scenario_id.lower(), scenario_id)
-        self.simulator.inject_anomaly_scenario(target_scenario)
+        self.simulator.inject_anomaly_scenario(
+            target_scenario,
+            duration_steps=duration_steps,
+            severity=severity,
+        )
         self.current_scenario = scenario_id
         return {
             "status": "injected",
@@ -169,7 +188,7 @@ class SimulatorService:
                         for r in readings:
                             payload = {
                                 "facility_id": str(self.active_facility_id),
-                                "observed_at": r.timestamp.isoformat(),
+                                "observed_at": datetime.now(timezone.utc).isoformat(),
                                 "treatment_stage": str(r.measurement_stage),
                                 "parameter": str(r.parameter),
                                 "value": float(r.value) if r.value is not None else None,
@@ -199,10 +218,10 @@ class SimulatorService:
                         if not fac:
                             fac = Facility(
                                 facility_id=self.active_facility_id,
-                                facility_name=self.active_facility_name or "Simulated STP",
+                                facility_name=self.active_facility_name or "Bharwara STP Lucknow",
                                 facility_type="municipal_stp",
-                                location={"city": "Simulated City"},
-                                capacity=Decimal("100.000000"),
+                                location={"city": "Lucknow", "state": "UP"},
+                                capacity=Decimal("345.000000"),
                                 capacity_unit="MLD",
                                 status="active",
                             )
@@ -210,14 +229,30 @@ class SimulatorService:
                             db.commit()
 
                         reading_repo = ReadingRepository(db)
+                        now_utc = datetime.now(timezone.utc)
                         for r in readings:
+                            param_str = str(r.parameter.value if hasattr(r.parameter, "value") else r.parameter).upper()
+                            sensor = db.query(Sensor).filter(
+                                Sensor.facility_id == self.active_facility_id,
+                                Sensor.parameter == param_str,
+                            ).first()
+                            sensor_id = sensor.sensor_id if sensor else None
+
+                            obs_val = None
+                            if r.value is not None:
+                                try:
+                                    obs_val = Decimal(str(round(float(r.value), 4)))
+                                except Exception:
+                                    obs_val = Decimal(str(r.value))
+
                             reading_row = Reading(
                                 reading_id=r.reading_id,
                                 facility_id=self.active_facility_id,
-                                observed_at=r.timestamp,
-                                treatment_stage=str(r.measurement_stage),
-                                parameter=str(r.parameter),
-                                value=Decimal(f"{r.value:.6f}") if r.value is not None else None,
+                                sensor_id=sensor_id,
+                                observed_at=now_utc,
+                                treatment_stage=str(r.measurement_stage.value if hasattr(r.measurement_stage, "value") else r.measurement_stage),
+                                parameter=param_str,
+                                value=obs_val,
                                 unit=str(r.unit),
                                 source="simulated",
                                 quality_status="pending",
@@ -231,6 +266,7 @@ class SimulatorService:
 
                         db.commit()
                     except Exception as e:
+                        logger.error(f"Error in simulator ingestion loop: {e}", exc_info=True)
                         db.rollback()
                     finally:
                         db.close()

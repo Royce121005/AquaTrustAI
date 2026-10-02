@@ -19,7 +19,7 @@ router = APIRouter(prefix="/simulator", tags=["Telemetry Simulator Bridge"])
     summary="Start synthetic telemetry stream simulation",
     dependencies=[Depends(require_role(["operator", "admin"]))],
 )
-def start_simulator(payload: SimulatorStartRequest = SimulatorStartRequest()):
+async def start_simulator(payload: SimulatorStartRequest = SimulatorStartRequest()):
     """Starts runtime synthetic telemetry stream generator."""
     service = SimulatorService.get_instance()
     result = service.start(
@@ -38,7 +38,7 @@ def start_simulator(payload: SimulatorStartRequest = SimulatorStartRequest()):
     summary="Stop synthetic telemetry stream simulation",
     dependencies=[Depends(require_role(["operator", "admin"]))],
 )
-def stop_simulator(payload: SimulatorStopRequest = SimulatorStopRequest()):
+async def stop_simulator(payload: SimulatorStopRequest = SimulatorStopRequest()):
     """Stops runtime synthetic telemetry generator."""
     service = SimulatorService.get_instance()
     return service.stop()
@@ -50,7 +50,7 @@ def stop_simulator(payload: SimulatorStopRequest = SimulatorStopRequest()):
     summary="Get simulator status",
     dependencies=[Depends(get_current_user_claims)],
 )
-def get_simulator_status():
+async def get_simulator_status():
     """Retrieve real-time generator status."""
     service = SimulatorService.get_instance()
     data = service.get_status()
@@ -62,7 +62,7 @@ def get_simulator_status():
     summary="Inject anomaly scenario into active simulation",
     dependencies=[Depends(require_role(["operator", "admin"]))],
 )
-def inject_anomaly(payload: AnomalyInjectionRequest):
+async def inject_anomaly(payload: AnomalyInjectionRequest):
     """Inject a physical or sensor anomaly into the running stream."""
     service = SimulatorService.get_instance()
     try:

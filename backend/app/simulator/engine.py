@@ -112,13 +112,26 @@ class AquaTrustRuntimeSimulator:
         if self.ai_engine:
             self.ai_engine.reset_stream_cache()
 
-    def inject_anomaly_scenario(self, scenario_id: str, stage: str = "final_effluent", param: str = "ph"):
+    def inject_anomaly_scenario(
+        self,
+        scenario_id: str,
+        stage: str = "final_effluent",
+        param: str = "ph",
+        duration_steps: Optional[int] = None,
+        severity: Optional[float] = None,
+    ):
         """
         Triggers an anomaly injection scenario for a target stage and parameter.
         """
-        recipe = self.loader.get_anomaly_scenario_recipe(scenario_id)
-        if not recipe:
+        raw_recipe = self.loader.get_anomaly_scenario_recipe(scenario_id)
+        if not raw_recipe:
             raise ValueError(f"Unknown anomaly scenario ID or recipe: '{scenario_id}'")
+
+        recipe = dict(raw_recipe)
+        if duration_steps is not None:
+            recipe["duration_steps"] = int(duration_steps)
+        if severity is not None:
+            recipe["severity"] = float(severity)
 
         target_params = recipe.get("target_parameters", [param])
         if "ALL" in target_params or param in target_params:
