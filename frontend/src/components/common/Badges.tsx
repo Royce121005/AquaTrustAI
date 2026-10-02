@@ -210,8 +210,8 @@ export const BackendHealthBadge: React.FC<{
   );
 };
 
-export const StatusBadge: React.FC<{ status: string; className?: string }> = ({ status, className = '' }) => {
-  const norm = status.toLowerCase();
+export const StatusBadge: React.FC<{ status?: string | null; className?: string }> = ({ status, className = '' }) => {
+  const norm = (status || 'unknown').toLowerCase();
   let color = 'bg-slate-100 text-slate-700 border-slate-300';
   if (['active', 'completed', 'confirmed', 'verified', 'finalized'].includes(norm)) {
     color = 'bg-emerald-50 text-emerald-700 border-emerald-200';
@@ -223,7 +223,7 @@ export const StatusBadge: React.FC<{ status: string; className?: string }> = ({ 
 
   return (
     <span className={`inline-flex items-center px-2 py-0.5 rounded text-[11px] font-mono font-medium border ${color} ${className}`}>
-      {status.toUpperCase()}
+      {(status || 'UNKNOWN').toUpperCase()}
     </span>
   );
 };

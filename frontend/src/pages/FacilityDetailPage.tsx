@@ -65,7 +65,15 @@ export const FacilityDetailPage: React.FC = () => {
     return <ErrorState error={facilityQuery.error} onRetry={() => facilityQuery.refetch()} />;
   }
 
-  const fac = facilityQuery.data!;
+  const fac = facilityQuery.data;
+  if (!fac) {
+    return (
+      <EmptyState
+        title="Facility Not Found"
+        message="The requested facility could not be retrieved from the backend."
+      />
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -113,27 +121,29 @@ export const FacilityDetailPage: React.FC = () => {
           <div>
             <span className="text-slate-400 block text-[11px]">Design Capacity</span>
             <span className="font-mono font-medium text-slate-800">
-              {fac.capacity !== null ? `${fac.capacity} ${fac.capacity_unit || ''}` : 'Not configured'}
+              {fac.capacity !== null && fac.capacity !== undefined ? `${fac.capacity} ${fac.capacity_unit || ''}` : 'Not configured'}
             </span>
           </div>
           <div>
             <span className="text-slate-400 block text-[11px]">Geographic Location</span>
             <span className="font-mono font-medium text-slate-800">
-              {fac.location && Object.keys(fac.location).length > 0
+              {fac.location && typeof fac.location === 'object' && Object.keys(fac.location).length > 0
                 ? JSON.stringify(fac.location)
+                : fac.location
+                ? String(fac.location)
                 : 'Unspecified'}
             </span>
           </div>
           <div>
             <span className="text-slate-400 block text-[11px]">Created At</span>
             <span className="font-mono text-slate-800">
-              {new Date(fac.created_at).toLocaleString()}
+              {fac.created_at ? new Date(fac.created_at).toLocaleString() : 'N/A'}
             </span>
           </div>
           <div>
             <span className="text-slate-400 block text-[11px]">Last Updated</span>
             <span className="font-mono text-slate-800">
-              {new Date(fac.updated_at).toLocaleString()}
+              {fac.updated_at ? new Date(fac.updated_at).toLocaleString() : 'N/A'}
             </span>
           </div>
         </div>
@@ -149,7 +159,7 @@ export const FacilityDetailPage: React.FC = () => {
             </h2>
           </div>
           <span className="text-xs text-slate-500 font-mono">
-            {sensorsQuery.data?.length ?? 0} Sensors Registered
+            {Array.isArray(sensorsQuery.data) ? sensorsQuery.data.length : 0} Sensors Registered
           </span>
         </div>
 
@@ -159,7 +169,7 @@ export const FacilityDetailPage: React.FC = () => {
           <div className="p-4">
             <ErrorState error={sensorsQuery.error} />
           </div>
-        ) : !sensorsQuery.data || sensorsQuery.data.length === 0 ? (
+        ) : !Array.isArray(sensorsQuery.data) || sensorsQuery.data.length === 0 ? (
           <EmptyState
             title="No Sensors Registered"
             message="No hardware sensors are mapped under this facility."
@@ -179,16 +189,16 @@ export const FacilityDetailPage: React.FC = () => {
               </thead>
               <tbody className="divide-y divide-slate-100 font-mono">
                 {sensorsQuery.data.map((s) => (
-                  <tr key={s.sensor_id} className="hover:bg-slate-50/80">
-                    <td className="py-2.5 px-4 font-semibold text-slate-800">{s.sensor_id}</td>
-                    <td className="py-2.5 px-4 font-bold text-brand-700">{s.parameter}</td>
-                    <td className="py-2.5 px-4 text-slate-600">{s.unit}</td>
+                  <tr key={s.sensor_id || Math.random().toString()} className="hover:bg-slate-50/80">
+                    <td className="py-2.5 px-4 font-semibold text-slate-800">{s.sensor_id || 'N/A'}</td>
+                    <td className="py-2.5 px-4 font-bold text-brand-700">{s.parameter || 'N/A'}</td>
+                    <td className="py-2.5 px-4 text-slate-600">{s.unit || ''}</td>
                     <td className="py-2.5 px-4 text-slate-500">{s.treatment_stage || 'N/A'}</td>
                     <td className="py-2.5 px-4">
                       <StatusBadge status={s.status} />
                     </td>
                     <td className="py-2.5 px-4 text-[11px] text-slate-400 truncate max-w-xs">
-                      {JSON.stringify(s.metadata)}
+                      {s.metadata ? JSON.stringify(s.metadata) : 'None'}
                     </td>
                   </tr>
                 ))}
@@ -256,7 +266,7 @@ export const FacilityDetailPage: React.FC = () => {
           <div className="p-4">
             <ErrorState error={readingsQuery.error} />
           </div>
-        ) : !readingsQuery.data || readingsQuery.data.length === 0 ? (
+        ) : !Array.isArray(readingsQuery.data) || readingsQuery.data.length === 0 ? (
           <EmptyState
             title="No Telemetry Observed"
             message="No readings match the current filter criteria for this facility."
@@ -278,18 +288,18 @@ export const FacilityDetailPage: React.FC = () => {
               </thead>
               <tbody className="divide-y divide-slate-100 font-mono">
                 {readingsQuery.data.map((r) => (
-                  <tr key={r.reading_id} className="hover:bg-slate-50/80">
+                  <tr key={r.reading_id || Math.random().toString()} className="hover:bg-slate-50/80">
                     <td className="py-2.5 px-4 font-semibold text-brand-700">
                       <Link to={`/readings/${r.reading_id}`} className="hover:underline">
-                        {r.reading_id.slice(0, 8)}...
+                        {r.reading_id ? `${String(r.reading_id).slice(0, 8)}...` : 'N/A'}
                       </Link>
                     </td>
                     <td className="py-2.5 px-4 text-slate-500 text-[11px]">
-                      {new Date(r.observed_at).toLocaleString()}
+                      {r.observed_at ? new Date(r.observed_at).toLocaleString() : 'N/A'}
                     </td>
-                    <td className="py-2.5 px-4 font-bold text-slate-900">{r.parameter}</td>
+                    <td className="py-2.5 px-4 font-bold text-slate-900">{r.parameter || 'N/A'}</td>
                     <td className="py-2.5 px-4 font-semibold text-slate-800">
-                      {r.value !== null ? `${r.value} ${r.unit}` : 'null'}
+                      {r.value !== null && r.value !== undefined ? `${r.value} ${r.unit || ''}` : 'null'}
                     </td>
                     <td className="py-2.5 px-4 text-slate-500">{r.treatment_stage || 'N/A'}</td>
                     <td className="py-2.5 px-4">
