@@ -7,7 +7,7 @@ import { getComplianceSummaryApi } from '../api/compliance';
 import { getValidationStatsApi } from '../api/validation';
 import { listTreatmentRecordsApi } from '../api/treatmentRecords';
 import { getDLTStatusApi } from '../api/dlt';
-import { LoadingState, ErrorState, EmptyState, BackendSupportRequiredState } from '../components/common/States';
+import { LoadingState, ErrorState, EmptyState } from '../components/common/States';
 import {
   StatusBadge,
   DltModeBadge,
@@ -366,17 +366,6 @@ export const DashboardPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Untruthful metrics indicator per prompt requirement: Section 12 */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <BackendSupportRequiredState
-          feature="Composite Plant Risk Score"
-          description="Backend does not compute or expose a composite plant risk index. Isolation Forest scores and CPCB evaluations remain separate authoritative metrics."
-        />
-        <BackendSupportRequiredState
-          feature="Direct Plant SCADA Control"
-          description="AquaTrust AI enforces verification and traceability boundaries. Direct actuator or PID loop manipulation is not exposed via REST."
-        />
-      </div>
     </div>
   );
 };

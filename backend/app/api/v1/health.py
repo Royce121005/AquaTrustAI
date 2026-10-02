@@ -45,3 +45,22 @@ def get_health() -> Dict[str, Any]:
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "database": "connected" if db_ok else "disconnected",
     }
+
+
+@router.get(
+    "/",
+    status_code=status.HTTP_200_OK,
+    summary="Root Service Index",
+    description="Returns backend identification and status.",
+)
+def get_root() -> Dict[str, Any]:
+    """Root endpoint providing service identity and health links."""
+    return {
+        "service": settings.APP_NAME,
+        "status": "online",
+        "version": "0.1.0",
+        "api_v1": f"{settings.API_V1_STR}",
+        "docs": "/docs",
+        "health": "/health",
+    }
+
