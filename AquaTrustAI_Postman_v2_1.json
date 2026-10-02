@@ -4,6 +4,13 @@
     "description": "AquaTrust AI API collection with preconfigured endpoints, auth, and payloads.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://127.0.0.1:8000",
+      "type": "string"
+    }
+  ],
   "item": [
     {
       "name": "ANOMALIES",
@@ -23,15 +30,10 @@
               }
             ],
             "url": {
-              "raw": "http://127.0.0.1:8000/api/v1/anomalies/infer",
-              "protocol": "http",
+              "raw": "{{baseUrl}}/api/v1/anomalies/infer",
               "host": [
-                "127",
-                "0",
-                "0",
-                "1"
+                "{{baseUrl}}"
               ],
-              "port": "8000",
               "path": [
                 "api",
                 "v1",
@@ -57,15 +59,10 @@
               }
             ],
             "url": {
-              "raw": "http://127.0.0.1:8000/api/v1/anomalies/readings/{reading_id}",
-              "protocol": "http",
+              "raw": "{{baseUrl}}/api/v1/anomalies/readings/{reading_id}",
               "host": [
-                "127",
-                "0",
-                "0",
-                "1"
+                "{{baseUrl}}"
               ],
-              "port": "8000",
               "path": [
                 "api",
                 "v1",
@@ -88,15 +85,10 @@
               }
             ],
             "url": {
-              "raw": "http://127.0.0.1:8000/api/v1/anomalies/metrics",
-              "protocol": "http",
+              "raw": "{{baseUrl}}/api/v1/anomalies/metrics",
               "host": [
-                "127",
-                "0",
-                "0",
-                "1"
+                "{{baseUrl}}"
               ],
-              "port": "8000",
               "path": [
                 "api",
                 "v1",
@@ -123,15 +115,10 @@
               }
             ],
             "url": {
-              "raw": "http://127.0.0.1:8000/api/v1/audit-events",
-              "protocol": "http",
+              "raw": "{{baseUrl}}/api/v1/audit-events",
               "host": [
-                "127",
-                "0",
-                "0",
-                "1"
+                "{{baseUrl}}"
               ],
-              "port": "8000",
               "path": [
                 "api",
                 "v1",
@@ -161,15 +148,10 @@
               }
             ],
             "url": {
-              "raw": "http://127.0.0.1:8000/api/v1/auth/login",
-              "protocol": "http",
+              "raw": "{{baseUrl}}/api/v1/auth/login",
               "host": [
-                "127",
-                "0",
-                "0",
-                "1"
+                "{{baseUrl}}"
               ],
-              "port": "8000",
               "path": [
                 "api",
                 "v1",
@@ -199,15 +181,10 @@
               }
             ],
             "url": {
-              "raw": "http://127.0.0.1:8000/api/v1/auth/logout",
-              "protocol": "http",
+              "raw": "{{baseUrl}}/api/v1/auth/logout",
               "host": [
-                "127",
-                "0",
-                "0",
-                "1"
+                "{{baseUrl}}"
               ],
-              "port": "8000",
               "path": [
                 "api",
                 "v1",
@@ -233,15 +210,10 @@
               }
             ],
             "url": {
-              "raw": "http://127.0.0.1:8000/api/v1/auth/me",
-              "protocol": "http",
+              "raw": "{{baseUrl}}/api/v1/auth/me",
               "host": [
-                "127",
-                "0",
-                "0",
-                "1"
+                "{{baseUrl}}"
               ],
-              "port": "8000",
               "path": [
                 "api",
                 "v1",
@@ -267,15 +239,10 @@
               }
             ],
             "url": {
-              "raw": "http://127.0.0.1:8000/api/v1/auth/register",
-              "protocol": "http",
+              "raw": "{{baseUrl}}/api/v1/auth/register",
               "host": [
-                "127",
-                "0",
-                "0",
-                "1"
+                "{{baseUrl}}"
               ],
-              "port": "8000",
               "path": [
                 "api",
                 "v1",
@@ -306,15 +273,10 @@
               }
             ],
             "url": {
-              "raw": "http://127.0.0.1:8000/api/v1/certificates",
-              "protocol": "http",
+              "raw": "{{baseUrl}}/api/v1/certificates",
               "host": [
-                "127",
-                "0",
-                "0",
-                "1"
+                "{{baseUrl}}"
               ],
-              "port": "8000",
               "path": [
                 "api",
                 "v1",
@@ -335,15 +297,10 @@
               }
             ],
             "url": {
-              "raw": "http://127.0.0.1:8000/api/v1/certificates/{certificate_id}",
-              "protocol": "http",
+              "raw": "{{baseUrl}}/api/v1/certificates/{certificate_id}",
               "host": [
-                "127",
-                "0",
-                "0",
-                "1"
+                "{{baseUrl}}"
               ],
-              "port": "8000",
               "path": [
                 "api",
                 "v1",
@@ -365,15 +322,10 @@
               }
             ],
             "url": {
-              "raw": "http://127.0.0.1:8000/api/v1/certificates/record/{record_id}",
-              "protocol": "http",
+              "raw": "{{baseUrl}}/api/v1/certificates/record/{record_id}",
               "host": [
-                "127",
-                "0",
-                "0",
-                "1"
+                "{{baseUrl}}"
               ],
-              "port": "8000",
               "path": [
                 "api",
                 "v1",
@@ -401,15 +353,10 @@
               }
             ],
             "url": {
-              "raw": "http://127.0.0.1:8000/api/v1/compliance/rules",
-              "protocol": "http",
+              "raw": "{{baseUrl}}/api/v1/compliance/rules",
               "host": [
-                "127",
-                "0",
-                "0",
-                "1"
+                "{{baseUrl}}"
               ],
-              "port": "8000",
               "path": [
                 "api",
                 "v1",
@@ -435,15 +382,10 @@
               }
             ],
             "url": {
-              "raw": "http://127.0.0.1:8000/api/v1/compliance/evaluate",
-              "protocol": "http",
+              "raw": "{{baseUrl}}/api/v1/compliance/evaluate",
               "host": [
-                "127",
-                "0",
-                "0",
-                "1"
+                "{{baseUrl}}"
               ],
-              "port": "8000",
               "path": [
                 "api",
                 "v1",
@@ -469,15 +411,10 @@
               }
             ],
             "url": {
-              "raw": "http://127.0.0.1:8000/api/v1/compliance/summary",
-              "protocol": "http",
+              "raw": "{{baseUrl}}/api/v1/compliance/summary",
               "host": [
-                "127",
-                "0",
-                "0",
-                "1"
+                "{{baseUrl}}"
               ],
-              "port": "8000",
               "path": [
                 "api",
                 "v1",
@@ -508,15 +445,10 @@
               }
             ],
             "url": {
-              "raw": "http://127.0.0.1:8000/api/v1/corrections/propose",
-              "protocol": "http",
+              "raw": "{{baseUrl}}/api/v1/corrections/propose",
               "host": [
-                "127",
-                "0",
-                "0",
-                "1"
+                "{{baseUrl}}"
               ],
-              "port": "8000",
               "path": [
                 "api",
                 "v1",
@@ -546,15 +478,10 @@
               }
             ],
             "url": {
-              "raw": "http://127.0.0.1:8000/api/v1/corrections/{correction_id}/authorize",
-              "protocol": "http",
+              "raw": "{{baseUrl}}/api/v1/corrections/{correction_id}/authorize",
               "host": [
-                "127",
-                "0",
-                "0",
-                "1"
+                "{{baseUrl}}"
               ],
-              "port": "8000",
               "path": [
                 "api",
                 "v1",
@@ -581,15 +508,10 @@
               }
             ],
             "url": {
-              "raw": "http://127.0.0.1:8000/api/v1/corrections/chain/{record_id}",
-              "protocol": "http",
+              "raw": "{{baseUrl}}/api/v1/corrections/chain/{record_id}",
               "host": [
-                "127",
-                "0",
-                "0",
-                "1"
+                "{{baseUrl}}"
               ],
-              "port": "8000",
               "path": [
                 "api",
                 "v1",
@@ -617,15 +539,10 @@
               }
             ],
             "url": {
-              "raw": "http://127.0.0.1:8000/api/v1/dlt/status",
-              "protocol": "http",
+              "raw": "{{baseUrl}}/api/v1/dlt/status",
               "host": [
-                "127",
-                "0",
-                "0",
-                "1"
+                "{{baseUrl}}"
               ],
-              "port": "8000",
               "path": [
                 "api",
                 "v1",
@@ -647,15 +564,10 @@
               }
             ],
             "url": {
-              "raw": "http://127.0.0.1:8000/api/v1/dlt/anchors",
-              "protocol": "http",
+              "raw": "{{baseUrl}}/api/v1/dlt/anchors",
               "host": [
-                "127",
-                "0",
-                "0",
-                "1"
+                "{{baseUrl}}"
               ],
-              "port": "8000",
               "path": [
                 "api",
                 "v1",
@@ -681,15 +593,10 @@
               }
             ],
             "url": {
-              "raw": "http://127.0.0.1:8000/api/v1/dlt/anchors/{record_id}/reconcile",
-              "protocol": "http",
+              "raw": "{{baseUrl}}/api/v1/dlt/anchors/{record_id}/reconcile",
               "host": [
-                "127",
-                "0",
-                "0",
-                "1"
+                "{{baseUrl}}"
               ],
-              "port": "8000",
               "path": [
                 "api",
                 "v1",
@@ -717,15 +624,10 @@
               }
             ],
             "url": {
-              "raw": "http://127.0.0.1:8000/api/v1/dlt/anchors/hash/{canonical_hash}",
-              "protocol": "http",
+              "raw": "{{baseUrl}}/api/v1/dlt/anchors/hash/{canonical_hash}",
               "host": [
-                "127",
-                "0",
-                "0",
-                "1"
+                "{{baseUrl}}"
               ],
-              "port": "8000",
               "path": [
                 "api",
                 "v1",
@@ -749,15 +651,10 @@
               }
             ],
             "url": {
-              "raw": "http://127.0.0.1:8000/api/v1/dlt/ledger/records/{record_id}",
-              "protocol": "http",
+              "raw": "{{baseUrl}}/api/v1/dlt/ledger/records/{record_id}",
               "host": [
-                "127",
-                "0",
-                "0",
-                "1"
+                "{{baseUrl}}"
               ],
-              "port": "8000",
               "path": [
                 "api",
                 "v1",
@@ -781,15 +678,10 @@
               }
             ],
             "url": {
-              "raw": "http://127.0.0.1:8000/api/v1/dlt/ledger/history/{record_id}",
-              "protocol": "http",
+              "raw": "{{baseUrl}}/api/v1/dlt/ledger/history/{record_id}",
               "host": [
-                "127",
-                "0",
-                "0",
-                "1"
+                "{{baseUrl}}"
               ],
-              "port": "8000",
               "path": [
                 "api",
                 "v1",
@@ -813,15 +705,10 @@
               }
             ],
             "url": {
-              "raw": "http://127.0.0.1:8000/api/v1/dlt/batches/records/{record_id}",
-              "protocol": "http",
+              "raw": "{{baseUrl}}/api/v1/dlt/batches/records/{record_id}",
               "host": [
-                "127",
-                "0",
-                "0",
-                "1"
+                "{{baseUrl}}"
               ],
-              "port": "8000",
               "path": [
                 "api",
                 "v1",
@@ -849,15 +736,10 @@
               }
             ],
             "url": {
-              "raw": "http://127.0.0.1:8000/api/v1/dlt/batch-anchor",
-              "protocol": "http",
+              "raw": "{{baseUrl}}/api/v1/dlt/batch-anchor",
               "host": [
-                "127",
-                "0",
-                "0",
-                "1"
+                "{{baseUrl}}"
               ],
-              "port": "8000",
               "path": [
                 "api",
                 "v1",
@@ -887,15 +769,10 @@
               }
             ],
             "url": {
-              "raw": "http://127.0.0.1:8000/api/v1/dlt/batch-verify",
-              "protocol": "http",
+              "raw": "{{baseUrl}}/api/v1/dlt/batch-verify",
               "host": [
-                "127",
-                "0",
-                "0",
-                "1"
+                "{{baseUrl}}"
               ],
-              "port": "8000",
               "path": [
                 "api",
                 "v1",
@@ -921,15 +798,10 @@
               }
             ],
             "url": {
-              "raw": "http://127.0.0.1:8000/api/v1/dlt/transactions/{tx_id}",
-              "protocol": "http",
+              "raw": "{{baseUrl}}/api/v1/dlt/transactions/{tx_id}",
               "host": [
-                "127",
-                "0",
-                "0",
-                "1"
+                "{{baseUrl}}"
               ],
-              "port": "8000",
               "path": [
                 "api",
                 "v1",
@@ -957,15 +829,10 @@
               }
             ],
             "url": {
-              "raw": "http://127.0.0.1:8000/api/v1/facilities",
-              "protocol": "http",
+              "raw": "{{baseUrl}}/api/v1/facilities",
               "host": [
-                "127",
-                "0",
-                "0",
-                "1"
+                "{{baseUrl}}"
               ],
-              "port": "8000",
               "path": [
                 "api",
                 "v1",
@@ -990,15 +857,10 @@
               }
             ],
             "url": {
-              "raw": "http://127.0.0.1:8000/api/v1/facilities",
-              "protocol": "http",
+              "raw": "{{baseUrl}}/api/v1/facilities",
               "host": [
-                "127",
-                "0",
-                "0",
-                "1"
+                "{{baseUrl}}"
               ],
-              "port": "8000",
               "path": [
                 "api",
                 "v1",
@@ -1023,15 +885,10 @@
               }
             ],
             "url": {
-              "raw": "http://127.0.0.1:8000/api/v1/facilities/{facility_id}",
-              "protocol": "http",
+              "raw": "{{baseUrl}}/api/v1/facilities/{facility_id}",
               "host": [
-                "127",
-                "0",
-                "0",
-                "1"
+                "{{baseUrl}}"
               ],
-              "port": "8000",
               "path": [
                 "api",
                 "v1",
@@ -1053,15 +910,10 @@
               }
             ],
             "url": {
-              "raw": "http://127.0.0.1:8000/api/v1/facilities/{facility_id}/readings",
-              "protocol": "http",
+              "raw": "{{baseUrl}}/api/v1/facilities/{facility_id}/readings",
               "host": [
-                "127",
-                "0",
-                "0",
-                "1"
+                "{{baseUrl}}"
               ],
-              "port": "8000",
               "path": [
                 "api",
                 "v1",
@@ -1084,15 +936,10 @@
               }
             ],
             "url": {
-              "raw": "http://127.0.0.1:8000/api/v1/facilities/{facility_id}/sensors",
-              "protocol": "http",
+              "raw": "{{baseUrl}}/api/v1/facilities/{facility_id}/sensors",
               "host": [
-                "127",
-                "0",
-                "0",
-                "1"
+                "{{baseUrl}}"
               ],
-              "port": "8000",
               "path": [
                 "api",
                 "v1",
@@ -1120,15 +967,10 @@
               }
             ],
             "url": {
-              "raw": "http://127.0.0.1:8000/health",
-              "protocol": "http",
+              "raw": "{{baseUrl}}/health",
               "host": [
-                "127",
-                "0",
-                "0",
-                "1"
+                "{{baseUrl}}"
               ],
-              "port": "8000",
               "path": [
                 "health"
               ]
@@ -1147,15 +989,10 @@
               }
             ],
             "url": {
-              "raw": "http://127.0.0.1:8000/api/v1/health",
-              "protocol": "http",
+              "raw": "{{baseUrl}}/api/v1/health",
               "host": [
-                "127",
-                "0",
-                "0",
-                "1"
+                "{{baseUrl}}"
               ],
-              "port": "8000",
               "path": [
                 "api",
                 "v1",
@@ -1185,15 +1022,10 @@
               }
             ],
             "url": {
-              "raw": "http://127.0.0.1:8000/api/v1/ingestion/readings",
-              "protocol": "http",
+              "raw": "{{baseUrl}}/api/v1/ingestion/readings",
               "host": [
-                "127",
-                "0",
-                "0",
-                "1"
+                "{{baseUrl}}"
               ],
-              "port": "8000",
               "path": [
                 "api",
                 "v1",
@@ -1223,15 +1055,10 @@
               }
             ],
             "url": {
-              "raw": "http://127.0.0.1:8000/api/v1/ingestion/batch",
-              "protocol": "http",
+              "raw": "{{baseUrl}}/api/v1/ingestion/batch",
               "host": [
-                "127",
-                "0",
-                "0",
-                "1"
+                "{{baseUrl}}"
               ],
-              "port": "8000",
               "path": [
                 "api",
                 "v1",
@@ -1262,15 +1089,10 @@
               }
             ],
             "url": {
-              "raw": "http://127.0.0.1:8000/api/v1/readings",
-              "protocol": "http",
+              "raw": "{{baseUrl}}/api/v1/readings",
               "host": [
-                "127",
-                "0",
-                "0",
-                "1"
+                "{{baseUrl}}"
               ],
-              "port": "8000",
               "path": [
                 "api",
                 "v1",
@@ -1291,15 +1113,10 @@
               }
             ],
             "url": {
-              "raw": "http://127.0.0.1:8000/api/v1/readings/{reading_id}",
-              "protocol": "http",
+              "raw": "{{baseUrl}}/api/v1/readings/{reading_id}",
               "host": [
-                "127",
-                "0",
-                "0",
-                "1"
+                "{{baseUrl}}"
               ],
-              "port": "8000",
               "path": [
                 "api",
                 "v1",
@@ -1330,15 +1147,10 @@
               }
             ],
             "url": {
-              "raw": "http://127.0.0.1:8000/api/v1/simulator/start",
-              "protocol": "http",
+              "raw": "{{baseUrl}}/api/v1/simulator/start",
               "host": [
-                "127",
-                "0",
-                "0",
-                "1"
+                "{{baseUrl}}"
               ],
-              "port": "8000",
               "path": [
                 "api",
                 "v1",
@@ -1368,15 +1180,10 @@
               }
             ],
             "url": {
-              "raw": "http://127.0.0.1:8000/api/v1/simulator/stop",
-              "protocol": "http",
+              "raw": "{{baseUrl}}/api/v1/simulator/stop",
               "host": [
-                "127",
-                "0",
-                "0",
-                "1"
+                "{{baseUrl}}"
               ],
-              "port": "8000",
               "path": [
                 "api",
                 "v1",
@@ -1402,15 +1209,10 @@
               }
             ],
             "url": {
-              "raw": "http://127.0.0.1:8000/api/v1/simulator/status",
-              "protocol": "http",
+              "raw": "{{baseUrl}}/api/v1/simulator/status",
               "host": [
-                "127",
-                "0",
-                "0",
-                "1"
+                "{{baseUrl}}"
               ],
-              "port": "8000",
               "path": [
                 "api",
                 "v1",
@@ -1436,15 +1238,10 @@
               }
             ],
             "url": {
-              "raw": "http://127.0.0.1:8000/api/v1/simulator/inject-anomaly",
-              "protocol": "http",
+              "raw": "{{baseUrl}}/api/v1/simulator/inject-anomaly",
               "host": [
-                "127",
-                "0",
-                "0",
-                "1"
+                "{{baseUrl}}"
               ],
-              "port": "8000",
               "path": [
                 "api",
                 "v1",
@@ -1479,15 +1276,10 @@
               }
             ],
             "url": {
-              "raw": "http://127.0.0.1:8000/api/v1/treatment-records/finalize",
-              "protocol": "http",
+              "raw": "{{baseUrl}}/api/v1/treatment-records/finalize",
               "host": [
-                "127",
-                "0",
-                "0",
-                "1"
+                "{{baseUrl}}"
               ],
-              "port": "8000",
               "path": [
                 "api",
                 "v1",
@@ -1513,15 +1305,10 @@
               }
             ],
             "url": {
-              "raw": "http://127.0.0.1:8000/api/v1/treatment-records",
-              "protocol": "http",
+              "raw": "{{baseUrl}}/api/v1/treatment-records",
               "host": [
-                "127",
-                "0",
-                "0",
-                "1"
+                "{{baseUrl}}"
               ],
-              "port": "8000",
               "path": [
                 "api",
                 "v1",
@@ -1542,15 +1329,10 @@
               }
             ],
             "url": {
-              "raw": "http://127.0.0.1:8000/api/v1/treatment-records/{record_id}",
-              "protocol": "http",
+              "raw": "{{baseUrl}}/api/v1/treatment-records/{record_id}",
               "host": [
-                "127",
-                "0",
-                "0",
-                "1"
+                "{{baseUrl}}"
               ],
-              "port": "8000",
               "path": [
                 "api",
                 "v1",
@@ -1577,15 +1359,10 @@
               }
             ],
             "url": {
-              "raw": "http://127.0.0.1:8000/api/v1/validation/stats",
-              "protocol": "http",
+              "raw": "{{baseUrl}}/api/v1/validation/stats",
               "host": [
-                "127",
-                "0",
-                "0",
-                "1"
+                "{{baseUrl}}"
               ],
-              "port": "8000",
               "path": [
                 "api",
                 "v1",
@@ -1611,15 +1388,10 @@
               }
             ],
             "url": {
-              "raw": "http://127.0.0.1:8000/api/v1/validation/readings/{reading_id}",
-              "protocol": "http",
+              "raw": "{{baseUrl}}/api/v1/validation/readings/{reading_id}",
               "host": [
-                "127",
-                "0",
-                "0",
-                "1"
+                "{{baseUrl}}"
               ],
-              "port": "8000",
               "path": [
                 "api",
                 "v1",
@@ -1646,15 +1418,10 @@
               }
             ],
             "url": {
-              "raw": "http://127.0.0.1:8000/api/v1/validation/readings/{reading_id}",
-              "protocol": "http",
+              "raw": "{{baseUrl}}/api/v1/validation/readings/{reading_id}",
               "host": [
-                "127",
-                "0",
-                "0",
-                "1"
+                "{{baseUrl}}"
               ],
-              "port": "8000",
               "path": [
                 "api",
                 "v1",
@@ -1686,15 +1453,10 @@
               }
             ],
             "url": {
-              "raw": "http://127.0.0.1:8000/api/v1/verification/verify-record/{record_id}",
-              "protocol": "http",
+              "raw": "{{baseUrl}}/api/v1/verification/verify-record/{record_id}",
               "host": [
-                "127",
-                "0",
-                "0",
-                "1"
+                "{{baseUrl}}"
               ],
-              "port": "8000",
               "path": [
                 "api",
                 "v1",
@@ -1725,15 +1487,10 @@
               }
             ],
             "url": {
-              "raw": "http://127.0.0.1:8000/api/v1/verification/records/{record_id}",
-              "protocol": "http",
+              "raw": "{{baseUrl}}/api/v1/verification/records/{record_id}",
               "host": [
-                "127",
-                "0",
-                "0",
-                "1"
+                "{{baseUrl}}"
               ],
-              "port": "8000",
               "path": [
                 "api",
                 "v1",
@@ -1764,15 +1521,10 @@
               }
             ],
             "url": {
-              "raw": "http://127.0.0.1:8000/api/v1/verification/public/verify/{record_id}",
-              "protocol": "http",
+              "raw": "{{baseUrl}}/api/v1/verification/public/verify/{record_id}",
               "host": [
-                "127",
-                "0",
-                "0",
-                "1"
+                "{{baseUrl}}"
               ],
-              "port": "8000",
               "path": [
                 "api",
                 "v1",
@@ -1800,15 +1552,10 @@
               }
             ],
             "url": {
-              "raw": "http://127.0.0.1:8000/api/v1/verification/public/verify/{record_id}",
-              "protocol": "http",
+              "raw": "{{baseUrl}}/api/v1/verification/public/verify/{record_id}",
               "host": [
-                "127",
-                "0",
-                "0",
-                "1"
+                "{{baseUrl}}"
               ],
-              "port": "8000",
               "path": [
                 "api",
                 "v1",
@@ -1832,15 +1579,10 @@
               }
             ],
             "url": {
-              "raw": "http://127.0.0.1:8000/api/v1/verification/public/verify-certificate/{certificate_id}",
-              "protocol": "http",
+              "raw": "{{baseUrl}}/api/v1/verification/public/verify-certificate/{certificate_id}",
               "host": [
-                "127",
-                "0",
-                "0",
-                "1"
+                "{{baseUrl}}"
               ],
-              "port": "8000",
               "path": [
                 "api",
                 "v1",
@@ -1868,15 +1610,10 @@
               }
             ],
             "url": {
-              "raw": "http://127.0.0.1:8000/api/v1/verification/verify-proof",
-              "protocol": "http",
+              "raw": "{{baseUrl}}/api/v1/verification/verify-proof",
               "host": [
-                "127",
-                "0",
-                "0",
-                "1"
+                "{{baseUrl}}"
               ],
-              "port": "8000",
               "path": [
                 "api",
                 "v1",
@@ -1902,15 +1639,10 @@
               }
             ],
             "url": {
-              "raw": "http://127.0.0.1:8000/api/v1/verification/keys/{key_id}",
-              "protocol": "http",
+              "raw": "{{baseUrl}}/api/v1/verification/keys/{key_id}",
               "host": [
-                "127",
-                "0",
-                "0",
-                "1"
+                "{{baseUrl}}"
               ],
-              "port": "8000",
               "path": [
                 "api",
                 "v1",

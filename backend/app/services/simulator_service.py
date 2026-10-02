@@ -1,10 +1,12 @@
 import asyncio
+import os
 import httpx
 from datetime import datetime, timezone
 from decimal import Decimal
 from typing import Optional, Dict, Any, List
 from uuid import UUID, uuid4
 
+from app.core.config import get_settings
 from app.db.session import SessionLocal
 from app.models.facility import Facility
 from app.models.reading import Reading
@@ -154,7 +156,9 @@ class SimulatorService:
                 self.last_tick_at = datetime.now(timezone.utc).isoformat()
 
                 if self.use_http_bridge:
-                    endpoint = self.bridge_endpoint or "http://127.0.0.1:8000/api/v1/telemetry/ingest"
+                    app_settings = get_settings()
+                    port = os.environ.get("PORT", str(app_settings.APP_PORT))
+                    endpoint = self.bridge_endpoint or f"http://127.0.0.1:{port}{app_settings.API_V1_STR}/telemetry/ingest"
                     token = create_access_token({
                         "sub": "simulator_service",
                         "username": "simulator_service",

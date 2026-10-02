@@ -1,7 +1,6 @@
-"""Generate a standard Postman Collection v2.1 JSON file from OpenAPI spec."""
+"""Generate a standard Postman Collection v2.1 JSON file from OpenAPI spec with dynamic baseUrl."""
 
 import json
-import urllib.request
 
 def generate_postman_collection():
     with open("AquaTrustAI_OpenAPI_Spec.json", "r", encoding="utf-8") as f:
@@ -13,6 +12,13 @@ def generate_postman_collection():
             "description": "AquaTrust AI API collection with preconfigured endpoints, auth, and payloads.",
             "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
         },
+        "variable": [
+            {
+                "key": "baseUrl",
+                "value": "http://127.0.0.1:8000",
+                "type": "string"
+            }
+        ],
         "item": []
     }
 
@@ -20,7 +26,6 @@ def generate_postman_collection():
 
     for path, methods in spec.get("paths", {}).items():
         parts = path.strip("/").split("/")
-        # group by section (e.g. auth, facilities, readings)
         if len(parts) >= 3 and parts[0] == "api" and parts[1] == "v1":
             folder_name = parts[2]
         elif len(parts) >= 1:
@@ -40,7 +45,6 @@ def generate_postman_collection():
 
             summary = details.get("summary") or f"{method.upper()} {path}"
             
-            # Request item
             req_item = {
                 "name": f"[{method.upper()}] {summary}",
                 "request": {
@@ -49,17 +53,14 @@ def generate_postman_collection():
                         {"key": "Accept", "value": "application/json"}
                     ],
                     "url": {
-                        "raw": f"http://127.0.0.1:8000{path}",
-                        "protocol": "http",
-                        "host": ["127", "0", "0", "1"],
-                        "port": "8000",
+                        "raw": "{{baseUrl}}" + path,
+                        "host": ["{{baseUrl}}"],
                         "path": [p for p in path.strip("/").split("/")]
                     },
                     "description": details.get("description", "")
                 }
             }
 
-            # Add body for POST
             if method.lower() == "post":
                 req_item["request"]["header"].append({"key": "Content-Type", "value": "application/json"})
                 if "login" in path:
@@ -81,7 +82,7 @@ def generate_postman_collection():
     with open("AquaTrustAI_Postman_v2_1.json", "w", encoding="utf-8") as f:
         json.dump(collection, f, indent=2)
 
-    print(f"Generated AquaTrustAI_Postman_v2_1.json with {len(folders)} folders and {sum(len(f['item']) for f in folders.values())} requests.")
+    print(f"Generated AquaTrustAI_Postman_v2_1.json with dynamic {{baseUrl}}, {len(folders)} folders, and {sum(len(f['item']) for f in folders.values())} requests.")
 
 if __name__ == "__main__":
     generate_postman_collection()
