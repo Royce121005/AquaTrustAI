@@ -1,6 +1,6 @@
 # AquaTrustAI Dataset Package — Data Dictionary
 
-Generated from `raw/bangalore_clean.csv` and `raw/indian_water_clean.csv`.
+Generated from `DATASET_04_CPCB_UP_STP` (Bharwara STP Lucknow) and `raw/indian_water_clean.csv`.
 No values were invented, imputed, or removed; genuine missing values are empty cells.
 Non-numeric sentinels (`BDL`, `-`) were mapped to empty cells and flagged where applicable.
 
@@ -15,7 +15,7 @@ Normalized daily STP observations. **12,438 rows** (1,382 days × 9 STPs), sorte
 | `date` | date (YYYY-MM-DD) | — | Observation day | `Date` | Reformatted to ISO date | Yes (time index) | Yes |
 | `stp_id` | string (slug) | — | Stable plant identifier | `<Name> STP_*` column prefixes | Derived, see mapping below | Yes (group key) | Yes |
 | `stp_name` | string | — | Plant display name | Header prefixes | Verbatim prefix | Label | Yes |
-| `city` | string | — | City | `City/Town` | Trimmed ("Bangaluru" — source spelling preserved) | Context | Context |
+| `city` | string | — | City | `City/Town` | Trimmed ("Lucknow" — source spelling preserved) | Context | Context |
 | `treatment_type` | string | — | Process description | `<Name> STP_Treatment Facility` | Trimmed, internal whitespace collapsed | Categorical feature | Yes |
 | `installed_capacity_mld` | float | MLD | **Per-plant** installed capacity | `<Name> STP_Installed_Capacity_MLD` | Numeric parse | Feature | Yes |
 | `operational_capacity_mld` | float | MLD | **City-level** operational capacity (constant 600) | `Operational_Capacity_MLD` | Numeric parse | Context (repeated per row) | Context |

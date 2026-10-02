@@ -2,7 +2,7 @@
   "reading_id": "a1b2c3d4-e5f6-4a5b-8c9d-0e1f2a3b4c5d",
   "dataset_id": "SIMULATION_MULTI_STP_GRID",
   "source_record_id": "SIM_STEP_8420",
-  "facility_id": "STP_BANGALORE_HEBBAL",
+  "facility_id": "STP_UP_LUCKNOW_BHARWARA",
   "sensor_id": "SENS_EFFLUENT_NH4N_03",
   "timestamp": "2026-09-27T08:30:00.000000Z",
   "measurement_stage": "final_effluent",

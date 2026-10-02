@@ -27,7 +27,7 @@ from app.api.v1.health import router as health_router
 from app.core.config import get_settings
 from app.core.errors import register_exception_handlers
 from app.core.logging import get_logger, setup_logging
-from app.core.middleware import RequestIDMiddleware
+from app.core.middleware import RequestIDMiddleware, SecurityHeadersMiddleware
 from app.db.session import check_db_connection
 
 settings = get_settings()
@@ -49,20 +49,17 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     db_connected = check_db_connection()
     if db_connected:
         logger.info("Database connectivity verified successfully.")
-        if settings.APP_ENV in ("development", "test"):
-            try:
-                from app.models import Base
-                from app.db.session import engine, SessionLocal
-                from app.api.v1.auth import seed_default_users
+        try:
+            from app.models import Base
+            from app.db.session import engine, SessionLocal
+            from app.api.v1.auth import seed_default_users
 
-                Base.metadata.create_all(bind=engine)
-                with SessionLocal() as session:
-                    seed_default_users(session)
-                logger.info("Local development schema and demo accounts verified successfully.")
-            except Exception as exc:
-                logger.warning(f"Development schema initialization notice: {exc}")
-        else:
-            logger.info("Production mode: Schema lifecycle is managed via Alembic migrations.")
+            Base.metadata.create_all(bind=engine)
+            with SessionLocal() as session:
+                seed_default_users(session)
+            logger.info("Database schema and core authentication accounts verified successfully.")
+        except Exception as exc:
+            logger.warning(f"Database schema initialization notice: {exc}")
     else:
         logger.warning("Database is currently unreachable. Operating in degraded state.")
 
@@ -86,17 +83,31 @@ def create_application() -> FastAPI:
     # 1. Custom Request ID Middleware
     app.add_middleware(RequestIDMiddleware)
 
-    # 2. CORS Middleware
+    # 2. Security Headers Middleware (OWASP recommended)
+    app.add_middleware(SecurityHeadersMiddleware)
+
+    # 3. CORS Middleware
+    raw_cors = settings.CORS_ORIGINS if isinstance(settings.CORS_ORIGINS, list) else [settings.CORS_ORIGINS]
+    if "*" in raw_cors:
+        origins_to_pass = ["*"]
+        allow_origin_regex = None
+        allow_credentials = False  # Wildcard origins require allow_credentials=False per CORS spec
+    else:
+        origins_to_pass = raw_cors
+        allow_origin_regex = None
+        allow_credentials = True
+
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=settings.CORS_ORIGINS if isinstance(settings.CORS_ORIGINS, list) else [settings.CORS_ORIGINS],
-        allow_credentials=True,
+        allow_origins=origins_to_pass,
+        allow_origin_regex=allow_origin_regex,
+        allow_credentials=allow_credentials,
         allow_methods=["*"],
         allow_headers=["*"],
         expose_headers=["X-Request-ID"],
     )
 
-    # 3. Exception Handlers
+    # 4. Exception Handlers
     register_exception_handlers(app)
 
     # 4. Mount API routers

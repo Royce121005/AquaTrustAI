@@ -1,0 +1,1928 @@
+{
+  "info": {
+    "name": "AquaTrust AI \u2014 API Collection (v2.1)",
+    "description": "AquaTrust AI API collection with preconfigured endpoints, auth, and payloads.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "ANOMALIES",
+      "item": [
+        {
+          "name": "[POST] Execute AI anomaly inference on a reading",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://127.0.0.1:8000/api/v1/anomalies/infer",
+              "protocol": "http",
+              "host": [
+                "127",
+                "0",
+                "0",
+                "1"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "v1",
+                "anomalies",
+                "infer"
+              ]
+            },
+            "description": "Run Isolation Forest anomaly inference on a reading or ad-hoc payload.",
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            }
+          }
+        },
+        {
+          "name": "[GET] Get anomaly report for a reading",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://127.0.0.1:8000/api/v1/anomalies/readings/{reading_id}",
+              "protocol": "http",
+              "host": [
+                "127",
+                "0",
+                "0",
+                "1"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "v1",
+                "anomalies",
+                "readings",
+                "{reading_id}"
+              ]
+            },
+            "description": "Retrieve anomaly inference report for a reading."
+          }
+        },
+        {
+          "name": "[GET] Get anomaly detection summary metrics",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://127.0.0.1:8000/api/v1/anomalies/metrics",
+              "protocol": "http",
+              "host": [
+                "127",
+                "0",
+                "0",
+                "1"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "v1",
+                "anomalies",
+                "metrics"
+              ]
+            },
+            "description": "Summary metrics supporting frontend insights dashboard."
+          }
+        }
+      ]
+    },
+    {
+      "name": "AUDIT-EVENTS",
+      "item": [
+        {
+          "name": "[GET] Query audit log entries with action, actor, and resource filters",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://127.0.0.1:8000/api/v1/audit-events",
+              "protocol": "http",
+              "host": [
+                "127",
+                "0",
+                "0",
+                "1"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "v1",
+                "audit-events"
+              ]
+            },
+            "description": "Retrieve structured audit trail entries."
+          }
+        }
+      ]
+    },
+    {
+      "name": "AUTH",
+      "item": [
+        {
+          "name": "[POST] Authenticate user and obtain JWT access token",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://127.0.0.1:8000/api/v1/auth/login",
+              "protocol": "http",
+              "host": [
+                "127",
+                "0",
+                "0",
+                "1"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Validates user credentials against database or demo accounts.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"operator\",\n  \"password\": \"operator123\"\n}"
+            }
+          }
+        },
+        {
+          "name": "[POST] Revoke current user JWT access token session",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://127.0.0.1:8000/api/v1/auth/logout",
+              "protocol": "http",
+              "host": [
+                "127",
+                "0",
+                "0",
+                "1"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "logout"
+              ]
+            },
+            "description": "Invalidates the caller's JWT token immediately by adding it to the revocation registry.",
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            }
+          }
+        },
+        {
+          "name": "[GET] Get current user authentication claims and role permissions",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://127.0.0.1:8000/api/v1/auth/me",
+              "protocol": "http",
+              "host": [
+                "127",
+                "0",
+                "0",
+                "1"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "me"
+              ]
+            },
+            "description": "Retrieve current authenticated user profile and roles."
+          }
+        },
+        {
+          "name": "[POST] Register a new user account with role",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://127.0.0.1:8000/api/v1/auth/register",
+              "protocol": "http",
+              "host": [
+                "127",
+                "0",
+                "0",
+                "1"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "register"
+              ]
+            },
+            "description": "Create a new user in the database (admin only).",
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "CERTIFICATES",
+      "item": [
+        {
+          "name": "[GET] List digital treatment certificates",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://127.0.0.1:8000/api/v1/certificates",
+              "protocol": "http",
+              "host": [
+                "127",
+                "0",
+                "0",
+                "1"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "v1",
+                "certificates"
+              ]
+            },
+            "description": "List digital treatment certificates with optional facility and status filtering."
+          }
+        },
+        {
+          "name": "[GET] Get digital treatment certificate by UUID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://127.0.0.1:8000/api/v1/certificates/{certificate_id}",
+              "protocol": "http",
+              "host": [
+                "127",
+                "0",
+                "0",
+                "1"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "v1",
+                "certificates",
+                "{certificate_id}"
+              ]
+            },
+            "description": "Retrieve digital certificate by certificate UUID."
+          }
+        },
+        {
+          "name": "[GET] Get digital certificate for a treatment record",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://127.0.0.1:8000/api/v1/certificates/record/{record_id}",
+              "protocol": "http",
+              "host": [
+                "127",
+                "0",
+                "0",
+                "1"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "v1",
+                "certificates",
+                "record",
+                "{record_id}"
+              ]
+            },
+            "description": "Retrieve digital certificate associated with a treatment record."
+          }
+        }
+      ]
+    },
+    {
+      "name": "COMPLIANCE",
+      "item": [
+        {
+          "name": "[GET] List active environmental compliance rules",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://127.0.0.1:8000/api/v1/compliance/rules",
+              "protocol": "http",
+              "host": [
+                "127",
+                "0",
+                "0",
+                "1"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "v1",
+                "compliance",
+                "rules"
+              ]
+            },
+            "description": "List active CPCB / EPA discharge standard rules."
+          }
+        },
+        {
+          "name": "[POST] Evaluate environmental compliance for a treatment record",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://127.0.0.1:8000/api/v1/compliance/evaluate",
+              "protocol": "http",
+              "host": [
+                "127",
+                "0",
+                "0",
+                "1"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "v1",
+                "compliance",
+                "evaluate"
+              ]
+            },
+            "description": "Evaluate compliance for a treatment record.",
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            }
+          }
+        },
+        {
+          "name": "[GET] Get environmental compliance summary metrics",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://127.0.0.1:8000/api/v1/compliance/summary",
+              "protocol": "http",
+              "host": [
+                "127",
+                "0",
+                "0",
+                "1"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "v1",
+                "compliance",
+                "summary"
+              ]
+            },
+            "description": "Compliance summary supporting frontend compliance.js."
+          }
+        }
+      ]
+    },
+    {
+      "name": "CORRECTIONS",
+      "item": [
+        {
+          "name": "[POST] Propose an append-only correction for a finalized record",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://127.0.0.1:8000/api/v1/corrections/propose",
+              "protocol": "http",
+              "host": [
+                "127",
+                "0",
+                "0",
+                "1"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "v1",
+                "corrections",
+                "propose"
+              ]
+            },
+            "description": "Propose a correction without mutating the original record.",
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            }
+          }
+        },
+        {
+          "name": "[POST] Authorize correction: marks original superseded and generates new versioned record",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://127.0.0.1:8000/api/v1/corrections/{correction_id}/authorize",
+              "protocol": "http",
+              "host": [
+                "127",
+                "0",
+                "0",
+                "1"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "v1",
+                "corrections",
+                "{correction_id}",
+                "authorize"
+              ]
+            },
+            "description": "Authorize a proposed correction.",
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            }
+          }
+        },
+        {
+          "name": "[GET] Get complete append-only provenance chain for a treatment record",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://127.0.0.1:8000/api/v1/corrections/chain/{record_id}",
+              "protocol": "http",
+              "host": [
+                "127",
+                "0",
+                "0",
+                "1"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "v1",
+                "corrections",
+                "chain",
+                "{record_id}"
+              ]
+            },
+            "description": "Fetch complete immutable lineage history."
+          }
+        }
+      ]
+    },
+    {
+      "name": "DLT",
+      "item": [
+        {
+          "name": "[GET] Report Fabric or simulation transport status",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://127.0.0.1:8000/api/v1/dlt/status",
+              "protocol": "http",
+              "host": [
+                "127",
+                "0",
+                "0",
+                "1"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "v1",
+                "dlt",
+                "status"
+              ]
+            },
+            "description": "Expose whether the application is talking to Fabric or its local simulator."
+          }
+        },
+        {
+          "name": "[GET] List DLT anchors across treatment records",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://127.0.0.1:8000/api/v1/dlt/anchors",
+              "protocol": "http",
+              "host": [
+                "127",
+                "0",
+                "0",
+                "1"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "v1",
+                "dlt",
+                "anchors"
+              ]
+            },
+            "description": "Query DLT anchor records."
+          }
+        },
+        {
+          "name": "[POST] Reconcile local pending anchor with DLT network",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://127.0.0.1:8000/api/v1/dlt/anchors/{record_id}/reconcile",
+              "protocol": "http",
+              "host": [
+                "127",
+                "0",
+                "0",
+                "1"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "v1",
+                "dlt",
+                "anchors",
+                "{record_id}",
+                "reconcile"
+              ]
+            },
+            "description": "Submits pending anchor to Fabric DLT Gateway and transitions state to anchored.",
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            }
+          }
+        },
+        {
+          "name": "[GET] Query DLT anchor by canonical SHA-256 hash",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://127.0.0.1:8000/api/v1/dlt/anchors/hash/{canonical_hash}",
+              "protocol": "http",
+              "host": [
+                "127",
+                "0",
+                "0",
+                "1"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "v1",
+                "dlt",
+                "anchors",
+                "hash",
+                "{canonical_hash}"
+              ]
+            },
+            "description": "Lookup anchor by canonical hash across ledger state."
+          }
+        },
+        {
+          "name": "[GET] Read an anchor from Fabric or simulation state",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://127.0.0.1:8000/api/v1/dlt/ledger/records/{record_id}",
+              "protocol": "http",
+              "host": [
+                "127",
+                "0",
+                "0",
+                "1"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "v1",
+                "dlt",
+                "ledger",
+                "records",
+                "{record_id}"
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "[GET] Read immutable Fabric transaction history for a record anchor",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://127.0.0.1:8000/api/v1/dlt/ledger/history/{record_id}",
+              "protocol": "http",
+              "host": [
+                "127",
+                "0",
+                "0",
+                "1"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "v1",
+                "dlt",
+                "ledger",
+                "history",
+                "{record_id}"
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "[GET] Look up the batch commitment containing a record",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://127.0.0.1:8000/api/v1/dlt/batches/records/{record_id}",
+              "protocol": "http",
+              "host": [
+                "127",
+                "0",
+                "0",
+                "1"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "v1",
+                "dlt",
+                "batches",
+                "records",
+                "{record_id}"
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "[POST] Anchor a batch of telemetry hashes via RFC 6962 Merkle tree",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://127.0.0.1:8000/api/v1/dlt/batch-anchor",
+              "protocol": "http",
+              "host": [
+                "127",
+                "0",
+                "0",
+                "1"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "v1",
+                "dlt",
+                "batch-anchor"
+              ]
+            },
+            "description": "Computes Merkle root and anchors batch to DLT ledger.",
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            }
+          }
+        },
+        {
+          "name": "[POST] Verify whether a telemetry hash is included in an anchored Merkle batch",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://127.0.0.1:8000/api/v1/dlt/batch-verify",
+              "protocol": "http",
+              "host": [
+                "127",
+                "0",
+                "0",
+                "1"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "v1",
+                "dlt",
+                "batch-verify"
+              ]
+            },
+            "description": "Verifies Merkle audit inclusion proof without fetching whole batch.",
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            }
+          }
+        },
+        {
+          "name": "[GET] Query DLT transaction by transaction ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://127.0.0.1:8000/api/v1/dlt/transactions/{tx_id}",
+              "protocol": "http",
+              "host": [
+                "127",
+                "0",
+                "0",
+                "1"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "v1",
+                "dlt",
+                "transactions",
+                "{tx_id}"
+              ]
+            },
+            "description": "Query transaction details from DLT ledger."
+          }
+        }
+      ]
+    },
+    {
+      "name": "FACILITIES",
+      "item": [
+        {
+          "name": "[GET] List all registered treatment facilities",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://127.0.0.1:8000/api/v1/facilities",
+              "protocol": "http",
+              "host": [
+                "127",
+                "0",
+                "0",
+                "1"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "v1",
+                "facilities"
+              ]
+            },
+            "description": "List all registered wastewater treatment facilities."
+          }
+        },
+        {
+          "name": "[POST] Register a new wastewater treatment facility",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://127.0.0.1:8000/api/v1/facilities",
+              "protocol": "http",
+              "host": [
+                "127",
+                "0",
+                "0",
+                "1"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "v1",
+                "facilities"
+              ]
+            },
+            "description": "Register a new wastewater treatment facility.",
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            }
+          }
+        },
+        {
+          "name": "[GET] Get facility details",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://127.0.0.1:8000/api/v1/facilities/{facility_id}",
+              "protocol": "http",
+              "host": [
+                "127",
+                "0",
+                "0",
+                "1"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "v1",
+                "facilities",
+                "{facility_id}"
+              ]
+            },
+            "description": "Retrieve facility details by UUID."
+          }
+        },
+        {
+          "name": "[GET] Get telemetry readings for a specific facility",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://127.0.0.1:8000/api/v1/facilities/{facility_id}/readings",
+              "protocol": "http",
+              "host": [
+                "127",
+                "0",
+                "0",
+                "1"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "v1",
+                "facilities",
+                "{facility_id}",
+                "readings"
+              ]
+            },
+            "description": "Retrieve paginated and filtered telemetry readings for a facility."
+          }
+        },
+        {
+          "name": "[GET] Get sensors registered under a facility",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://127.0.0.1:8000/api/v1/facilities/{facility_id}/sensors",
+              "protocol": "http",
+              "host": [
+                "127",
+                "0",
+                "0",
+                "1"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "v1",
+                "facilities",
+                "{facility_id}",
+                "sensors"
+              ]
+            },
+            "description": "Retrieve all sensors associated with a treatment facility."
+          }
+        }
+      ]
+    },
+    {
+      "name": "HEALTH",
+      "item": [
+        {
+          "name": "[GET] Service Health Check",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://127.0.0.1:8000/health",
+              "protocol": "http",
+              "host": [
+                "127",
+                "0",
+                "0",
+                "1"
+              ],
+              "port": "8000",
+              "path": [
+                "health"
+              ]
+            },
+            "description": "Returns backend operational status and database readiness."
+          }
+        },
+        {
+          "name": "[GET] Service Health Check",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://127.0.0.1:8000/api/v1/health",
+              "protocol": "http",
+              "host": [
+                "127",
+                "0",
+                "0",
+                "1"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "v1",
+                "health"
+              ]
+            },
+            "description": "Returns backend operational status and database readiness."
+          }
+        }
+      ]
+    },
+    {
+      "name": "INGESTION",
+      "item": [
+        {
+          "name": "[POST] Ingest a single telemetry reading",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://127.0.0.1:8000/api/v1/ingestion/readings",
+              "protocol": "http",
+              "host": [
+                "127",
+                "0",
+                "0",
+                "1"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "v1",
+                "ingestion",
+                "readings"
+              ]
+            },
+            "description": "Ingests, validates, and runs real-time AI anomaly detection on a telemetry observation.",
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            }
+          }
+        },
+        {
+          "name": "[POST] Ingest a batch of telemetry readings",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://127.0.0.1:8000/api/v1/ingestion/batch",
+              "protocol": "http",
+              "host": [
+                "127",
+                "0",
+                "0",
+                "1"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "v1",
+                "ingestion",
+                "batch"
+              ]
+            },
+            "description": "Ingest a batch of readings for a facility.",
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "READINGS",
+      "item": [
+        {
+          "name": "[GET] Query telemetry readings",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://127.0.0.1:8000/api/v1/readings",
+              "protocol": "http",
+              "host": [
+                "127",
+                "0",
+                "0",
+                "1"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "v1",
+                "readings"
+              ]
+            },
+            "description": "Query telemetry readings with multi-parameter filtering."
+          }
+        },
+        {
+          "name": "[GET] Get single reading by UUID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://127.0.0.1:8000/api/v1/readings/{reading_id}",
+              "protocol": "http",
+              "host": [
+                "127",
+                "0",
+                "0",
+                "1"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "v1",
+                "readings",
+                "{reading_id}"
+              ]
+            },
+            "description": "Retrieve reading by UUID."
+          }
+        }
+      ]
+    },
+    {
+      "name": "SIMULATOR",
+      "item": [
+        {
+          "name": "[POST] Start synthetic telemetry stream simulation",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://127.0.0.1:8000/api/v1/simulator/start",
+              "protocol": "http",
+              "host": [
+                "127",
+                "0",
+                "0",
+                "1"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "v1",
+                "simulator",
+                "start"
+              ]
+            },
+            "description": "Starts runtime synthetic telemetry stream generator.",
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            }
+          }
+        },
+        {
+          "name": "[POST] Stop synthetic telemetry stream simulation",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://127.0.0.1:8000/api/v1/simulator/stop",
+              "protocol": "http",
+              "host": [
+                "127",
+                "0",
+                "0",
+                "1"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "v1",
+                "simulator",
+                "stop"
+              ]
+            },
+            "description": "Stops runtime synthetic telemetry generator.",
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            }
+          }
+        },
+        {
+          "name": "[GET] Get simulator status",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://127.0.0.1:8000/api/v1/simulator/status",
+              "protocol": "http",
+              "host": [
+                "127",
+                "0",
+                "0",
+                "1"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "v1",
+                "simulator",
+                "status"
+              ]
+            },
+            "description": "Retrieve real-time generator status."
+          }
+        },
+        {
+          "name": "[POST] Inject anomaly scenario into active simulation",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://127.0.0.1:8000/api/v1/simulator/inject-anomaly",
+              "protocol": "http",
+              "host": [
+                "127",
+                "0",
+                "0",
+                "1"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "v1",
+                "simulator",
+                "inject-anomaly"
+              ]
+            },
+            "description": "Inject a physical or sensor anomaly into the running stream.",
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "TREATMENT-RECORDS",
+      "item": [
+        {
+          "name": "[POST] Aggregate and finalize a treatment window",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://127.0.0.1:8000/api/v1/treatment-records/finalize",
+              "protocol": "http",
+              "host": [
+                "127",
+                "0",
+                "0",
+                "1"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "v1",
+                "treatment-records",
+                "finalize"
+              ]
+            },
+            "description": "Aggregate readings, evaluate compliance, and finalize an immutable treatment record.",
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            }
+          }
+        },
+        {
+          "name": "[GET] List treatment records",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://127.0.0.1:8000/api/v1/treatment-records",
+              "protocol": "http",
+              "host": [
+                "127",
+                "0",
+                "0",
+                "1"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "v1",
+                "treatment-records"
+              ]
+            },
+            "description": "Query treatment records with state and compliance filtering."
+          }
+        },
+        {
+          "name": "[GET] Get treatment record details",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://127.0.0.1:8000/api/v1/treatment-records/{record_id}",
+              "protocol": "http",
+              "host": [
+                "127",
+                "0",
+                "0",
+                "1"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "v1",
+                "treatment-records",
+                "{record_id}"
+              ]
+            },
+            "description": "Retrieve detailed treatment record by UUID."
+          }
+        }
+      ]
+    },
+    {
+      "name": "VALIDATION",
+      "item": [
+        {
+          "name": "[GET] Get pre-AI validation quality statistics",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://127.0.0.1:8000/api/v1/validation/stats",
+              "protocol": "http",
+              "host": [
+                "127",
+                "0",
+                "0",
+                "1"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "v1",
+                "validation",
+                "stats"
+              ]
+            },
+            "description": "Aggregate data quality validation statistics."
+          }
+        },
+        {
+          "name": "[POST] Execute deterministic validation on a reading",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://127.0.0.1:8000/api/v1/validation/readings/{reading_id}",
+              "protocol": "http",
+              "host": [
+                "127",
+                "0",
+                "0",
+                "1"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "v1",
+                "validation",
+                "readings",
+                "{reading_id}"
+              ]
+            },
+            "description": "Run deterministic pre-AI data-trust validation rules on an existing reading.",
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            }
+          }
+        },
+        {
+          "name": "[GET] Get validation report for a reading",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://127.0.0.1:8000/api/v1/validation/readings/{reading_id}",
+              "protocol": "http",
+              "host": [
+                "127",
+                "0",
+                "0",
+                "1"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "v1",
+                "validation",
+                "readings",
+                "{reading_id}"
+              ]
+            },
+            "description": "Fetch existing validation report for a reading."
+          }
+        }
+      ]
+    },
+    {
+      "name": "VERIFICATION",
+      "item": [
+        {
+          "name": "[POST] Execute 4-stage independent trust verification on a treatment record",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://127.0.0.1:8000/api/v1/verification/verify-record/{record_id}",
+              "protocol": "http",
+              "host": [
+                "127",
+                "0",
+                "0",
+                "1"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "v1",
+                "verification",
+                "verify-record",
+                "{record_id}"
+              ]
+            },
+            "description": "Re-computes atc-v1 canonical hash, checks ECDSA signature, certificate and DLT ledger anchor.",
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            }
+          }
+        },
+        {
+          "name": "[POST] Alias for verify-record to match frontend contract",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://127.0.0.1:8000/api/v1/verification/records/{record_id}",
+              "protocol": "http",
+              "host": [
+                "127",
+                "0",
+                "0",
+                "1"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "v1",
+                "verification",
+                "records",
+                "{record_id}"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            }
+          }
+        },
+        {
+          "name": "[POST] Public independent 4-stage trust verification on a treatment record (unauthenticated)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://127.0.0.1:8000/api/v1/verification/public/verify/{record_id}",
+              "protocol": "http",
+              "host": [
+                "127",
+                "0",
+                "0",
+                "1"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "v1",
+                "verification",
+                "public",
+                "verify",
+                "{record_id}"
+              ]
+            },
+            "description": "Public unauthenticated endpoint allowing external verifiers, auditors, and regulators to verify records without internal JWT login.",
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            }
+          }
+        },
+        {
+          "name": "[GET] Public independent 4-stage trust verification on a treatment record via GET (unauthenticated)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://127.0.0.1:8000/api/v1/verification/public/verify/{record_id}",
+              "protocol": "http",
+              "host": [
+                "127",
+                "0",
+                "0",
+                "1"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "v1",
+                "verification",
+                "public",
+                "verify",
+                "{record_id}"
+              ]
+            },
+            "description": "GET alias for public unauthenticated record verification."
+          }
+        },
+        {
+          "name": "[GET] Public verification of compliance certificate and underlying treatment record by certificate ID (unauthenticated)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://127.0.0.1:8000/api/v1/verification/public/verify-certificate/{certificate_id}",
+              "protocol": "http",
+              "host": [
+                "127",
+                "0",
+                "0",
+                "1"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "v1",
+                "verification",
+                "public",
+                "verify-certificate",
+                "{certificate_id}"
+              ]
+            },
+            "description": "Resolves certificate_id to its treatment record and returns the complete 4-stage verification result."
+          }
+        },
+        {
+          "name": "[POST] Cryptographic proof verification with authority trust anchor enforcement",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://127.0.0.1:8000/api/v1/verification/verify-proof",
+              "protocol": "http",
+              "host": [
+                "127",
+                "0",
+                "0",
+                "1"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "v1",
+                "verification",
+                "verify-proof"
+              ]
+            },
+            "description": "Verifies SHA-256 canonical hash, ECDSA NIST P-256 signature, and authority trust anchor.",
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            }
+          }
+        },
+        {
+          "name": "[GET] Discover active public key for signature verification",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://127.0.0.1:8000/api/v1/verification/keys/{key_id}",
+              "protocol": "http",
+              "host": [
+                "127",
+                "0",
+                "0",
+                "1"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "v1",
+                "verification",
+                "keys",
+                "{key_id}"
+              ]
+            },
+            "description": "Retrieve public key PEM and fingerprint."
+          }
+        }
+      ]
+    }
+  ]
+}

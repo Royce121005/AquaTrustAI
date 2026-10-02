@@ -1,0 +1,72 @@
+services:
+  # 1. Database Tier: PostgreSQL 17
+  db:
+    image: postgres:17-alpine
+    container_name: aquatrust_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-aquatrust_db}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-aquatrust_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - aquatrust_net
+
+  # 2. Application Tier: FastAPI Multi-Worker ASGI
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: aquatrust_backend
+    restart: unless-stopped
+    environment:
+      APP_NAME: "AquaTrust AI Backend"
+      APP_ENV: "production"
+      DEBUG: "false"
+      APP_HOST: "0.0.0.0"
+      APP_PORT: "8000"
+      API_V1_STR: "/api/v1"
+      DATABASE_URL: "postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-aquatrust_db}"
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-aquatrust_production_secret_key_change_me_32_bytes_min}
+      CORS_ORIGINS: ${CORS_ORIGINS:-*}
+      LOG_LEVEL: "INFO"
+      LOG_FORMAT: "json"
+    expose:
+      - "8000"
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - aquatrust_net
+
+  # 3. Web & Edge Proxy Tier: React 18 + Nginx
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: aquatrust_frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - aquatrust_net
+
+networks:
+  aquatrust_net:
+    driver: bridge
+
+volumes:
+  postgres_data:
+    driver: local

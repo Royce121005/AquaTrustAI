@@ -23,7 +23,7 @@ engine_kwargs = {
 }
 
 if settings.DATABASE_URL.startswith("postgresql"):
-    connect_args["connect_timeout"] = 3
+    connect_args["connect_timeout"] = 10
     engine_kwargs.update({
         "pool_size": settings.DB_POOL_SIZE,
         "max_overflow": settings.DB_MAX_OVERFLOW,

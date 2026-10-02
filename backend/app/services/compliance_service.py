@@ -67,6 +67,15 @@ DEFAULT_CPCB_RULES = [
         "source_reference": "CPCB_2021",
         "effective_from": datetime(2021, 1, 1, 0, 0, 0, tzinfo=timezone.utc),
     },
+    {
+        "parameter": "TKN",
+        "operator": "lte",
+        "threshold": Decimal("10.000000"),
+        "threshold_unit": "mg/L",
+        "stage_scope": "final_effluent",
+        "source_reference": "CPCB_2021",
+        "effective_from": datetime(2021, 1, 1, 0, 0, 0, tzinfo=timezone.utc),
+    },
 ]
 
 # Mandatory parameters required for final effluent discharge compliance

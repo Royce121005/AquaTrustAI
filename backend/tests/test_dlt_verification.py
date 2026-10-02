@@ -28,7 +28,7 @@ FIXTURES_PATH = Path(__file__).resolve().parent.parent.parent / "dlt" / "fixture
 
 SAMPLE_TREATMENT_RECORD_DATA = {
     "record_id": "rec_stp_001_20260927_001",
-    "facility_id": "STP-KORAMANGALA-01",
+    "facility_id": "STP_UP_LUCKNOW_045",
     "period_start": "2026-09-27T00:00:00Z",
     "period_end": "2026-09-27T06:00:00Z",
     "record_version": 1,
@@ -37,7 +37,7 @@ SAMPLE_TREATMENT_RECORD_DATA = {
     "anomaly_status": "NORMAL",
     "compliance_status": "COMPLIANT",
     "provenance": {
-        "source_dataset_ids": ["bangalore_clean_v1", "uci_etp_v1"],
+        "source_dataset_ids": ["DATASET_04_CPCB_UP_STP", "uci_etp_v1"],
         "model_version": "isolation_forest_v1.0.0",
         "rule_version": "CPCB_STP_2023_v1",
     },

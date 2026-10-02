@@ -127,10 +127,10 @@ def test_reading_persistence_and_sliding_window_hydration(db_session: Session):
     facility_id = uuid.uuid4()
     facility = Facility(
         facility_id=facility_id,
-        facility_name="Koramangala STP Bangalore",
+        facility_name="Bharwara STP Lucknow",
         facility_type="municipal_stp",
-        location={"city": "Bangalore", "state": "KA"},
-        capacity=Decimal("248.000000"),
+        location={"city": "Lucknow", "state": "UP"},
+        capacity=Decimal("345.000000"),
         capacity_unit="MLD",
     )
     facility_repo.create(facility)

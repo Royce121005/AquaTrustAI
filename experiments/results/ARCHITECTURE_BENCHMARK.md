@@ -20,7 +20,7 @@ This empirical benchmark rigorously evaluates the performance, throughput, stora
 
 ## 2. Multi-Scale Empirical Benchmark Results
 
-Workloads were executed deterministically across 4 facility tiers: **8 STPs** (Bangalore baseline), **50 STPs** (Regional cluster), **100 STPs** (Statewide grid), and **500 STPs** (National enterprise scale).
+Workloads were executed deterministically across 4 facility tiers: **8 STPs** (Municipal baseline), **50 STPs** (Regional cluster), **100 STPs** (Statewide grid), and **500 STPs** (National enterprise scale).
 
 | Scale | Benchmark Metric | Variant A (Centralized) | Variant B (Blockchain-Centric) | Variant C (Hybrid AquaTrust AI) | Hybrid Advantage |
 |---|---|---|---|---|---|

@@ -51,7 +51,7 @@ def generate_stp_workload(stp_count: int, seed: int = 42) -> List[Dict[str, Any]
             "anomaly_status": "NORMAL" if rng.random() > 0.05 else "ANOMALOUS",
             "compliance_status": compliance_status,
             "provenance": {
-                "source_dataset_ids": ["bangalore_clean_v1", "uci_etp_v1"],
+                "source_dataset_ids": ["DATASET_04_CPCB_UP_STP", "uci_etp_v1"],
                 "model_version": "isolation_forest_v1.0.0",
                 "rule_version": "CPCB_STP_2023_v1",
             },

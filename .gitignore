@@ -38,3 +38,7 @@ backend/aquatrust_simulation_state.json
 
 # Local environment wrapper
 powershell.cmd
+
+# Postman local workspace cache (keep canonical AquaTrustAI_Postman_v2_1.json instead)
+.postman/
+postman/
