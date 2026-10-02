@@ -370,7 +370,7 @@ class FabricDLTGateway:
                 )
             except (RuntimeError, ValueError, KeyError):
                 return False
-        batch = self._mock_ledger.get(batch_id)
+        batch = self.query_batch(batch_id)
         if not batch or "proofs" not in batch or leaf_hash not in batch["proofs"]:
             return False
 
@@ -435,7 +435,11 @@ class FabricDLTGateway:
                 return self._fabric_request("query", "ReadBatchAnchor", [batch_id])["result"]
             except RuntimeError:
                 return None
-        return self._mock_ledger.get(batch_id)
+        res = self._mock_ledger.get(batch_id)
+        if not res:
+            self._load_ledger()
+            res = self._mock_ledger.get(batch_id)
+        return res
 
     def query_batch_for_record(self, record_id: str) -> Optional[Dict[str, Any]]:
         """Read the membership index for a finalized record."""
