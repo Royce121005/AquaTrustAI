@@ -75,11 +75,16 @@ export const ReadingDetailPage: React.FC = () => {
     return <LoadingState message="Fetching observation telemetry and evidence records..." />;
   }
 
-  if (readingQuery.isError) {
-    return <ErrorState error={readingQuery.error} onRetry={() => readingQuery.refetch()} />;
+  if (readingQuery.isError || !readingQuery.data) {
+    return (
+      <ErrorState
+        error={readingQuery.error || new Error('Reading not found')}
+        onRetry={() => readingQuery.refetch()}
+      />
+    );
   }
 
-  const reading = readingQuery.data!;
+  const reading = readingQuery.data;
 
   return (
     <div className="space-y-6">
@@ -322,7 +327,9 @@ export const ReadingDetailPage: React.FC = () => {
               <div>
                 <span className="text-slate-400 block text-[11px]">Inference Timestamp</span>
                 <span className="font-mono text-slate-800">
-                  {new Date(anomalyQuery.data.inference_at).toLocaleString()}
+                  {anomalyQuery.data.inference_at
+                    ? new Date(anomalyQuery.data.inference_at).toLocaleString()
+                    : 'N/A'}
                 </span>
               </div>
 
@@ -338,7 +345,9 @@ export const ReadingDetailPage: React.FC = () => {
               <span className="text-slate-500 font-medium block text-xs mb-1.5">
                 Features Extracted by Inference Pipeline:
               </span>
-              {anomalyQuery.data.features && Object.keys(anomalyQuery.data.features).length > 0 ? (
+              {anomalyQuery.data.features &&
+              typeof anomalyQuery.data.features === 'object' &&
+              Object.keys(anomalyQuery.data.features).length > 0 ? (
                 <div className="bg-slate-50 border border-slate-200 rounded p-3 text-[11px] font-mono text-slate-700 overflow-auto max-h-48">
                   <pre>{JSON.stringify(anomalyQuery.data.features, null, 2)}</pre>
                 </div>

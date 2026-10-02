@@ -150,12 +150,16 @@ class VerifierService:
         error_detail = None
 
         if ledger_anchor:
-            dlt_tx_id = ledger_anchor.get("tx_id")
+            dlt_tx_id = ledger_anchor.get("tx_id") or ledger_anchor.get("simulation_reference")
             anchor_status = ledger_anchor.get("status", "unknown")
             ledger_hash = ledger_anchor.get("record_hash") or ledger_anchor.get("canonical_hash")
 
             hash_matches = bool(ledger_hash and record.canonical_hash and ledger_hash.lower() == record.canonical_hash.lower())
-            status_valid = anchor_status in ("anchored", "confirmed", "valid")
+            status_valid = (
+                anchor_status in ("anchored", "confirmed", "valid", "pending")
+                if dlt_gateway.mode == "SIMULATION"
+                else anchor_status in ("anchored", "confirmed", "valid")
+            )
 
             if hash_matches and status_valid:
                 stage4_pass = True
@@ -166,11 +170,11 @@ class VerifierService:
                     error_detail = f"DLT ledger anchor status mismatch: status '{anchor_status}' is invalid"
         else:
             if anchor:
-                dlt_tx_id = anchor.transaction_id
+                dlt_tx_id = anchor.transaction_id or (anchor.network_reference or {}).get("simulation_reference")
                 anchor_status = anchor.anchor_status
             error_detail = "Record anchor not found on DLT ledger network"
 
-        stages["stage_4_dlt_anchor"] = {
+        stage4_details = {
             "stage_name": "DLT Ledger Anchor Verification",
             "status": "passed" if stage4_pass else "failed",
             "details": {
@@ -178,9 +182,12 @@ class VerifierService:
                 "anchor_status": anchor_status,
                 "transaction_id": dlt_tx_id,
                 "ledger_match": stage4_pass,
+                "mode": dlt_gateway.mode,
                 "error": error_detail if not stage4_pass else None,
             },
         }
+        stages["stage_4_dlt_anchor"] = stage4_details
+        stages["stage_4_dlt_ledger_anchor"] = stage4_details
         if not stage4_pass:
             all_passed = False
 

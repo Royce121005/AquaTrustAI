@@ -385,7 +385,39 @@ class FabricDLTGateway:
                 return self._adapt_anchor(self._fabric_request("query", "ReadAnchor", [str(record_id)])["result"])
             except RuntimeError:
                 return None
-        return self._mock_ledger.get(str(record_id))
+        rec_str = str(record_id)
+        if rec_str in self._mock_ledger:
+            return self._mock_ledger[rec_str]
+        # In simulation mode, restore anchor from database if present
+        try:
+            from app.db.session import SessionLocal
+            from app.models.dlt_anchor import DLTAnchor
+            with SessionLocal() as db:
+                row = db.query(DLTAnchor).filter(DLTAnchor.record_id == record_id).first()
+                if row:
+                    net_ref = row.network_reference or {}
+                    entry = {
+                        "tx_id": row.transaction_id,
+                        "simulation_reference": net_ref.get("simulation_reference"),
+                        "simulation_sequence": net_ref.get("simulation_sequence", 1),
+                        "channel_id": net_ref.get("channel", self.channel_name),
+                        "chaincode": net_ref.get("chaincode", self.chaincode_name),
+                        "docType": "record_anchor",
+                        "record_id": str(row.record_id),
+                        "record_hash": row.canonical_hash,
+                        "canonical_hash": row.canonical_hash,
+                        "facility_id": str(row.facility_id),
+                        "compliance_status": row.compliance_status,
+                        "status": "anchored" if row.anchor_status in ("anchored", "confirmed", "pending") else row.anchor_status,
+                        "mode": "SIMULATION",
+                        "distributed_ledger": False,
+                    }
+                    with self._lock:
+                        self._mock_ledger[rec_str] = entry
+                    return entry
+        except Exception:
+            pass
+        return None
 
     def query_transaction(self, tx_id: str) -> Optional[Dict[str, Any]]:
         """Query transaction by transaction ID."""

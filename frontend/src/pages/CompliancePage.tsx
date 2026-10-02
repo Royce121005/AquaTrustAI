@@ -193,7 +193,7 @@ export const CompliancePage: React.FC = () => {
                         <td className="py-2.5 px-3 text-slate-500">{p.threshold_unit}</td>
                         <td className="py-2.5 px-3 text-slate-600">{p.sample_count}</td>
                         <td className="py-2.5 px-3 text-slate-500 text-[11px]">
-                          {p.mean_value?.toFixed(1) || '—'} / {p.min_value?.toFixed(1) || '—'} / {p.max_value?.toFixed(1) || '—'}
+                          {(p.mean_value !== null && p.mean_value !== undefined && !isNaN(Number(p.mean_value)) ? Number(p.mean_value).toFixed(1) : '—')} / {(p.min_value !== null && p.min_value !== undefined && !isNaN(Number(p.min_value)) ? Number(p.min_value).toFixed(1) : '—')} / {(p.max_value !== null && p.max_value !== undefined && !isNaN(Number(p.max_value)) ? Number(p.max_value).toFixed(1) : '—')}
                         </td>
                         <td className="py-2.5 px-3">
                           <ComplianceStatusBadge status={p.result || p.status} />

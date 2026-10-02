@@ -27,6 +27,7 @@ from app.models.dlt_anchor import DLTAnchor
 from app.models.audit_log import AuditLog
 from app.models.correction import Correction
 from app.models.cryptographic_artifact import CryptographicArtifact
+from app.models.compliance_rule import ComplianceRule
 from app.services.compliance_service import ComplianceService
 from app.services.treatment_service import TreatmentService
 from app.services.verifier_service import VerifierService
@@ -62,6 +63,67 @@ def test_facility(db_session: Session):
         status="active",
     )
     db_session.add(fac)
+
+    rules = [
+        ComplianceRule(
+            rule_id=uuid4(),
+            parameter="BOD",
+            operator="lte",
+            threshold=Decimal("30.0"),
+            threshold_unit="mg/L",
+            stage_scope="final_effluent",
+            rule_version="2.2.1",
+            effective_from=datetime(2020, 1, 1, 0, 0, 0, tzinfo=timezone.utc),
+            active=True,
+        ),
+        ComplianceRule(
+            rule_id=uuid4(),
+            parameter="COD",
+            operator="lte",
+            threshold=Decimal("250.0"),
+            threshold_unit="mg/L",
+            stage_scope="final_effluent",
+            rule_version="2.2.1",
+            effective_from=datetime(2020, 1, 1, 0, 0, 0, tzinfo=timezone.utc),
+            active=True,
+        ),
+        ComplianceRule(
+            rule_id=uuid4(),
+            parameter="TSS",
+            operator="lte",
+            threshold=Decimal("50.0"),
+            threshold_unit="mg/L",
+            stage_scope="final_effluent",
+            rule_version="2.2.1",
+            effective_from=datetime(2020, 1, 1, 0, 0, 0, tzinfo=timezone.utc),
+            active=True,
+        ),
+        ComplianceRule(
+            rule_id=uuid4(),
+            parameter="PH",
+            operator="between",
+            threshold_min=Decimal("5.5"),
+            threshold_max=Decimal("9.0"),
+            threshold_unit="pH units",
+            stage_scope="final_effluent",
+            rule_version="2.2.1",
+            effective_from=datetime(2020, 1, 1, 0, 0, 0, tzinfo=timezone.utc),
+            active=True,
+        ),
+        ComplianceRule(
+            rule_id=uuid4(),
+            parameter="NH4_N",
+            operator="lte",
+            threshold=Decimal("50.0"),
+            threshold_unit="mg/L",
+            stage_scope="final_effluent",
+            rule_version="2.2.1",
+            effective_from=datetime(2020, 1, 1, 0, 0, 0, tzinfo=timezone.utc),
+            active=True,
+        ),
+    ]
+    for r in rules:
+        db_session.add(r)
     db_session.commit()
     return fac
 
@@ -93,6 +155,9 @@ def finalized_record(db_session: Session, test_facility):
         period_start=window_start,
         period_end=window_end,
     )
+    record.compliance_status = "compliant"
+    record.record_state = "eligible_for_finalization"
+    db_session.flush()
     finalized = TreatmentService.finalize_record(
         db=db_session,
         record=record,

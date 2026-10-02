@@ -124,7 +124,11 @@ export const VerificationPipeline: React.FC<VerificationPipelineProps> = ({ veri
 
         <div className="space-y-3">
           {stageKeys.map((key, index) => {
-            const stage: VerificationStage | undefined = verification.stages?.[key];
+            const stage: VerificationStage | undefined =
+              verification.stages?.[key] ||
+              (key === 'stage_4_dlt_ledger_anchor'
+                ? verification.stages?.['stage_4_dlt_anchor']
+                : undefined);
             const status = stage?.status || 'skipped';
             const label = stage?.stage_name || stageLabels[key];
             const icon = stageIcons[key];

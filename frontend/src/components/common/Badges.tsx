@@ -58,16 +58,20 @@ export const QualityBadge: React.FC<{ status: string | null; className?: string 
 
 export const AnomalyStatusBadge: React.FC<{
   status: string | null;
-  score?: number | null;
+  score?: number | string | null;
   className?: string;
 }> = ({ status, score, className = '' }) => {
   const norm = (status || 'unknown').toLowerCase();
+  const numScore =
+    score !== undefined && score !== null && !isNaN(Number(score))
+      ? Number(score)
+      : null;
 
   if (norm === 'normal') {
     return (
       <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-mono font-medium bg-emerald-50 border border-emerald-200 text-emerald-700 ${className}`}>
         <CheckCircle2 className="w-3 h-3 text-emerald-600" />
-        NORMAL {score !== undefined && score !== null ? `(${score.toFixed(3)})` : ''}
+        NORMAL {numScore !== null ? `(${numScore.toFixed(3)})` : ''}
       </span>
     );
   }
@@ -75,7 +79,7 @@ export const AnomalyStatusBadge: React.FC<{
     return (
       <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-mono font-medium bg-rose-50 border border-rose-200 text-rose-700 ${className}`}>
         <AlertCircle className="w-3 h-3 text-rose-600" />
-        ANOMALOUS {score !== undefined && score !== null ? `(${score.toFixed(3)})` : ''}
+        ANOMALOUS {numScore !== null ? `(${numScore.toFixed(3)})` : ''}
       </span>
     );
   }
