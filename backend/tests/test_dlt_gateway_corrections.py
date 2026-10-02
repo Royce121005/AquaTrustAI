@@ -147,12 +147,13 @@ def test_independent_verification_pipeline(db_session: Session, finalized_record
     assert tamper_res["stages"]["stage_1_hash_integrity"]["status"] == "failed"
 
 
-def test_dlt_ledger_anchor_stage4_failure_modes(db_session: Session, finalized_record):
+def test_dlt_ledger_anchor_stage4_failure_modes(db_session: Session, finalized_record, monkeypatch):
     """Test Stage 4 fails if DLT ledger anchor is missing or contains mismatched hash."""
     rec_id = finalized_record.record_id
 
     # 1. Simulate anchor missing from DLT gateway
-    gateway_backup = dlt_gateway._mock_ledger.pop(str(rec_id), None)
+    monkeypatch.setattr(dlt_gateway, "query_record_anchor", lambda *a, **k: None)
+    gateway_backup = None
     try:
         res = VerifierService.verify_treatment_record(db_session, rec_id)
         assert res["stages"]["stage_4_dlt_anchor"]["status"] == "failed"
@@ -161,7 +162,7 @@ def test_dlt_ledger_anchor_stage4_failure_modes(db_session: Session, finalized_r
         assert res["overall_verdict"] == "DLT_MISMATCH"
 
         # 2. Simulate anchor with mismatched hash on DLT gateway
-        dlt_gateway._mock_ledger[str(rec_id)] = {
+        monkeypatch.setattr(dlt_gateway, "query_record_anchor", lambda *a, **k: {
             "tx_id": "tx_tampered",
             "block_number": 1050,
             "channel_id": "aquatrustchannel",
@@ -169,7 +170,7 @@ def test_dlt_ledger_anchor_stage4_failure_modes(db_session: Session, finalized_r
             "record_id": str(rec_id),
             "record_hash": "0" * 64,  # Mismatched hash
             "status": "anchored",
-        }
+        })
         res_mismatch = VerifierService.verify_treatment_record(db_session, rec_id)
         assert res_mismatch["stages"]["stage_4_dlt_anchor"]["status"] == "failed"
         assert res_mismatch["stages"]["stage_4_dlt_anchor"]["details"]["ledger_match"] is False
@@ -268,17 +269,21 @@ def test_production_key_derivation_guard(monkeypatch):
 def test_dlt_gateway_correction_link_and_status():
     """Test FabricDLTGateway correction link recording and status management."""
     gateway = FabricDLTGateway(mode="simulation")
-    assert gateway.is_connected is True
+    assert gateway.is_connected is False
 
     status_info = gateway.get_status()
-    assert status_info["mode"] == "simulation"
-    assert status_info["status"] == "connected"
-    assert status_info["channel"] == "aquatrustchannel"
+    assert status_info["mode"] == "SIMULATION"
+    assert status_info["status"] == "simulation"
+    assert status_info["simulation_only"] is True
+    assert status_info["distributed_ledger"] is False
+    assert status_info["channel"] == "aquatrust-channel"
     assert status_info["chaincode"] == "aquatrust-records"
 
     # Record correction link on DLT
     orig_id = uuid4()
     corr_id = uuid4()
+    gateway.anchor_record(orig_id, "a" * 64, uuid4(), "compliant", "signature", "key-1")
+    gateway.anchor_record(corr_id, "b" * 64, uuid4(), "compliant", "signature", "key-1")
     reason = "Optical sensor BOD calibration adjustment"
     link_res = gateway.record_correction_link(
         original_record_id=orig_id,
@@ -291,18 +296,57 @@ def test_dlt_gateway_correction_link_and_status():
     assert link_res["corrected_record_id"] == str(corr_id)
     assert link_res["reason"] == reason
     assert link_res["status"] == "anchored"
-    assert link_res["tx_id"] is not None
-    assert link_res["block_number"] > 1000
+    assert link_res["tx_id"] is None
+    assert link_res["simulation_reference"].startswith("sim:")
+    assert link_res["simulation_sequence"] > 0
+    assert link_res["original_hash"] == "a" * 64
+    assert link_res["correction_hash"] == "b" * 64
 
     # Query correction link
     queried = gateway.query_correction_link(orig_id, corr_id)
     assert queried is not None
-    assert queried["tx_id"] == link_res["tx_id"]
+    assert queried["simulation_reference"] == link_res["simulation_reference"]
 
     # Test status change
     gateway.set_status("degraded")
     assert gateway.is_connected is False
     assert gateway.get_status()["status"] == "degraded"
+
+
+def test_fabric_mode_uses_committed_gateway_response_without_simulation_fallback(monkeypatch):
+    gateway = FabricDLTGateway(mode="FABRIC")
+    record_id, facility_id = uuid4(), uuid4()
+    calls = []
+
+    def invoke(operation, function, args):
+        calls.append((operation, function, args))
+        anchor = {
+            "docType": "record_anchor", "recordId": str(record_id),
+            "recordHash": "c" * 64, "transactionId": "fabric-real-tx-01",
+            "organizationId": "FacilityMSP", "timestamp": "2026-10-01T00:00:00Z",
+        }
+        return {"result": anchor, "transactionId": "fabric-real-tx-01", "commitStatus": "VALID"}
+
+    monkeypatch.setattr(gateway, "_fabric_request", invoke)
+    result = gateway.anchor_record(record_id, "c" * 64, facility_id, "compliant", "signature", "key-01")
+    assert result["mode"] == "FABRIC"
+    assert result["distributed_ledger"] is True
+    assert result["tx_id"] == "fabric-real-tx-01"
+    assert result["record_hash"] == "c" * 64
+    assert calls[0][1] == "CreateAnchor"
+    assert gateway.query_record_anchor(record_id)["tx_id"] == "fabric-real-tx-01"
+    assert str(record_id) not in gateway._mock_ledger
+
+
+def test_fabric_unavailable_is_failed_and_never_silently_simulated(monkeypatch):
+    gateway = FabricDLTGateway(mode="FABRIC")
+    monkeypatch.setattr(gateway, "_fabric_request", lambda *args: (_ for _ in ()).throw(RuntimeError("peer unavailable")))
+    result = gateway.anchor_record(uuid4(), "d" * 64, uuid4(), "compliant", "signature", "key-01")
+    assert result["status"] == "failed"
+    assert result["mode"] == "FABRIC"
+    assert result["tx_id"] is None
+    assert result["distributed_ledger"] is False
+    assert all(value.get("record_id") != str(result["record_id"]) for value in gateway._mock_ledger.values() if isinstance(value, dict))
 
 
 def test_append_only_correction_lifecycle(client: TestClient, db_session: Session, finalized_record):
@@ -417,8 +461,9 @@ def test_dlt_anchor_and_reconciliation(client: TestClient, db_session: Session, 
     assert rec_resp.status_code == 200
     rec_data = rec_resp.json()
     assert rec_data["reconciled"] is True
-    assert rec_data["current_status"] == "anchored"
-    assert rec_data["transaction_id"] is not None
+    assert rec_data["current_status"] in ("simulated", "confirmed")
+    assert (rec_data["transaction_id"] is None or isinstance(rec_data["transaction_id"], str))
+    assert rec_data["ledger_mode"] in ("SIMULATION", "FABRIC")
 
 
 def test_audit_logs_query(client: TestClient, db_session: Session, finalized_record):

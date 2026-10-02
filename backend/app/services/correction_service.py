@@ -209,6 +209,8 @@ class CorrectionService:
                 "dlt_tx_id": dlt_corr_link.get("tx_id"),
                 "dlt_block_number": dlt_corr_link.get("block_number"),
                 "correction_link_tx": dlt_corr_link.get("tx_id"),
+                "correction_link_mode": dlt_corr_link.get("mode", "SIMULATION"),
+                "correction_simulation_reference": dlt_corr_link.get("simulation_reference"),
                 "new_dlt_anchor_id": str(dlt_anchor.anchor_id) if dlt_anchor else None,
             },
             created_at=utc_now(),

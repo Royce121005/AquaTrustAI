@@ -12,7 +12,7 @@
 | P07 | QA + Compliance | NOT STARTED | — | — | — | — |
 | P08 | Treatment Records | NOT STARTED | — | — | — | — |
 | P09 | Cryptography | READY FOR REVIEW | PASS | PASS | — | [PHASE_09_REPORT.md](../COMPLETION/PHASE_09_REPORT.md) |
-| P10 | Hyperledger Fabric | READY FOR REVIEW | PASS | PASS | — | [PHASE_10_REPORT.md](../COMPLETION/PHASE_10_REPORT.md) |
+| P10 | Hyperledger Fabric | IN PROGRESS | CHAINCODE + DLT UNIT PASS | LIVE FABRIC PENDING | — | [PHASE_10_REPORT.md](../COMPLETION/PHASE_10_REPORT.md) |
 | P11 | Verification + Corrections | READY FOR REVIEW | PASS | PASS | — | [PHASE_11_REPORT.md](../COMPLETION/PHASE_11_REPORT.md) |
 | P12 | Frontend Integration | READY FOR REVIEW | PASS | PASS | — | [PHASE_12_REPORT.md](../COMPLETION/PHASE_12_REPORT.md) |
 | P13 | RBAC + Security | READY FOR REVIEW | PASS | PASS | — | [PHASE_13_REPORT.md](../COMPLETION/PHASE_13_REPORT.md) |

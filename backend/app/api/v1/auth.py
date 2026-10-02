@@ -96,12 +96,18 @@ def seed_default_users(db: Session) -> List[User]:
 def login(payload: LoginRequest, db: Session = Depends(get_db)):
     """Validates user credentials against database or demo accounts."""
     user_repo = UserRepository(db)
-    user = user_repo.get_by_username(payload.username)
+    user = user_repo.get_by_username(payload.username) or user_repo.get_by_email(payload.username)
 
     # Lazy-seed fallback if user is in DEMO_USERS and not yet created in the current DB
-    if not user and payload.username in DEMO_USERS:
-        seed_default_users(db)
-        user = user_repo.get_by_username(payload.username)
+    demo_key = payload.username
+    if not user:
+        for k, v in DEMO_USERS.items():
+            if payload.username in (k, v["email"]):
+                demo_key = k
+                break
+        if demo_key in DEMO_USERS:
+            seed_default_users(db)
+            user = user_repo.get_by_username(demo_key)
 
     if user:
         if user.status != "active":
@@ -120,8 +126,8 @@ def login(payload: LoginRequest, db: Session = Depends(get_db)):
         email = user.email
         display_name = user.display_name or user.username
         facility_id = "FAC-CPCB-001" if role_val == UserRole.OPERATOR.value else None
-    elif payload.username in DEMO_USERS:
-        demo = DEMO_USERS[payload.username]
+    elif demo_key in DEMO_USERS:
+        demo = DEMO_USERS[demo_key]
         if not verify_password(payload.password, demo["hashed_password"]):
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,

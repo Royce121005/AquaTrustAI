@@ -1,0 +1,21 @@
+OrdererOrgs:
+  - Name: Orderer
+    Domain: aquatrust.internal
+    Specs:
+      - Hostname: orderer0
+PeerOrgs:
+  - Name: Facility
+    Domain: facility.aquatrust.internal
+    EnableNodeOUs: true
+    Template: { Count: 1 }
+    Users: { Count: 2 }
+  - Name: Auditor
+    Domain: auditor.aquatrust.internal
+    EnableNodeOUs: true
+    Template: { Count: 1 }
+    Users: { Count: 2 }
+  - Name: Regulator
+    Domain: regulator.aquatrust.internal
+    EnableNodeOUs: true
+    Template: { Count: 1 }
+    Users: { Count: 2 }

@@ -253,7 +253,7 @@ def test_composite_window_aggregation_and_finalization(db_session: Session, test
     anchor = db_session.query(DLTAnchor).filter(DLTAnchor.record_id == record.record_id).first()
     assert anchor is not None
     assert anchor.canonical_hash == finalized.canonical_hash
-    assert anchor.anchor_status == "pending"
+    assert anchor.anchor_status in ("pending", "confirmed")
 
     # Verify Audit Log
     audit = db_session.query(AuditLog).filter(

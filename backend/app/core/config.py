@@ -4,10 +4,15 @@ Implements environment-driven, type-validated configuration adhering strictly to
 MASTER/ARCHITECTURE_FREEZE.md, MASTER/SECURITY_RULES.md, and PHASE_01_FOUNDATION.md.
 """
 
+import os
 from functools import lru_cache
 from typing import List, Literal, Union
+from dotenv import load_dotenv
 from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+load_dotenv(os.path.join(os.path.dirname(__file__), "..", "..", ".env"))
+load_dotenv()
 
 
 class Settings(BaseSettings):

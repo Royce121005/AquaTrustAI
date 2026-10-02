@@ -17,17 +17,24 @@ def test_gateway_anchor_and_verify_batch():
         "4a5e8c187f54b6b662d5e3f4219b168936932400f07df8b857796d1945f348e3",
         "90df45318532f146a782e46cf29d0092c481979b92f7dc2a7925e01b332dc3a1",
     ]
+    record_ids = ["record-a", "record-b", "record-c"]
 
     res = gateway.anchor_batch(
         batch_id=batch_id,
         record_hashes=hashes,
         facility_id=facility_id,
+        record_ids=record_ids,
     )
 
     assert res["status"] == "anchored"
     assert res["leaf_count"] == 3
     assert len(res["merkle_root"]) == 64
-    assert res["channel_id"] == "aquatrustchannel"
+    assert res["channel_id"] == "aquatrust-channel"
+    assert res["mode"] == "SIMULATION"
+    assert res["distributed_ledger"] is False
+    assert res["tx_id"] is None
+    assert res["simulation_reference"].startswith("sim:")
+    assert res["record_ids"] == record_ids
 
     # Verify each hash is proven inside the anchored batch
     for h in hashes:
@@ -36,3 +43,5 @@ def test_gateway_anchor_and_verify_batch():
     # Unknown hash must fail inclusion verification
     fake_hash = "0" * 64
     assert gateway.verify_batch_leaf(batch_id, fake_hash) is False
+    assert gateway.query_batch(batch_id)["merkle_root"] == res["merkle_root"]
+    assert gateway.generate_batch_id(record_ids, hashes) == gateway.generate_batch_id(record_ids, hashes)

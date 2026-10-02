@@ -1,0 +1,55 @@
+peer:
+  id: peer0.facility.aquatrust.internal
+  networkId: aquatrust
+  address: 127.0.0.1:7051
+  listenAddress: 0.0.0.0:7051
+  chaincodeListenAddress: 0.0.0.0:7052
+
+  localMspId: FacilityMSP
+  localMspType: bccsp
+  mspConfigPath: organizations/peerOrganizations/facility.aquatrust.internal/users/Admin@facility.aquatrust.internal/msp
+
+  tls:
+    enabled: true
+    cert:
+      file: organizations/peerOrganizations/facility.aquatrust.internal/peers/peer0.facility.aquatrust.internal/tls/server.crt
+    key:
+      file: organizations/peerOrganizations/facility.aquatrust.internal/peers/peer0.facility.aquatrust.internal/tls/server.key
+    rootcert:
+      file: organizations/peerOrganizations/facility.aquatrust.internal/peers/peer0.facility.aquatrust.internal/tls/ca.crt
+
+  gossip:
+    bootstrap: 127.0.0.1:7051
+    externalEndpoint: 127.0.0.1:7051
+
+  fileSystemPath: /tmp/aquatrust-peer
+
+  BCCSP:
+    Default: SW
+    SW:
+      Hash: SHA2
+      Security: 256
+      FileKeyStore:
+        KeyStore:
+
+  gateway:
+    enabled: true
+    endorsementTimeout: 30s
+    broadcastTimeout: 30s
+
+client:
+  connTimeout: 3s
+
+deliveryclient:
+  blockGossipEnabled: true
+  reconnectTotalTimeThreshold: 3600s
+  connTimeout: 3s
+  reConnectBackoffThreshold: 3600s
+
+chaincode:
+  startuptimeout: 300s
+  installTimeout: 300s
+
+ledger:
+  state:
+    stateDatabase: goleveldb

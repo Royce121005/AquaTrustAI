@@ -1,0 +1,65 @@
+{
+  "reportDate": "2026-10-01",
+  "overall": "CORE_LIVE_FABRIC_FLOW_PASSED_WITH_UNRELATED_VALIDATION_BLOCKERS",
+  "fabric": {
+    "version": "2.5.15",
+    "dockerEngine": "29.8.1",
+    "channel": "aquatrust-channel",
+    "chaincode": "aquatrust-records",
+    "chaincodeVersion": "1.0.1",
+    "sequence": 2,
+    "packageId": "aquatrust-records_1.0.1:fb50d56172aec18aa99c2719a269a2c0628bdb7e4c642d92edd8f918de1f8cd0",
+    "endorsementPolicy": "OutOf(2, 'FacilityMSP.peer', 'AuditorMSP.peer', 'RegulatorMSP.peer')",
+    "approvals": {
+      "FacilityMSP": true,
+      "AuditorMSP": true,
+      "RegulatorMSP": true
+    },
+    "peers": {
+      "Facility": {"image": "hyperledger/fabric-peer:2.5.15", "installed": true, "committed": true, "channelHeight": 18},
+      "Auditor": {"image": "hyperledger/fabric-peer:2.5.15", "installed": true, "committed": true, "channelHeight": 18},
+      "Regulator": {"image": "hyperledger/fabric-peer:2.5.15", "installed": true, "committed": true, "channelHeight": 18},
+      "Orderer": {"image": "hyperledger/fabric-orderer:2.5.15", "running": true}
+    },
+    "allPeerBlockHashesMatched": true
+  },
+  "requirements": [
+    {"requirement": "Fabric 2.5.15 network and channel operation", "status": "PASS", "evidence": "All peers joined aquatrust-channel at height 18 with identical current block hash; live Gateway health online."},
+    {"requirement": "Normal Node chaincode package, install and lifecycle commit", "status": "PASS", "evidence": "Node package installed on Facility/Auditor/Regulator; sequence 2 committed with all approvals; package ID recorded above."},
+    {"requirement": "CreateAnchor and backend finalized-record integration", "status": "PASS", "evidence": "Record 2a989812-6837-46dc-99b4-e3390eb46a7d committed VALID; tx 3f78d6a3709027ce92893436679f284f81949fdb5dbdd6621de1799e65302822."},
+    {"requirement": "Record queries by ID and hash; structured anchor verification", "status": "PASS", "evidence": "ReadAnchor, GetAnchorByRecordId, GetAnchorByHash and VerifyAnchorReference returned the committed record/hash; history and transaction query returned the same transaction."},
+    {"requirement": "Canonical hash, ES256 signature, certificate and ledger verification", "status": "PASS", "evidence": "Backend HTTP verifier returned VERIFIED; all four verification stages passed for the finalized record."},
+    {"requirement": "Merkle 2-record and 3-record batch anchor, mapping and proof", "status": "PASS", "evidence": "Batch txs 736b716cd7afbc68b3ddc5a6b0b87e80caef480d93352c26fc515c429b1c48b and 8fbd7667bced0171c364d70a43e26d3128c293ac3da30a0ffdf22676c014d0dc; valid proofs and Fabric mappings queried."},
+    {"requirement": "Append-only correction anchor and link", "status": "PASS", "evidence": "Original tx 38e635e8366a8797400e81d9420e1cb0849f56d714dba30f45414abf66fe3e8a; correction tx b01387a168b371135a48cc290c3c8afb83dc2c93c8b04c7806d8de9c8394e1fd; link tx 492c0a7df5d3d53aee8d8ea29fbbd23d94ea2409c03a63d59f5653bd488855de. Link queried; original unchanged."},
+    {"requirement": "Tamper and invalid-proof rejection", "status": "PASS", "evidence": "Altered submitted hash returned HASH_MISMATCH/verified=false; bad Merkle leaf returned false; live-Fabric backend verifier test returned TAMPER_DETECTED after stored-field mutation."},
+    {"requirement": "Multi-organization endorsement policy", "status": "PASS", "evidence": "Committed 2-of-3 policy and all three org approvals; successful transactions were endorsed by Facility+Auditor, Facility+Regulator, and for the 3-leaf batch Facility+Auditor+Regulator per peer logs."},
+    {"requirement": "Insufficient-endorsement negative transaction", "status": "NOT TESTED", "evidence": "Single-endorser CLI attempt failed client-side parsing of constructor JSON under PowerShell (invalid character 'A' looking for beginning of object key string); no proposal reached Fabric."},
+    {"requirement": "Simulation/Fabric separation and no silent fallback", "status": "PASS", "evidence": "Live responses report FABRIC with real tx IDs and ledger reads. Backend DLT suite passed simulation/no-fallback assertions; a separate live application startup with Fabric offline was not run."},
+    {"requirement": "Correction workflow through backend correction HTTP API", "status": "NOT TESTED", "evidence": "The chaincode correction operations were executed through real Gateway; the backend correction proposal/authorization endpoints were not exercised against Fabric."},
+    {"requirement": "Full browser/frontend integration", "status": "NOT TESTED", "evidence": "No browser/frontend integration test was run."},
+    {"requirement": "Full backend test suite", "status": "FAIL", "evidence": "Excluding migration collection: 128 passed, 1 failed at tests/test_errors.py::test_422_validation_error_structure due to missing starlette.status.HTTP_422_UNPROCESSABLE_CONTENT."},
+    {"requirement": "Database migration tests collection", "status": "FAIL", "evidence": "Collection blocked: ModuleNotFoundError: No module named 'alembic.config'; unrelated to Fabric workflow and not modified."}
+  ],
+  "transactions": {
+    "treatmentAnchor": "3f78d6a3709027ce92893436679f284f81949fdb5dbdd6621de1799e65302822",
+    "batch2": "736b716cd7afbc68b3ddc5a6b0b87e80caef480d93352c26fc515c429b1c48b",
+    "batch3": "8fbd7667bced0171c364d70a43e26d3128c293ac3da30a0ffdf22676c014d0dc",
+    "correctionOriginalAnchor": "38e635e8366a8797400e81d9420e1cb0849f56d714dba30f45414abf66fe3e8a",
+    "correctionAnchor": "b01387a168b371135a48cc290c3c8afb83dc2c93c8b04c7806d8de9c8394e1fd",
+    "correctionLink": "492c0a7df5d3d53aee8d8ea29fbbd23d94ea2409c03a63d59f5653bd488855de",
+    "chaincodeDefinitionCommit": "078b2711537949d637d8812738bbec6b3d403671622cd84dc3c5e1359c06c5da"
+  },
+  "tests": {
+    "chaincode": {"command": "npm test", "passed": 5, "failed": 0},
+    "dltBackend": {"command": "pytest -q tests/test_dlt_gateway_corrections.py tests/test_dlt_merkle.py tests/test_dlt_verification.py", "passed": 32, "failed": 0},
+    "liveFabricTamper": {"command": "pytest -q tests/test_dlt_gateway_corrections.py::test_independent_verification_pipeline with DLT_MODE=FABRIC", "passed": 1, "failed": 0},
+    "fabricClientBuild": {"command": "npm run build", "passed": true},
+    "backendExcludingMigrationCollection": {"command": "pytest -q --ignore=tests/test_database_migrations.py", "passed": 128, "failed": 1, "knownFailure": "tests/test_errors.py::test_422_validation_error_structure"},
+    "fullBackendCollection": {"command": "pytest -q", "passed": null, "failed": null, "collectionError": "tests/test_database_migrations.py: ModuleNotFoundError: No module named 'alembic.config'"}
+  },
+  "remainingBlockers": [
+    "Install/repair the backend Alembic dependency/import to collect migration tests.",
+    "Unrelated backend validation error still references HTTP_422_UNPROCESSABLE_CONTENT, unavailable in installed Starlette.",
+    "Negative endorsement, backend correction API, and frontend browser flows remain untested."
+  ]
+}

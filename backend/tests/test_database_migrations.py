@@ -26,11 +26,14 @@ def test_alembic_configuration_and_revisions():
 def test_alembic_offline_sql_generation():
     """Verify that Alembic can generate offline PostgreSQL DDL SQL without error."""
     backend_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+    env = dict(os.environ)
+    env["DATABASE_URL"] = "postgresql://aquatrust_user:aquatrust_password@localhost:5432/aquatrust_db"
     result = subprocess.run(
         [sys.executable, "-m", "alembic", "-c", "alembic.ini", "upgrade", "head", "--sql"],
         cwd=backend_dir,
         capture_output=True,
         text=True,
+        env=env,
     )
     assert result.returncode == 0, f"Alembic SQL generation failed: {result.stderr}"
     assert "CREATE TABLE facilities" in result.stdout

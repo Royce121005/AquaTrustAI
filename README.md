@@ -1,17 +1,32 @@
-# AquaTrust AI
+# AquaTrustAI
 
-Water treatment intelligence platform.
+A wastewater monitoring and trusted-data project. Operational readings, AI inference, compliance, treatment records, cryptographic verification and the DLT gateway are provided by the FastAPI backend; the browser presents those results without fabricating values.
 
-- `frontend/` — React + Vite application (this is what deploys to Vercel)
-- Backend (FastAPI), database, AI services: planned — see `frontend/docs/api-integration.md`
+## Repository layout
 
-Data sources:
+- `frontend/` — React, TypeScript and Vite application.
+- `backend/` — FastAPI API, persistence, validation, AI, compliance, records, verification and DLT integration.
+- `ml/` — model and inference implementation.
+- `dlt/` — Fabric network, chaincode and client resources.
+- `datasets/` — source manifests and processed project datasets.
 
-- `frontend/public/data/bangalore_clean.csv` — primary historical STP dataset
-  (9 Bangalore STPs, daily COD/BOD/pH/TSS/nitrogen + capacities, 2019–2023);
-  drives the Monitoring trends/history views and the Dashboard snapshot.
-- `frontend/public/data/indian_water_clean.csv` — national water-quality
-  reference records (2021–2023); drives the Compliance reference explorer.
+## Run the frontend
 
-Operational pages (sensors, alerts, treatment status) and AI Insights remain on
-provisional mock services until the FastAPI backend and the ML model land.
+```powershell
+cd frontend
+npm install
+Copy-Item .env.example .env
+npm run dev
+```
+
+Set `VITE_DEV_API_PROXY_TARGET` in `frontend/.env` to the running AquaTrustAI FastAPI origin. The default development proxy target is `http://127.0.0.1:8000`. Set `VITE_API_BASE_URL` to the backend API prefix for deployment (default `/api/v1`). Vercel builds from `frontend/` using the existing root configuration.
+
+## Validation
+
+```powershell
+cd frontend
+npm test
+npm run build
+```
+
+See [FRONTEND_IMPLEMENTATION_REPORT.md](FRONTEND_IMPLEMENTATION_REPORT.md) for the dataset audit, API boundaries and validation status. Dataset files and metadata are catalogued under `datasets/`; older README references to a Bangalore CSV are obsolete.

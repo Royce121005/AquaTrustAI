@@ -28,31 +28,38 @@ class DLTReconcileResponse(BaseModel):
     anchor_id: UUID
     previous_status: str
     current_status: str
-    transaction_id: str
+    transaction_id: Optional[str] = None
+    ledger_mode: str = "SIMULATION"
+    failure: Optional[str] = None
     reconciled: bool
 
 
 class DLTBatchAnchorRequest(BaseModel):
-    batch_id: str
+    batch_id: Optional[str] = None
     record_hashes: List[str]
+    record_ids: Optional[List[str]] = None
     facility_id: UUID
     key_id: Optional[str] = "key-ecdsa-p256-01"
 
 
 class DLTBatchAnchorResponse(BaseModel):
-    tx_id: str
-    block_number: int
+    tx_id: Optional[str] = None
+    simulation_reference: Optional[str] = None
+    block_number: Optional[int] = None
     channel_id: str
     chaincode: str
     docType: str
     batch_id: str
     merkle_root: str
     leaf_count: int
+    record_ids: Optional[List[str]] = None
     facility_id: str
     signature_metadata: Optional[Dict[str, Any]] = None
     timestamp: str
     proofs: Dict[str, Any]
     status: str
+    mode: str
+    distributed_ledger: bool
 
 
 class DLTBatchVerifyRequest(BaseModel):
@@ -65,4 +72,6 @@ class DLTBatchVerifyResponse(BaseModel):
     leaf_hash: str
     verified: bool
     merkle_root: Optional[str] = None
+    mode: str = "SIMULATION"
+    distributed_ledger: bool = False
     message: str

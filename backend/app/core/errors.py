@@ -45,7 +45,7 @@ class ValidationException(AquaTrustException):
         super().__init__(
             message=message,
             error_code="VALIDATION_ERROR",
-            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             details=details,
         )
 
@@ -182,7 +182,7 @@ async def request_validation_exception_handler(
         details=exc.errors(),
         request_id=req_id,
     )
-    return JSONResponse(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, content=payload.model_dump())
+    return JSONResponse(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, content=payload.model_dump())
 
 
 async def http_exception_handler(request: Request, exc: HTTPException) -> JSONResponse:

@@ -1,0 +1,98 @@
+Organizations:
+  - &OrdererOrg
+    Name: OrdererOrg
+    ID: OrdererMSP
+    MSPDir: organizations/ordererOrganizations/aquatrust.internal/msp
+    Policies:
+      Readers: { Type: Signature, Rule: "OR('OrdererMSP.member')" }
+      Writers: { Type: Signature, Rule: "OR('OrdererMSP.member')" }
+      Admins: { Type: Signature, Rule: "OR('OrdererMSP.admin')" }
+  - &FacilityOrg
+    Name: FacilityOrg
+    ID: FacilityMSP
+    MSPDir: organizations/peerOrganizations/facility.aquatrust.internal/msp
+    Policies:
+      Readers: { Type: Signature, Rule: "OR('FacilityMSP.admin', 'FacilityMSP.peer', 'FacilityMSP.client')" }
+      Writers: { Type: Signature, Rule: "OR('FacilityMSP.admin', 'FacilityMSP.client')" }
+      Admins: { Type: Signature, Rule: "OR('FacilityMSP.admin')" }
+      Endorsement: { Type: Signature, Rule: "OR('FacilityMSP.peer')" }
+    AnchorPeers:
+      - { Host: peer0.facility.aquatrust.internal, Port: 7051 }
+  - &AuditorOrg
+    Name: AuditorOrg
+    ID: AuditorMSP
+    MSPDir: organizations/peerOrganizations/auditor.aquatrust.internal/msp
+    Policies:
+      Readers: { Type: Signature, Rule: "OR('AuditorMSP.admin', 'AuditorMSP.peer', 'AuditorMSP.client')" }
+      Writers: { Type: Signature, Rule: "OR('AuditorMSP.admin', 'AuditorMSP.client')" }
+      Admins: { Type: Signature, Rule: "OR('AuditorMSP.admin')" }
+      Endorsement: { Type: Signature, Rule: "OR('AuditorMSP.peer')" }
+    AnchorPeers:
+      - { Host: peer0.auditor.aquatrust.internal, Port: 8051 }
+  - &RegulatorOrg
+    Name: RegulatorOrg
+    ID: RegulatorMSP
+    MSPDir: organizations/peerOrganizations/regulator.aquatrust.internal/msp
+    Policies:
+      Readers: { Type: Signature, Rule: "OR('RegulatorMSP.admin', 'RegulatorMSP.peer', 'RegulatorMSP.client')" }
+      Writers: { Type: Signature, Rule: "OR('RegulatorMSP.admin', 'RegulatorMSP.client')" }
+      Admins: { Type: Signature, Rule: "OR('RegulatorMSP.admin')" }
+      Endorsement: { Type: Signature, Rule: "OR('RegulatorMSP.peer')" }
+    AnchorPeers:
+      - { Host: peer0.regulator.aquatrust.internal, Port: 9051 }
+
+Capabilities:
+  Channel: &ChannelCapabilities { V2_0: true }
+  Orderer: &OrdererCapabilities { V2_0: true }
+  Application: &ApplicationCapabilities { V2_0: true }
+
+Orderer: &OrdererDefaults
+  OrdererType: etcdraft
+  Addresses: [orderer0.aquatrust.internal:7050]
+  EtcdRaft:
+    Consenters:
+      - Host: orderer0.aquatrust.internal
+        Port: 7050
+        ClientTLSCert: organizations/ordererOrganizations/aquatrust.internal/orderers/orderer0.aquatrust.internal/tls/server.crt
+        ServerTLSCert: organizations/ordererOrganizations/aquatrust.internal/orderers/orderer0.aquatrust.internal/tls/server.crt
+    Options: { TickInterval: 500ms, ElectionTick: 10, HeartbeatTick: 1, MaxInflightBlocks: 5, SnapshotIntervalSize: 16 MB }
+  BatchTimeout: 2s
+  BatchSize: { MaxMessageCount: 10, AbsoluteMaxBytes: 99 MB, PreferredMaxBytes: 512 KB }
+  Organizations: [*OrdererOrg]
+  Policies:
+    Readers: { Type: ImplicitMeta, Rule: ANY Readers }
+    Writers: { Type: ImplicitMeta, Rule: ANY Writers }
+    Admins: { Type: ImplicitMeta, Rule: MAJORITY Admins }
+    BlockValidation: { Type: ImplicitMeta, Rule: ANY Writers }
+
+Application: &ApplicationDefaults
+  Organizations: []
+  Policies:
+    Readers: { Type: ImplicitMeta, Rule: ANY Readers }
+    Writers: { Type: ImplicitMeta, Rule: ANY Writers }
+    Admins: { Type: ImplicitMeta, Rule: MAJORITY Admins }
+    LifecycleEndorsement: { Type: ImplicitMeta, Rule: MAJORITY Endorsement }
+    Endorsement: { Type: Signature, Rule: "OutOf(2, 'FacilityMSP.peer', 'AuditorMSP.peer', 'RegulatorMSP.peer')" }
+  Capabilities: *ApplicationCapabilities
+
+Channel: &ChannelDefaults
+  Policies:
+    Readers: { Type: ImplicitMeta, Rule: ANY Readers }
+    Writers: { Type: ImplicitMeta, Rule: ANY Writers }
+    Admins: { Type: ImplicitMeta, Rule: MAJORITY Admins }
+  Capabilities: *ChannelCapabilities
+
+Profiles:
+  AquaTrustOrdererGenesis:
+    Orderer: *OrdererDefaults
+    Consortiums:
+      AquaTrustConsortium:
+        Organizations: [*FacilityOrg, *AuditorOrg, *RegulatorOrg]
+    Capabilities: *OrdererCapabilities
+  AquaTrustChannel:
+    Consortium: AquaTrustConsortium
+    <<: *ChannelDefaults
+    Application:
+      <<: *ApplicationDefaults
+      Organizations: [*FacilityOrg, *AuditorOrg, *RegulatorOrg]
+      Capabilities: *ApplicationCapabilities

@@ -1,0 +1,14 @@
+{
+  "name": "aquatrust-fabric-client",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Private Fabric Gateway adapter for the AquaTrust FastAPI DLT service",
+  "main": "dist/server.js",
+  "scripts": { "build": "tsc --build", "start": "node dist/server.js" },
+  "engines": { "node": ">=20 <25" },
+  "dependencies": {
+    "@grpc/grpc-js": "1.14.5",
+    "@hyperledger/fabric-gateway": "1.4.0"
+  },
+  "devDependencies": { "@types/node": "22.10.2", "typescript": "5.7.2" }
+}

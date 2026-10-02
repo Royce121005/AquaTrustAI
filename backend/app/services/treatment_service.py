@@ -344,6 +344,9 @@ class TreatmentService:
             signature_value=sig_value,
             key_id=signing_key.key_id,
         )
+        ledger_mode = dlt_res.get("mode", "SIMULATION")
+        ledger_failed = dlt_res.get("status") == "failed"
+        anchor_state = "failed" if ledger_failed else ("confirmed" if ledger_mode == "FABRIC" else "pending")
 
         anchor_id = uuid4()
         dlt_anchor = DLTAnchor(
@@ -356,12 +359,19 @@ class TreatmentService:
             compliance_status=record.compliance_status,
             signature_metadata={"algorithm": "ES256", "key_id": signing_key.key_id},
             network_reference={
-                "channel": dlt_res.get("channel_id", "aquatrustchannel"),
+                "channel": dlt_res.get("channel_id", "aquatrust-channel"),
                 "chaincode": dlt_res.get("chaincode", "aquatrust-records"),
                 "block_number": dlt_res.get("block_number"),
+                "mode": ledger_mode,
+                "distributed_ledger": ledger_mode == "FABRIC" and not ledger_failed,
+                "simulation_reference": dlt_res.get("simulation_reference"),
+                "failure": dlt_res.get("failure"),
             },
             transaction_id=dlt_res.get("tx_id"),
-            anchor_status="pending",
+            anchor_status=anchor_state,
+            submitted_at=utc_now() if ledger_mode == "FABRIC" else None,
+            confirmed_at=utc_now() if ledger_mode == "FABRIC" and not ledger_failed else None,
+            failure_code="FABRIC_SUBMISSION_FAILED" if ledger_failed else None,
             created_at=utc_now(),
         )
         treatment_repo.add_dlt_anchor(dlt_anchor)
@@ -371,7 +381,7 @@ class TreatmentService:
         record.canonical_hash = canonical_hash
         record.signature_id = sig_id
         record.certificate_id = cert_id
-        record.anchor_status = "pending"
+        record.anchor_status = anchor_state
         record.evidence_snapshot = evidence_snapshot
         record.finalized_at = utc_now()
 

@@ -10,6 +10,13 @@ backend_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 if backend_root not in sys.path:
     sys.path.insert(0, backend_root)
 
+from dotenv import load_dotenv
+env_path = os.path.join(backend_root, ".env")
+if os.path.isfile(env_path):
+    load_dotenv(env_path)
+else:
+    load_dotenv()
+
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator
 from fastapi import FastAPI

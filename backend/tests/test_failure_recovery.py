@@ -67,11 +67,13 @@ def test_dlt_gateway_simulation_fallback_mode():
         key_id="key-01",
     )
     assert res["status"] == "anchored"
-    assert res["tx_id"] is not None
-    assert res["block_number"] > 1000
+    assert res["tx_id"] is None
+    assert res["simulation_reference"].startswith("sim:")
+    assert res["simulation_sequence"] > 0
+    assert res["distributed_ledger"] is False
 
     # Query transaction
-    queried = gateway.query_transaction(res["tx_id"])
+    queried = gateway.query_transaction(res["simulation_reference"])
     assert queried is not None
     assert queried["record_hash"] == rec_hash
 

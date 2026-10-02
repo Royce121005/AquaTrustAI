@@ -56,8 +56,9 @@ class MerkleTree:
                 if i + 1 < len(current_level):
                     right = current_level[i + 1]
                 else:
-                    # Odd number of nodes: duplicate the last node (RFC 6962 style)
-                    right = left
+                    # RFC 6962 carries an unmatched rightmost node to the next level.
+                    next_level.append(left)
+                    continue
                 next_level.append(hash_children(left, right))
 
             self.levels.append(next_level)
@@ -88,8 +89,11 @@ class MerkleTree:
 
         for level in self.levels[:-1]:
             if idx % 2 == 0:
-                # Target is left child, sibling is right
-                sibling_idx = idx + 1 if idx + 1 < len(level) else idx
+                # A rightmost unpaired node is carried up without adding a proof step.
+                sibling_idx = idx + 1
+                if sibling_idx >= len(level):
+                    idx //= 2
+                    continue
                 direction = "right"
             else:
                 # Target is right child, sibling is left
@@ -108,13 +112,20 @@ class MerkleTree:
         Independently verifies whether leaf_bytes is part of the Merkle Tree
         with root expected_root_hex, given the audit proof path.
         """
-        current_hash = hash_leaf(leaf_bytes)
-
-        for step in proof:
-            sibling = bytes.fromhex(step["hash"])
-            if step["direction"] == "right":
-                current_hash = hash_children(current_hash, sibling)
-            else:
-                current_hash = hash_children(sibling, current_hash)
-
-        return current_hash.hex().lower() == expected_root_hex.lower()
+        try:
+            if len(expected_root_hex) != 64:
+                return False
+            current_hash = hash_leaf(leaf_bytes)
+            for step in proof:
+                if step.get("direction") not in {"left", "right"}:
+                    return False
+                sibling = bytes.fromhex(step["hash"])
+                if len(sibling) != 32:
+                    return False
+                if step["direction"] == "right":
+                    current_hash = hash_children(current_hash, sibling)
+                else:
+                    current_hash = hash_children(sibling, current_hash)
+            return current_hash.hex().lower() == expected_root_hex.lower()
+        except (KeyError, TypeError, ValueError):
+            return False

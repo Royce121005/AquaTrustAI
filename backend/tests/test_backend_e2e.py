@@ -130,7 +130,9 @@ def test_full_trust_pipeline_e2e(client: TestClient, db_session: Session):
     # Step 5: Reconcile DLT Anchor with Fabric Gateway
     dlt_resp = client.post(f"/api/v1/dlt/anchors/{record_id}/reconcile")
     assert dlt_resp.status_code == 200
-    assert dlt_resp.json()["current_status"] == "anchored"
+    assert dlt_resp.json()["current_status"] in ("simulated", "confirmed")
+    assert dlt_resp.json()["ledger_mode"] in ("SIMULATION", "FABRIC")
+    assert (dlt_resp.json()["transaction_id"] is None or isinstance(dlt_resp.json()["transaction_id"], str))
 
     # Step 6: 4-Stage Independent Verification Pipeline
     ver_resp = client.post(f"/api/v1/verification/verify-record/{record_id}")
@@ -282,7 +284,9 @@ def test_live_jwt_auth_e2e_pipeline(db_session: Session):
 
         dlt_resp = live_client.post(f"/api/v1/dlt/anchors/{record_id}/reconcile", headers=aud_headers)
         assert dlt_resp.status_code == 200
-        assert dlt_resp.json()["current_status"] == "anchored"
+        assert dlt_resp.json()["current_status"] in ("simulated", "confirmed")
+        assert dlt_resp.json()["ledger_mode"] in ("SIMULATION", "FABRIC")
+        assert (dlt_resp.json()["transaction_id"] is None or isinstance(dlt_resp.json()["transaction_id"], str))
 
         ver_resp = live_client.post(f"/api/v1/verification/verify-record/{record_id}", headers=aud_headers)
         assert ver_resp.status_code == 200

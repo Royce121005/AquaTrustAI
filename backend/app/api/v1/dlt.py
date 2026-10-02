@@ -26,6 +26,12 @@ from app.core.security import get_current_user_claims, require_role
 router = APIRouter(tags=["Distributed Ledger (DLT) Anchors"])
 
 
+@router.get("/dlt/status", summary="Report Fabric or simulation transport status")
+def get_dlt_status():
+    """Expose whether the application is talking to Fabric or its local simulator."""
+    return dlt_gateway.get_status()
+
+
 @router.get(
     "/dlt/anchors",
     response_model=List[DLTAnchorResponse],
@@ -82,6 +88,16 @@ def reconcile_anchor(record_id: UUID, db: Session = Depends(get_db)):
     if not anchor:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Anchor for record {record_id} not found")
 
+    # Finalization already submitted confirmed Fabric anchors. Return their original
+    # transaction reference without creating a second ledger transaction.
+    if anchor.anchor_status == "confirmed" and (anchor.network_reference or {}).get("mode") == "FABRIC":
+        return DLTReconcileResponse(
+            record_id=record_id, anchor_id=anchor.anchor_id,
+            previous_status="confirmed", current_status="confirmed",
+            transaction_id=anchor.transaction_id, ledger_mode="FABRIC",
+            reconciled=bool(anchor.transaction_id),
+        )
+
     prev_status = anchor.anchor_status
     crypto_art = db.query(CryptographicArtifact).filter(CryptographicArtifact.record_id == anchor.record_id).first()
     sig_value = crypto_art.signature_value if crypto_art else "sample_signature_b64"
@@ -96,23 +112,40 @@ def reconcile_anchor(record_id: UUID, db: Session = Depends(get_db)):
         key_id=key_id,
     )
 
-    anchor.anchor_status = "anchored"
+    ledger_mode = dlt_res.get("mode", "SIMULATION")
+    if dlt_res.get("status") == "failed":
+        anchor.anchor_status = "failed"
+        anchor.failure_code = "FABRIC_SUBMISSION_FAILED"
+    elif ledger_mode == "FABRIC":
+        anchor.anchor_status = "confirmed"
+        anchor.failure_code = None
+    else:
+        # A local simulation is not a committed Fabric anchor, so keep the
+        # persisted status pending and expose the simulation reference/mode.
+        anchor.anchor_status = "pending"
     anchor.transaction_id = dlt_res["tx_id"]
     anchor.network_reference = {
-        "channel": dlt_res.get("channel_id", "aquatrustchannel"),
+        "channel": dlt_res.get("channel_id", "aquatrust-channel"),
         "chaincode": dlt_res.get("chaincode", "aquatrust-records"),
-        "block_number": dlt_res["block_number"],
+        "block_number": dlt_res.get("block_number"),
+        "simulation_sequence": dlt_res.get("simulation_sequence"),
+        "mode": ledger_mode,
+        "distributed_ledger": ledger_mode == "FABRIC" and dlt_res.get("status") != "failed",
+        "simulation_reference": dlt_res.get("simulation_reference"),
     }
-    anchor.confirmed_at = utc_now()
+    anchor.confirmed_at = utc_now() if ledger_mode == "FABRIC" and dlt_res.get("status") != "failed" else None
+    anchor.submitted_at = utc_now()
     db.commit()
 
     return DLTReconcileResponse(
         record_id=record_id,
         anchor_id=anchor.anchor_id,
         previous_status=prev_status,
-        current_status=anchor.anchor_status,
+        current_status="simulated" if ledger_mode == "SIMULATION" else anchor.anchor_status,
         transaction_id=anchor.transaction_id,
-        reconciled=True,
+        ledger_mode=ledger_mode,
+        failure=dlt_res.get("failure"),
+        reconciled=dlt_res.get("status") != "failed",
     )
 
 
@@ -129,6 +162,30 @@ def get_anchor_by_hash(canonical_hash: str):
     return anchor
 
 
+@router.get("/dlt/ledger/records/{record_id}", summary="Read an anchor from Fabric or simulation state")
+def get_ledger_anchor(record_id: UUID):
+    anchor = dlt_gateway.query_record_anchor(record_id)
+    if not anchor:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"No ledger anchor found for record {record_id}")
+    return anchor
+
+
+@router.get("/dlt/ledger/history/{record_id}", summary="Read immutable Fabric transaction history for a record anchor")
+def get_ledger_history(record_id: UUID):
+    history = dlt_gateway.query_anchor_history(record_id)
+    if not history:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"No anchor history found for record {record_id}")
+    return {"record_id": str(record_id), "mode": dlt_gateway.mode, "distributed_ledger": dlt_gateway.mode == "FABRIC", "history": history}
+
+
+@router.get("/dlt/batches/records/{record_id}", summary="Look up the batch commitment containing a record")
+def get_record_batch(record_id: UUID):
+    mapping = dlt_gateway.query_batch_for_record(str(record_id))
+    if not mapping:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"No batch mapping found for record {record_id}")
+    return {**mapping, "mode": dlt_gateway.mode, "distributed_ledger": dlt_gateway.mode == "FABRIC"}
+
+
 @router.post(
     "/dlt/batch-anchor",
     response_model=DLTBatchAnchorResponse,
@@ -141,12 +198,15 @@ def anchor_batch(payload: DLTBatchAnchorRequest):
         res = dlt_gateway.anchor_batch(
             batch_id=payload.batch_id,
             record_hashes=payload.record_hashes,
+            record_ids=payload.record_ids,
             facility_id=payload.facility_id,
             key_id=payload.key_id or "key-ecdsa-p256-01",
         )
         return DLTBatchAnchorResponse(**res)
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+    except RuntimeError as e:
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(e))
 
 
 @router.post(
@@ -157,14 +217,16 @@ def anchor_batch(payload: DLTBatchAnchorRequest):
 def verify_batch_leaf(payload: DLTBatchVerifyRequest):
     """Verifies Merkle audit inclusion proof without fetching whole batch."""
     is_valid = dlt_gateway.verify_batch_leaf(payload.batch_id, payload.leaf_hash)
-    batch = dlt_gateway.query_transaction(payload.batch_id) or dlt_gateway._mock_ledger.get(payload.batch_id)
-    root = batch.get("merkle_root") if batch else None
+    batch = dlt_gateway.query_batch(payload.batch_id)
+    root = (batch.get("merkle_root") or batch.get("merkleRoot")) if batch else None
 
     return DLTBatchVerifyResponse(
         batch_id=payload.batch_id,
         leaf_hash=payload.leaf_hash,
         verified=is_valid,
         merkle_root=root,
+        mode=dlt_gateway.mode,
+        distributed_ledger=dlt_gateway.mode == "FABRIC",
         message="Leaf hash cryptographically verified in batch" if is_valid else "Leaf hash not found or proof invalid",
     )
 
