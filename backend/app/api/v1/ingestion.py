@@ -16,8 +16,11 @@ from app.repositories.facility_repository import FacilityRepository
 from app.repositories.reading_repository import ReadingRepository
 from app.services.validation_service import ValidationService
 from app.services.anomaly_service import AnomalyService
+from app.core.config import get_settings
 from app.core.security import get_current_user_claims, require_role
 from app.core.rate_limit import rate_limit_ingestion
+
+settings = get_settings()
 from app.schemas.ingestion import (
     ReadingIngestRequest,
     ReadingIngestResponse,

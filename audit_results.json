@@ -13,8 +13,8 @@
       "test": "Hyperledger Fabric Gateway Health",
       "command": "FabricBlockchainService().health()",
       "expected": "online: True",
-      "actual": "{'mode': 'FABRIC', 'online': True, 'channel': 'aquatrust-channel', 'chaincode': 'aquatrust-records'}",
-      "status": "PASS",
+      "actual": "FABRIC_BRIDGE_TOKEN is required in FABRIC mode",
+      "status": "FAIL",
       "severity": "HIGH",
       "details": {}
     }
@@ -313,7 +313,7 @@
       "test": "CPCB Rules Catalog Loaded",
       "command": "GET /api/v1/compliance/rules",
       "expected": ">= 5 regulatory rules",
-      "actual": "5 rules",
+      "actual": "6 rules",
       "status": "PASS",
       "severity": "HIGH",
       "details": {}
@@ -322,8 +322,8 @@
       "test": "Compliant Effluent Evaluation",
       "command": "POST /api/v1/compliance/evaluate",
       "expected": "overall_status == 'compliant'",
-      "actual": "None",
-      "status": "FAIL",
+      "actual": "compliant",
+      "status": "PASS",
       "severity": "HIGH",
       "details": {}
     },
@@ -331,8 +331,8 @@
       "test": "Discharge Violation Detection",
       "command": "POST /api/v1/compliance/evaluate (BOD=80)",
       "expected": "overall_status == 'non_compliant'",
-      "actual": "None",
-      "status": "FAIL",
+      "actual": "non_compliant",
+      "status": "PASS",
       "severity": "HIGH",
       "details": {}
     }
@@ -351,7 +351,7 @@
       "test": "SHA-256 Avalanche Effect",
       "command": "compute_canonical_hash(tampered)",
       "expected": "Hash completely differs",
-      "actual": "4bb5c7e04a4da55e != 19a1c85d3966ee5d",
+      "actual": "fc3d43e71c04d105 != 11beba6cb4a3376d",
       "status": "PASS",
       "severity": "CRITICAL",
       "details": {}
@@ -380,8 +380,8 @@
       "test": "Live Hyperledger Fabric Anchor Commit",
       "command": "gateway.anchor_record()",
       "expected": "status == 'anchored', real tx_id returned",
-      "actual": "status=anchored, tx_id=ff585c68accb254a9812d584570bf41d5ef9eb3ba3f5b83d667efaa500e5331f",
-      "status": "PASS",
+      "actual": "status=failed, tx_id=None",
+      "status": "FAIL",
       "severity": "CRITICAL",
       "details": {}
     },
@@ -389,8 +389,8 @@
       "test": "Live Hyperledger Fabric Anchor Query",
       "command": "gateway.query_record_anchor()",
       "expected": "Record found on ledger with matching hash",
-      "actual": "found=True",
-      "status": "PASS",
+      "actual": "found=False",
+      "status": "FAIL",
       "severity": "CRITICAL",
       "details": {}
     },
@@ -407,7 +407,7 @@
   "Verification": [
     {
       "test": "4-Stage Independent Verification Pipeline",
-      "command": "POST /api/v1/verification/verify-record/b9dfaa4f-80ce-43ac-a5cb-f7536418724d",
+      "command": "POST /api/v1/verification/verify-record/b8180787-8b9d-4e2d-81a2-68bcd6edec17",
       "expected": "VERIFIED across all 4 cryptographic stages",
       "actual": "verdict=VERIFIED",
       "status": "PASS",
@@ -416,7 +416,7 @@
     },
     {
       "test": "Public Zero-Auth Verification Portal",
-      "command": "GET /api/v1/verification/public/verify/b9dfaa4f-80ce-43ac-a5cb-f7536418724d",
+      "command": "GET /api/v1/verification/public/verify/b8180787-8b9d-4e2d-81a2-68bcd6edec17",
       "expected": "HTTP 200 + VERIFIED",
       "actual": "HTTP 200, verdict=VERIFIED",
       "status": "PASS",
@@ -438,7 +438,7 @@
       "test": "Authorize Append-Only Correction (Auditor)",
       "command": "POST /api/v1/corrections/{id}/authorize",
       "expected": "HTTP 200 + superseding record generated",
-      "actual": "HTTP 200, new_id=764b7208-25b9-4da2-84ab-c7ccf6ce73d5",
+      "actual": "HTTP 200, new_id=1e40f820-c772-4870-8fe8-7a7e2590203f",
       "status": "PASS",
       "severity": "CRITICAL",
       "details": {}
@@ -447,8 +447,8 @@
       "test": "Provenance Lineage Integrity",
       "command": "GET /api/v1/corrections/chain/{id}",
       "expected": "Original marked superseded, new version active",
-      "actual": "versions_count=3, orig_superseded=False",
-      "status": "FAIL",
+      "actual": "versions_count=2, orig_superseded=True",
+      "status": "PASS",
       "severity": "CRITICAL",
       "details": {}
     }
@@ -458,7 +458,7 @@
       "test": "Concurrent Compliance Summary (20 reqs)",
       "command": "20 concurrent GET /compliance/summary",
       "expected": "Average latency < 200ms",
-      "actual": "avg=524.39ms, total_wall_time=0.82s",
+      "actual": "avg=304.29ms, total_wall_time=0.42s",
       "status": "PARTIAL",
       "severity": "MEDIUM",
       "details": {}

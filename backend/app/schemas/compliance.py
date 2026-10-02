@@ -52,6 +52,7 @@ class ComplianceEvaluateRequest(BaseModel):
     facility_id: Optional[UUID] = None
     period_start: Optional[datetime] = None
     period_end: Optional[datetime] = None
+    parameters: Optional[Dict[str, float]] = None
 
 
 class ComplianceEvaluateResponse(BaseModel):
@@ -59,6 +60,7 @@ class ComplianceEvaluateResponse(BaseModel):
     compliance_result_id: Optional[UUID] = None
     treatment_record_id: Optional[UUID] = None
     compliance_status: str
+    overall_status: Optional[str] = None
     rule_version: str
     parameter_results: Dict[str, Any]
     evaluated_at: datetime
