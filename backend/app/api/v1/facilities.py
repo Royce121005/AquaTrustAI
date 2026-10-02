@@ -21,9 +21,13 @@ router = APIRouter(tags=["Facilities"])
     summary="List all registered treatment facilities",
     dependencies=[Depends(get_current_user_claims)],
 )
-def list_facilities(fac_repo: FacilityRepository = Depends(get_facility_repository)):
+def list_facilities(
+    limit: int = 500,
+    skip: int = 0,
+    fac_repo: FacilityRepository = Depends(get_facility_repository),
+):
     """List all registered wastewater treatment facilities."""
-    facilities = fac_repo.list()
+    facilities = fac_repo.list(skip=skip, limit=limit)
     return [
         FacilityResponse(
             facility_id=f.facility_id,
