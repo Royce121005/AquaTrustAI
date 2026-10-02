@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: iwm-bts-backend
+    runtime: python
+    plan: free
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt -r ../datasets/requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: APP_ENV
+        value: development
+      - key: DLT_MODE
+        value: SIMULATION
+      - key: CORS_ORIGINS
+        value: "*"
+      - key: DATABASE_URL
+        value: sqlite:///./aquatrust.db
