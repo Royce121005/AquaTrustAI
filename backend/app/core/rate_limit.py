@@ -14,13 +14,22 @@ from fastapi import Request, HTTPException, status
 class SlidingWindowRateLimiter:
     """Thread-safe in-memory sliding window rate limiter."""
 
-    def __init__(self, requests_per_minute: int = 120):
-        self.limit = requests_per_minute
-        self.window = 60.0  # seconds
+    def __init__(
+        self,
+        requests_per_minute: int = 120,
+        max_requests: int = None,
+        window_seconds: float = 60.0,
+        enabled: bool = True,
+    ):
+        self.limit = max_requests if max_requests is not None else requests_per_minute
+        self.window = float(window_seconds)
+        self.enabled = enabled
         self._history: Dict[str, List[float]] = defaultdict(list)
         self._lock = Lock()
 
     def check(self, key: str) -> bool:
+        if not self.enabled:
+            return True
         now = time.time()
         with self._lock:
             cutoff = now - self.window
@@ -31,6 +40,23 @@ class SlidingWindowRateLimiter:
             self._history[key].append(now)
             return True
 
+    def __call__(self, request: Request) -> bool:
+        if not self.enabled:
+            return True
+        headers = getattr(request, "headers", {}) or {}
+        forwarded = headers.get("X-Forwarded-For") if hasattr(headers, "get") else None
+        client_obj = getattr(request, "client", None)
+        client_ip = forwarded.split(",")[0].strip() if forwarded else (getattr(client_obj, "host", None) or "127.0.0.1")
+        if not self.check(client_ip):
+            raise HTTPException(
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                detail="Rate limit exceeded",
+                headers={"Retry-After": str(int(self.window))},
+            )
+        return True
+
+
+RateLimiter = SlidingWindowRateLimiter
 
 # Global rate limiter instances:
 # 1. Telemetry Ingestion: 120 requests per minute per client/gateway

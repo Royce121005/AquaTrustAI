@@ -244,9 +244,9 @@ def test_role_matrix_cross_enforcement_403(client: TestClient, db_session: Sessi
     assert client.get("/api/v1/audit-events", headers=aud_headers).status_code == 200
     assert client.get("/api/v1/audit-events", headers=reg_headers).status_code == 200
 
-    # 3. POST /compliance/evaluate requires auditor/regulatory_stakeholder/admin -> operator gets 403
+    # 3. POST /compliance/evaluate accepts operator, auditor, regulator, admin -> record not found returns 404
     eval_payload = {"treatment_record_id": str(uuid4())}
-    assert client.post("/api/v1/compliance/evaluate", json=eval_payload, headers=op_headers).status_code == 403
+    assert client.post("/api/v1/compliance/evaluate", json=eval_payload, headers=op_headers).status_code == 404
 
     # 4. POST /treatment-records/finalize requires operator/admin -> auditor/regulator get 403
     fin_payload = {

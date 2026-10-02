@@ -418,14 +418,8 @@ class ComplianceService:
                 "mean_value": float(obs_mean) if obs_mean is not None else float(norm_mean),
             }
 
-        # Dynamic determination of required parameters based on active rules for this evaluation
-        active_rule_params = {
-            (r.parameter or "").strip().upper()
-            for r in rules
-            if getattr(r, "active", True) and (r.parameter or "").strip()
-        }
-        # If rules provided, require all active rule parameters; otherwise fall back to standard CPCB set
-        required_parameters = active_rule_params if active_rule_params else MANDATORY_FINAL_EFFLUENT_PARAMETERS
+        # Required parameters for overall compliance evaluation
+        required_parameters = MANDATORY_FINAL_EFFLUENT_PARAMETERS
 
         # Overall Status Determination
         if has_non_compliant:
