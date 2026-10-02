@@ -170,7 +170,7 @@ class VerifierService:
                 anchor_status = anchor.anchor_status
             error_detail = "Record anchor not found on DLT ledger network"
 
-        stages["stage_4_dlt_anchor"] = {
+        stage_4_result = {
             "stage_name": "DLT Ledger Anchor Verification",
             "status": "passed" if stage4_pass else "failed",
             "details": {
@@ -181,6 +181,8 @@ class VerifierService:
                 "error": error_detail if not stage4_pass else None,
             },
         }
+        stages["stage_4_dlt_anchor"] = stage_4_result
+        stages["stage_4_dlt_ledger_anchor"] = stage_4_result
         if not stage4_pass:
             all_passed = False
 
