@@ -1,0 +1,170 @@
+/* AquaTrustAI — Industrial SCADA Digital Twin GPU Animations */
+
+@keyframes flowDash {
+  from {
+    stroke-dashoffset: 40;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes flowDashReverse {
+  from {
+    stroke-dashoffset: 0;
+  }
+  to {
+    stroke-dashoffset: 40;
+  }
+}
+
+@keyframes bubbleRise {
+  0% {
+    transform: translate3d(0, 0, 0) scale(0.7);
+    opacity: 0.2;
+  }
+  50% {
+    opacity: 0.9;
+  }
+  100% {
+    transform: translate3d(var(--drift-x, 2px), -55px, 0) scale(1.2);
+    opacity: 0;
+  }
+}
+
+@keyframes sludgeSettle {
+  0% {
+    transform: translate3d(0, 0, 0);
+    opacity: 0.8;
+  }
+  50% {
+    opacity: 0.9;
+  }
+  100% {
+    transform: translate3d(var(--settle-x, -4px), 45px, 0);
+    opacity: 0.2;
+  }
+}
+
+@keyframes waveRipple {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(-10px, 1.5px, 0);
+  }
+  100% {
+    transform: translate3d(-20px, 0, 0);
+  }
+}
+
+@keyframes turbineSpin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pulseRadar {
+  0% {
+    transform: scale(0.85);
+    opacity: 0.9;
+  }
+  70% {
+    opacity: 0.3;
+  }
+  100% {
+    transform: scale(2.2);
+    opacity: 0;
+  }
+}
+
+@keyframes shimmerGlow {
+  0%, 100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+/* SCADA Animation utility classes */
+.pipe-flow {
+  stroke-dasharray: 8 6;
+  animation: flowDash 1.2s linear infinite;
+  will-change: stroke-dashoffset;
+}
+
+.pipe-flow-fast {
+  stroke-dasharray: 8 6;
+  animation: flowDash 0.7s linear infinite;
+  will-change: stroke-dashoffset;
+}
+
+.pipe-flow-slow {
+  stroke-dasharray: 8 6;
+  animation: flowDash 2.2s linear infinite;
+  will-change: stroke-dashoffset;
+}
+
+.pipe-flow-ras {
+  stroke-dasharray: 7 5;
+  animation: flowDashReverse 1.5s linear infinite;
+  will-change: stroke-dashoffset;
+}
+
+.scada-bubble {
+  animation: bubbleRise 2s ease-in infinite;
+  will-change: transform, opacity;
+}
+
+.scada-sludge {
+  animation: sludgeSettle 3.2s ease-out infinite;
+  will-change: transform, opacity;
+}
+
+.scada-wave {
+  animation: waveRipple 3s ease-in-out infinite alternate;
+  will-change: transform;
+}
+
+.scada-turbine {
+  animation: turbineSpin 1.8s linear infinite;
+  transform-origin: center;
+  will-change: transform;
+}
+
+.scada-radar {
+  animation: pulseRadar 2s cubic-bezier(0.2, 0.8, 0.4, 1) infinite;
+  transform-origin: center;
+  will-change: transform, opacity;
+}
+
+.scada-shimmer {
+  animation: shimmerGlow 2.5s ease-in-out infinite;
+}
+
+/* Flow speed controls */
+.anim-paused * {
+  animation-play-state: paused !important;
+}
+
+.anim-fast .pipe-flow,
+.anim-fast .pipe-flow-ras {
+  animation-duration: 0.6s !important;
+}
+
+.anim-fast .scada-turbine {
+  animation-duration: 0.9s !important;
+}
+
+.anim-slow .pipe-flow,
+.anim-slow .pipe-flow-ras {
+  animation-duration: 2.5s !important;
+}
+
+.anim-slow .scada-turbine {
+  animation-duration: 3.5s !important;
+}

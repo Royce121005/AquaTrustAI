@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
@@ -11,6 +11,8 @@ import {
   CheckCircle2,
   HelpCircle,
   Play,
+  Pause,
+  Square,
   RotateCcw,
   ShieldAlert,
   Droplets,
@@ -18,6 +20,12 @@ import {
   Sliders,
   Check,
   RefreshCw,
+  Radio,
+  Wifi,
+  WifiOff,
+  Bell,
+  Gauge,
+  Sparkles,
 } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -37,7 +45,17 @@ import {
   getFacilityRecommendationsApi,
   getFacilitySustainabilityApi,
   runScenarioApi,
+  startTwinEngineApi,
+  stopTwinEngineApi,
+  pauseTwinEngineApi,
+  resumeTwinEngineApi,
+  getTwinEngineStatusApi,
 } from '../api/digitalTwin';
+import { useTwinStream } from '../hooks/useTwinStream';
+import { SynopticProcessFlow } from '../components/digitalTwin/SynopticProcessFlow';
+import { StageInspectionDrawer } from '../components/digitalTwin/StageInspectionDrawer';
+import { LiveTelemetryTrends } from '../components/digitalTwin/LiveTelemetryTrends';
+import { AlarmConsole } from '../components/digitalTwin/AlarmConsole';
 import { LoadingState, ErrorState } from '../components/common/States';
 import { useAuth } from '../context/AuthContext';
 import { ScenarioCreateRequest, ScenarioResponse } from '../types/digitalTwin';
@@ -77,7 +95,7 @@ export const DigitalTwinPage: React.FC = () => {
   const [selectedFacilityId, setSelectedFacilityId] = useState<string>(defaultFacilityId);
 
   // Sync state if facilities finish loading
-  React.useEffect(() => {
+  useEffect(() => {
     if (!selectedFacilityId && facilities.length > 0) {
       setSelectedFacilityId(facilities[0].facility_id);
     }
@@ -85,6 +103,9 @@ export const DigitalTwinPage: React.FC = () => {
 
   // Tab navigation
   const [activeTab, setActiveTab] = useState<'overview' | 'scenarios' | 'predictions' | 'sustainability'>('overview');
+
+  // Selected stage for inspection drawer
+  const [selectedStageId, setSelectedStageId] = useState<string | null>(null);
 
   // Scenario configuration state
   const [scenarioType, setScenarioType] = useState<ScenarioCreateRequest['scenario_type']>('influent_quality_change');
@@ -97,12 +118,34 @@ export const DigitalTwinPage: React.FC = () => {
   // Acknowledged recommendations state (local UI)
   const [acknowledgedRecs, setAcknowledgedRecs] = useState<Record<string, boolean>>({});
 
-  // Digital Twin queries
+  // Real-time WebSocket Twin Stream
+  const {
+    connectionState,
+    twinState: streamTwinState,
+    activeAlarms,
+    engineStatus: streamEngineStatus,
+    stateVersion: streamStateVersion,
+    lastMessageAt,
+    acknowledgeAlarm,
+    resync,
+    reconnect,
+  } = useTwinStream(selectedFacilityId, {
+    enabled: !!selectedFacilityId,
+  });
+
+  // REST Fallback Digital Twin queries
   const stateQuery = useQuery({
     queryKey: ['twin-state', selectedFacilityId],
     queryFn: () => getFacilityTwinStateApi(selectedFacilityId),
-    enabled: !!selectedFacilityId,
+    enabled: !!selectedFacilityId && !streamTwinState,
     refetchInterval: 30000,
+  });
+
+  const engineStatusQuery = useQuery({
+    queryKey: ['twin-engine-status', selectedFacilityId],
+    queryFn: () => getTwinEngineStatusApi(selectedFacilityId),
+    enabled: !!selectedFacilityId && !streamEngineStatus,
+    refetchInterval: 10000,
   });
 
   const predictionsQuery = useQuery({
@@ -123,6 +166,39 @@ export const DigitalTwinPage: React.FC = () => {
     enabled: !!selectedFacilityId && (activeTab === 'overview' || activeTab === 'sustainability'),
   });
 
+  // Engine Lifecycle Mutations
+  const startEngineMutation = useMutation({
+    mutationFn: () => startTwinEngineApi(selectedFacilityId, { interval_seconds: 1.0, operating_mode: 'simulation' }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['twin-engine-status', selectedFacilityId] });
+      resync();
+    },
+  });
+
+  const stopEngineMutation = useMutation({
+    mutationFn: () => stopTwinEngineApi(selectedFacilityId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['twin-engine-status', selectedFacilityId] });
+      resync();
+    },
+  });
+
+  const pauseEngineMutation = useMutation({
+    mutationFn: () => pauseTwinEngineApi(selectedFacilityId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['twin-engine-status', selectedFacilityId] });
+      resync();
+    },
+  });
+
+  const resumeEngineMutation = useMutation({
+    mutationFn: () => resumeTwinEngineApi(selectedFacilityId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['twin-engine-status', selectedFacilityId] });
+      resync();
+    },
+  });
+
   // What-If Scenario mutation
   const runScenarioMutation = useMutation({
     mutationFn: (payload: ScenarioCreateRequest) => runScenarioApi(selectedFacilityId, payload),
@@ -136,6 +212,7 @@ export const DigitalTwinPage: React.FC = () => {
     const newId = e.target.value;
     setSelectedFacilityId(newId);
     setScenarioResult(null);
+    setSelectedStageId(null);
     if (routeFacilityId) {
       navigate(`/facilities/${newId}/twin`);
     }
@@ -164,7 +241,12 @@ export const DigitalTwinPage: React.FC = () => {
   }
 
   const selectedFacility = facilities.find((f) => f.facility_id === selectedFacilityId);
-  const twinState = stateQuery.data;
+  const activeTwinState = streamTwinState || stateQuery.data;
+  const activeEngineStatus = streamEngineStatus || engineStatusQuery.data;
+
+  const currentLifecycle = activeEngineStatus?.lifecycle_state || 'stopped';
+  const currentMode = activeEngineStatus?.operating_mode || activeTwinState?.source_mode || 'simulation';
+  const effectiveVersion = streamStateVersion || activeTwinState?.state_version || 1;
 
   // Transform scenario results for Recharts
   const chartData = scenarioResult
@@ -180,63 +262,158 @@ export const DigitalTwinPage: React.FC = () => {
 
   return (
     <div className="space-y-6 pb-12">
-      {/* Top Header & Facility Selector */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-gray-200 pb-5">
-        <div>
-          <div className="flex items-center gap-2">
-            <Cpu className="h-7 w-7 text-indigo-600" />
-            <h1 className="text-2xl font-bold text-gray-900">Virtual STP Digital Twin</h1>
+      {/* ========================================================= */}
+      {/* GLOBAL SCADA OPERATIONS HEADER & CONTROLS                 */}
+      {/* ========================================================= */}
+      <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 shadow-xl flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+        {/* Left: Branding & Facility Select */}
+        <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+          <div className="flex items-center gap-2.5">
+            <div className="p-2.5 rounded-lg bg-sky-950/80 border border-sky-800 text-sky-400">
+              <Cpu className="h-6 w-6" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h1 className="text-xl font-bold text-slate-100">Virtual STP Digital Twin</h1>
+                {/* Real-Time Mode Badge */}
+                <span className="px-2 py-0.5 rounded text-[11px] font-mono font-bold uppercase bg-indigo-950 text-indigo-400 border border-indigo-800">
+                  [{currentMode.toUpperCase()}]
+                </span>
+              </div>
+              <p className="text-xs text-slate-400 mt-0.5">
+                Real-Time Animated Industrial SCADA Control Room & CPCB Compliance Gating
+              </p>
+            </div>
           </div>
-          <p className="text-sm text-gray-500 mt-1">
-            Real-time stateful digital twin, biological process kinetics, what-if scenario studio, and water recycling accounting.
-          </p>
+
+          {/* Facility Dropdown */}
+          <div className="flex items-center gap-2 sm:border-l sm:border-slate-800 sm:pl-4">
+            <select
+              id="facility-select"
+              value={selectedFacilityId}
+              onChange={handleFacilityChange}
+              className="rounded-lg border border-slate-700 bg-slate-950 text-slate-200 px-3 py-1.5 text-xs font-medium shadow-sm focus:border-sky-500 focus:outline-none"
+            >
+              {facilities.map((fac) => (
+                <option key={fac.facility_id} value={fac.facility_id}>
+                  {fac.facility_name} ({fac.capacity} {fac.capacity_unit})
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
 
-        <div className="flex items-center gap-3">
-          <label htmlFor="facility-select" className="text-sm font-medium text-gray-700 whitespace-nowrap">
-            Selected Facility:
-          </label>
-          <select
-            id="facility-select"
-            value={selectedFacilityId}
-            onChange={handleFacilityChange}
-            className="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-          >
-            {facilities.map((fac) => (
-              <option key={fac.facility_id} value={fac.facility_id}>
-                {fac.facility_name} ({fac.capacity} {fac.capacity_unit})
-              </option>
-            ))}
-          </select>
+        {/* Right: Engine Lifecycle Controls & Stream Indicator */}
+        <div className="flex flex-wrap items-center gap-3">
+          {/* Connection State Pill */}
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-xs font-mono">
+            {connectionState === 'connected' ? (
+              <>
+                <span className="flex h-2 w-2 relative">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                </span>
+                <span className="text-emerald-400 font-bold">STREAM LIVE</span>
+              </>
+            ) : connectionState === 'resyncing' ? (
+              <>
+                <RefreshCw className="w-3 h-3 text-amber-400 animate-spin" />
+                <span className="text-amber-400 font-bold">RESYNCING</span>
+              </>
+            ) : connectionState === 'connecting' ? (
+              <>
+                <RefreshCw className="w-3 h-3 text-sky-400 animate-spin" />
+                <span className="text-sky-400">CONNECTING</span>
+              </>
+            ) : (
+              <>
+                <WifiOff className="w-3 h-3 text-rose-400" />
+                <span className="text-rose-400">DISCONNECTED</span>
+              </>
+            )}
+            <span className="text-slate-600">|</span>
+            <span className="text-slate-300 font-bold">v{effectiveVersion}</span>
+          </div>
+
+          {/* Engine Lifecycle Controls */}
+          <div className="flex items-center gap-1 bg-slate-950 border border-slate-800 p-1 rounded-lg">
+            {currentLifecycle !== 'running' ? (
+              <button
+                onClick={() => {
+                  if (currentLifecycle === 'paused') {
+                    resumeEngineMutation.mutate();
+                  } else {
+                    startEngineMutation.mutate();
+                  }
+                }}
+                disabled={startEngineMutation.isPending || resumeEngineMutation.isPending}
+                className="flex items-center gap-1 px-3 py-1 rounded bg-emerald-600 hover:bg-emerald-500 text-white font-mono text-xs font-semibold shadow-sm transition-colors"
+                title={currentLifecycle === 'paused' ? 'Resume Engine' : 'Start Engine (1Hz)'}
+              >
+                <Play className="w-3.5 h-3.5 fill-current" />
+                <span>{currentLifecycle === 'paused' ? 'RESUME' : 'START'}</span>
+              </button>
+            ) : (
+              <button
+                onClick={() => pauseEngineMutation.mutate()}
+                disabled={pauseEngineMutation.isPending}
+                className="flex items-center gap-1 px-3 py-1 rounded bg-amber-600 hover:bg-amber-500 text-white font-mono text-xs font-semibold shadow-sm transition-colors"
+                title="Pause Engine"
+              >
+                <Pause className="w-3.5 h-3.5 fill-current" />
+                <span>PAUSE</span>
+              </button>
+            )}
+
+            <button
+              onClick={() => stopEngineMutation.mutate()}
+              disabled={stopEngineMutation.isPending || currentLifecycle === 'stopped'}
+              className="flex items-center gap-1 px-2.5 py-1 rounded hover:bg-slate-800 text-slate-300 disabled:opacity-40 font-mono text-xs font-semibold transition-colors"
+              title="Stop Engine"
+            >
+              <Square className="w-3.5 h-3.5 fill-current text-rose-400" />
+              <span>STOP</span>
+            </button>
+          </div>
+
+          {/* Manual Refresh / Reconnect */}
           <button
-            onClick={() => stateQuery.refetch()}
-            disabled={stateQuery.isFetching}
-            className="p-2 text-gray-500 hover:text-indigo-600 hover:bg-gray-100 rounded-md transition"
-            title="Refresh Virtual State"
+            onClick={() => {
+              reconnect();
+              stateQuery.refetch();
+            }}
+            className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors border border-slate-800"
+            title="Force Stream Reconnect & State Sync"
           >
-            <RefreshCw className={`h-5 w-5 ${stateQuery.isFetching ? 'animate-spin' : ''}`} />
+            <RefreshCw className="h-4 w-4" />
           </button>
         </div>
       </div>
 
-      {/* Facility Status Ribbon */}
-      {twinState && (
-        <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm flex flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center gap-6">
+      {/* Facility Status Summary Ribbon */}
+      {activeTwinState && (
+        <div className="bg-slate-900 border border-slate-800 rounded-lg p-3 text-xs flex flex-wrap items-center justify-between gap-3 text-slate-300">
+          <div className="flex items-center gap-6 flex-wrap">
             <div>
-              <span className="text-xs uppercase tracking-wider text-gray-400 font-semibold block">State Version</span>
-              <span className="text-lg font-bold text-indigo-600">v{twinState.state_version}</span>
+              <span className="text-[10px] uppercase font-bold text-slate-400 block">Facility Profile</span>
+              <span className="font-semibold text-slate-100">{selectedFacility?.facility_name || 'Central Delhi STP'}</span>
             </div>
             <div>
-              <span className="text-xs uppercase tracking-wider text-gray-400 font-semibold block">Technology</span>
-              <span className="text-sm font-medium text-gray-900 capitalize">
-                {selectedFacility?.facility_type?.replace('_', ' ') || 'Activated Sludge'}
+              <span className="text-[10px] uppercase font-bold text-slate-400 block">Technology</span>
+              <span className="font-medium text-slate-300 capitalize">
+                {selectedFacility?.facility_type?.replace('_', ' ') || 'Activated Sludge Process (ASP)'}
               </span>
             </div>
             <div>
-              <span className="text-xs uppercase tracking-wider text-gray-400 font-semibold block">Observed Clock</span>
-              <span className="text-sm font-medium text-gray-700">
-                {new Date(twinState.observed_at).toLocaleString()}
+              <span className="text-[10px] uppercase font-bold text-slate-400 block">Observed Clock</span>
+              <span className="font-mono text-slate-300">
+                {new Date(activeTwinState.observed_at).toLocaleTimeString([], { hour12: false })}
+              </span>
+            </div>
+            <div>
+              <span className="text-[10px] uppercase font-bold text-slate-400 block">Simulation Ticks</span>
+              <span className="font-mono font-bold text-sky-400">
+                {activeEngineStatus?.tick_count ?? 0} ticks
               </span>
             </div>
           </div>
@@ -244,63 +421,56 @@ export const DigitalTwinPage: React.FC = () => {
           <div className="flex items-center gap-3">
             {/* Freshness Badge */}
             <span
-              className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold ${
-                twinState.state_freshness === 'fresh'
-                  ? 'bg-emerald-100 text-emerald-800'
-                  : twinState.state_freshness === 'stale'
-                  ? 'bg-amber-100 text-amber-800'
-                  : 'bg-rose-100 text-rose-800'
+              className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold ${
+                activeTwinState.state_freshness === 'fresh'
+                  ? 'bg-emerald-950 text-emerald-300 border border-emerald-800'
+                  : activeTwinState.state_freshness === 'stale'
+                  ? 'bg-amber-950 text-amber-300 border border-amber-800'
+                  : 'bg-rose-950 text-rose-300 border border-rose-800'
               }`}
             >
               <span
                 className={`h-2 w-2 rounded-full ${
-                  twinState.state_freshness === 'fresh'
-                    ? 'bg-emerald-500 animate-pulse'
-                    : twinState.state_freshness === 'stale'
-                    ? 'bg-amber-500'
-                    : 'bg-rose-500'
+                  activeTwinState.state_freshness === 'fresh'
+                    ? 'bg-emerald-400 animate-pulse'
+                    : activeTwinState.state_freshness === 'stale'
+                    ? 'bg-amber-400'
+                    : 'bg-rose-400'
                 }`}
               />
-              {twinState.state_freshness === 'fresh'
+              {activeTwinState.state_freshness === 'fresh'
                 ? 'Live Synchronized'
-                : twinState.state_freshness === 'stale'
+                : activeTwinState.state_freshness === 'stale'
                 ? 'Telemetry Stale'
                 : 'Telemetry Expired'}
             </span>
 
             {/* Data Quality Badge */}
             <span
-              className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold ${
-                twinState.data_quality === 'valid'
-                  ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                  : twinState.data_quality === 'suspect'
-                  ? 'bg-amber-50 text-amber-700 border border-amber-200'
-                  : 'bg-rose-50 text-rose-700 border border-rose-200'
+              className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold ${
+                activeTwinState.data_quality === 'valid'
+                  ? 'bg-emerald-950 text-emerald-300 border border-emerald-800'
+                  : activeTwinState.data_quality === 'suspect'
+                  ? 'bg-amber-950 text-amber-300 border border-amber-800'
+                  : 'bg-rose-950 text-rose-300 border border-rose-800'
               }`}
             >
-              {twinState.data_quality === 'valid' ? (
-                <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
+              {activeTwinState.data_quality === 'valid' ? (
+                <CheckCircle2 className="h-3 w-3 text-emerald-400" />
               ) : (
-                <AlertTriangle className="h-3.5 w-3.5 text-amber-600" />
+                <AlertTriangle className="h-3 w-3 text-amber-400" />
               )}
-              Quality: {twinState.data_quality.toUpperCase()}
+              Quality: {activeTwinState.data_quality.toUpperCase()}
             </span>
-
-            {/* Model Hash Tooltip */}
-            {twinState.process_model?.configuration_hash && (
-              <span className="text-xs text-gray-400 font-mono hidden lg:inline" title={twinState.process_model.configuration_hash}>
-                Hash: {twinState.process_model.configuration_hash.substring(0, 10)}...
-              </span>
-            )}
           </div>
         </div>
       )}
 
-      {/* Tabs */}
-      <div className="border-b border-gray-200">
-        <nav className="flex space-x-8">
+      {/* Nav Tabs */}
+      <div className="border-b border-slate-800">
+        <nav className="flex space-x-6">
           {[
-            { id: 'overview', label: 'Plant Stages & Flow', icon: Layers },
+            { id: 'overview', label: 'Animated Process SCADA Canvas', icon: Layers },
             { id: 'scenarios', label: 'What-If Scenario Studio', icon: Sliders },
             { id: 'predictions', label: 'Forward Predictive Horizon', icon: TrendingUp },
             { id: 'sustainability', label: 'Water Recycling & Reuse', icon: Droplets },
@@ -311,10 +481,10 @@ export const DigitalTwinPage: React.FC = () => {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as typeof activeTab)}
-                className={`flex items-center gap-2 py-4 px-1 border-b-2 font-medium text-sm transition ${
+                className={`flex items-center gap-2 py-3 px-1 border-b-2 font-medium text-sm transition-colors ${
                   isSelected
-                    ? 'border-indigo-600 text-indigo-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    ? 'border-sky-500 text-sky-400 font-bold'
+                    : 'border-transparent text-slate-400 hover:text-slate-200 hover:border-slate-700'
                 }`}
               >
                 <Icon className="h-4 w-4" />
@@ -325,136 +495,55 @@ export const DigitalTwinPage: React.FC = () => {
         </nav>
       </div>
 
-      {/* TAB 1: Plant Stages & Flow Overview */}
+      {/* ========================================================= */}
+      {/* TAB 1: ANIMATED PROCESS SCADA CANVAS & LIVE TELEMETRY     */}
+      {/* ========================================================= */}
       {activeTab === 'overview' && (
         <div className="space-y-6">
-          {/* Data Origin Taxonomy Legend */}
-          <div className="bg-gray-50 border border-gray-200 rounded-md p-3 flex flex-wrap items-center justify-between gap-3 text-xs text-gray-600">
-            <span className="font-semibold text-gray-700">Data Origin Taxonomy:</span>
-            <div className="flex items-center gap-4">
-              <span className="inline-flex items-center gap-1 font-medium text-emerald-700">
-                <span className="h-2.5 w-2.5 rounded-full bg-emerald-500" />
-                [OBSERVED] Telemetry
-              </span>
-              <span className="inline-flex items-center gap-1 font-medium text-blue-700">
-                <span className="h-2.5 w-2.5 rounded-full bg-blue-500" />
-                [SIMULATED] Process Kinetics
-              </span>
-              <span className="inline-flex items-center gap-1 font-medium text-purple-700">
-                <span className="h-2.5 w-2.5 rounded-full bg-purple-500" />
-                [PREDICTED] Forward Forecast
-              </span>
-              <span className="inline-flex items-center gap-1 font-medium text-amber-700">
-                <span className="h-2.5 w-2.5 rounded-full bg-amber-500" />
-                [WHAT-IF] Isolated Scenario
-              </span>
-            </div>
-          </div>
+          {/* PRIMARY VIEWPORT: MASTER INDUSTRIAL SYNOPTIC PROCESS FLOW */}
+          <SynopticProcessFlow
+            twinState={activeTwinState || null}
+            activeAlarms={activeAlarms}
+            selectedStageId={selectedStageId}
+            onSelectStage={(stageId) => setSelectedStageId(stageId)}
+            isLoading={stateQuery.isLoading && !activeTwinState}
+          />
 
-          {/* 5-Stage Process Flow Diagram */}
-          {stateQuery.isLoading ? (
-            <LoadingState message="Calculating virtual treatment stages..." />
-          ) : stateQuery.isError ? (
-            <ErrorState error={stateQuery.error as Error} />
-          ) : twinState?.stage_states ? (
-            <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
-              {[
-                { id: 'inlet', title: '1. Raw Influent', desc: 'Raw wastewater inlet' },
-                { id: 'primary_clarifier', title: '2. Primary Clarifier', desc: 'Gravitational solids settling' },
-                { id: 'biological_aeration', title: '3. Biological Aeration', desc: 'Activated sludge oxidation' },
-                { id: 'secondary_clarifier', title: '4. Secondary Clarifier', desc: 'Biomass clarification' },
-                { id: 'final_effluent', title: '5. Final Effluent', desc: 'Treated discharge point' },
-              ].map((stageMeta, idx) => {
-                const stageData = twinState.stage_states[stageMeta.id];
-                const isFinal = stageMeta.id === 'final_effluent';
-                const isAeration = stageMeta.id === 'biological_aeration';
+          {/* Contextual Stage Inspection Drawer (Slide-Over) */}
+          <StageInspectionDrawer
+            stageId={selectedStageId}
+            twinState={activeTwinState || null}
+            alarms={activeAlarms}
+            onClose={() => setSelectedStageId(null)}
+            onAcknowledgeAlarm={acknowledgeAlarm}
+          />
 
-                return (
-                  <div
-                    key={stageMeta.id}
-                    className={`rounded-lg border p-4 bg-white shadow-sm flex flex-col justify-between transition hover:shadow-md ${
-                      isFinal
-                        ? 'border-indigo-300 ring-1 ring-indigo-200 bg-indigo-50/20'
-                        : 'border-gray-200'
-                    }`}
-                  >
-                    <div>
-                      <div className="flex items-center justify-between pb-2 border-b border-gray-100">
-                        <span className="text-xs font-bold text-gray-800">{stageMeta.title}</span>
-                        {idx < 4 && <ArrowRight className="h-3.5 w-3.5 text-gray-400 hidden md:inline" />}
-                      </div>
-                      <p className="text-[11px] text-gray-400 mt-1">{stageMeta.desc}</p>
+          {/* 1Hz Live Telemetry Trends (Rolling Sparklines) */}
+          <LiveTelemetryTrends twinState={activeTwinState || null} maxPoints={45} />
 
-                      {stageData?.parameters ? (
-                        <div className="mt-4 space-y-2 text-xs">
-                          <div className="flex justify-between items-center">
-                            <span className="text-gray-500">BOD:</span>
-                            <span className="font-semibold text-gray-900">
-                              {getParamDisplay(stageData.parameters.bod, 1)} <span className="text-[10px] text-gray-400">{getParamUnit(stageData.parameters.bod, 'mg/L')}</span>
-                            </span>
-                          </div>
-                          <div className="flex justify-between items-center">
-                            <span className="text-gray-500">COD:</span>
-                            <span className="font-semibold text-gray-900">
-                              {getParamDisplay(stageData.parameters.cod, 1)} <span className="text-[10px] text-gray-400">{getParamUnit(stageData.parameters.cod, 'mg/L')}</span>
-                            </span>
-                          </div>
-                          <div className="flex justify-between items-center">
-                            <span className="text-gray-500">TSS:</span>
-                            <span className="font-semibold text-gray-900">
-                              {getParamDisplay(stageData.parameters.tss, 1)} <span className="text-[10px] text-gray-400">{getParamUnit(stageData.parameters.tss, 'mg/L')}</span>
-                            </span>
-                          </div>
-                          <div className="flex justify-between items-center">
-                            <span className="text-gray-500">pH:</span>
-                            <span className="font-semibold text-gray-900">{getParamDisplay(stageData.parameters.ph, 2)}</span>
-                          </div>
-                          <div className="flex justify-between items-center">
-                            <span className="text-gray-500">NH4-N:</span>
-                            <span className="font-semibold text-gray-900">
-                              {getParamDisplay(stageData.parameters.nh4_n, 1)} <span className="text-[10px] text-gray-400">{getParamUnit(stageData.parameters.nh4_n, 'mg/L')}</span>
-                            </span>
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="mt-4 text-xs text-gray-400 italic">No stage telemetry</div>
-                      )}
-                    </div>
-
-                    {isAeration && (stageData.operating_variables || twinState.operating_variables) && (
-                      <div className="mt-3 pt-2 border-t border-gray-100 text-[10px] text-gray-500 space-y-0.5">
-                        <div>HRT: {String((stageData.operating_variables as any)?.hrt_hours ?? (twinState.operating_variables as any)?.hrt_hours ?? '8.0')}h</div>
-                        <div>DO Setpoint: {String((stageData.operating_variables as any)?.do_mg_l ?? (twinState.operating_variables as any)?.do_mg_l ?? '2.0')} mg/L</div>
-                        <div>Temp: {String((stageData.operating_variables as any)?.temperature_c ?? (twinState.operating_variables as any)?.temperature_c ?? '20')}°C</div>
-                      </div>
-                    )}
-
-                    {isFinal && twinState.process_model?.overall_removal_efficiencies?.bod_removal_percent != null && (
-                      <div className="mt-3 pt-2 border-t border-indigo-100 text-[11px] font-medium text-indigo-700">
-                        Overall BOD Removal:{' '}
-                        {twinState.process_model.overall_removal_efficiencies.bod_removal_percent.toFixed(1)}%
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          ) : null}
+          {/* Live SCADA Alarms & Compliance Event Console */}
+          <AlarmConsole
+            alarms={activeAlarms}
+            onAcknowledge={acknowledgeAlarm}
+            isLoading={false}
+          />
 
           {/* Operational Advisory Recommendations */}
-          <div className="bg-white border border-gray-200 rounded-lg p-5 shadow-sm space-y-4">
+          <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-sm space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <ShieldAlert className="h-5 w-5 text-indigo-600" />
-                <h3 className="text-base font-bold text-gray-900">Active Operational Recommendations</h3>
+                <ShieldAlert className="h-5 w-5 text-sky-400" />
+                <h3 className="text-sm font-bold text-slate-100 uppercase tracking-wide">
+                  Active Operational Recommendations
+                </h3>
               </div>
-              <span className="text-xs bg-indigo-50 text-indigo-700 px-2.5 py-1 rounded font-medium">
+              <span className="text-xs bg-sky-950 text-sky-300 border border-sky-800 px-2.5 py-1 rounded font-medium">
                 Advisory Only — Requires Human Approval
               </span>
             </div>
 
             {recommendationsQuery.isLoading ? (
-              <p className="text-sm text-gray-500">Checking plant operating constraints...</p>
+              <p className="text-sm text-slate-400">Checking plant operating constraints...</p>
             ) : recommendationsQuery.data && recommendationsQuery.data.length > 0 ? (
               <div className="space-y-3">
                 {recommendationsQuery.data.map((rec) => {
@@ -462,8 +551,10 @@ export const DigitalTwinPage: React.FC = () => {
                   return (
                     <div
                       key={rec.recommendation_id}
-                      className={`border rounded-md p-4 transition ${
-                        isAcknowledged ? 'bg-gray-50 border-gray-200 opacity-60' : 'bg-white border-indigo-100 shadow-sm'
+                      className={`border rounded-lg p-4 transition ${
+                        isAcknowledged
+                          ? 'bg-slate-950/40 border-slate-800 opacity-60'
+                          : 'bg-slate-950 border-slate-800 shadow-sm'
                       }`}
                     >
                       <div className="flex items-start justify-between gap-4">
@@ -472,26 +563,26 @@ export const DigitalTwinPage: React.FC = () => {
                             <span
                               className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded ${
                                 rec.priority === 'urgent'
-                                  ? 'bg-rose-100 text-rose-800'
+                                  ? 'bg-rose-950 text-rose-300 border border-rose-800'
                                   : rec.priority === 'high'
-                                  ? 'bg-amber-100 text-amber-800'
-                                  : 'bg-indigo-100 text-indigo-800'
+                                  ? 'bg-amber-950 text-amber-300 border border-amber-800'
+                                  : 'bg-indigo-950 text-indigo-300 border border-indigo-800'
                               }`}
                             >
                               {rec.priority}
                             </span>
-                            <h4 className="text-sm font-semibold text-gray-900">{rec.suggested_action}</h4>
+                            <h4 className="text-sm font-semibold text-slate-100">{rec.suggested_action}</h4>
                           </div>
-                          <p className="text-xs text-gray-600">{rec.expected_outcome}</p>
-                          <div className="text-[11px] text-gray-400 mt-2">
-                            <span className="font-medium text-gray-500">Evidence: </span>
+                          <p className="text-xs text-slate-400">{rec.expected_outcome}</p>
+                          <div className="text-[11px] text-slate-500 mt-2">
+                            <span className="font-medium text-slate-400">Evidence: </span>
                             {rec.evidence.join('; ')}
                           </div>
                         </div>
 
                         <div>
                           {isAcknowledged ? (
-                            <span className="inline-flex items-center gap-1 text-xs text-emerald-600 font-semibold">
+                            <span className="inline-flex items-center gap-1 text-xs text-emerald-400 font-semibold">
                               <Check className="h-4 w-4" /> Confirmed
                             </span>
                           ) : (
@@ -499,7 +590,7 @@ export const DigitalTwinPage: React.FC = () => {
                               onClick={() =>
                                 setAcknowledgedRecs((prev) => ({ ...prev, [rec.recommendation_id]: true }))
                               }
-                              className="px-3 py-1.5 text-xs font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded shadow-sm transition"
+                              className="px-3 py-1.5 text-xs font-medium text-white bg-sky-600 hover:bg-sky-500 rounded-lg shadow-sm transition"
                             >
                               Acknowledge
                             </button>
@@ -511,7 +602,7 @@ export const DigitalTwinPage: React.FC = () => {
                 })}
               </div>
             ) : (
-              <p className="text-sm text-gray-500 italic">
+              <p className="text-xs text-slate-400 italic">
                 All operating variables and biological stages are currently within optimal kinetic envelopes.
               </p>
             )}
@@ -519,27 +610,29 @@ export const DigitalTwinPage: React.FC = () => {
         </div>
       )}
 
-      {/* TAB 2: What-If Scenario Simulation Studio */}
+      {/* ========================================================= */}
+      {/* TAB 2: WHAT-IF SCENARIO SIMULATION STUDIO                 */}
+      {/* ========================================================= */}
       {activeTab === 'scenarios' && (
         <div className="space-y-6">
-          <div className="bg-amber-50 border-l-4 border-amber-400 p-4 rounded-r-md">
+          <div className="bg-amber-950/40 border-l-4 border-amber-500 p-4 rounded-r-lg">
             <div className="flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-amber-600" />
-              <h4 className="text-sm font-bold text-amber-800">Isolated What-If Simulation Sandbox</h4>
+              <AlertTriangle className="h-5 w-5 text-amber-400" />
+              <h4 className="text-sm font-bold text-amber-200">Isolated What-If Simulation Sandbox</h4>
             </div>
-            <p className="text-xs text-amber-700 mt-1">
-              Scenarios run in total isolation on copies of virtual state. They explore hypothetical plant behavior and
+            <p className="text-xs text-amber-300/80 mt-1">
+              Scenarios run in total isolation on virtual state copies. They explore hypothetical plant behavior and
               <strong> do not</strong> overwrite observed measurements, modify accepted state, or generate regulatory
               compliance certificates.
             </p>
           </div>
 
           {/* Scenario Configuration Controls */}
-          <div className="bg-white border border-gray-200 rounded-lg p-5 shadow-sm space-y-4">
-            <h3 className="text-base font-bold text-gray-900">Define Scenario Parameters</h3>
+          <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-sm space-y-4">
+            <h3 className="text-base font-bold text-slate-100">Define Scenario Parameters</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <label className="text-xs font-semibold text-gray-700 block mb-1">Scenario Type</label>
+                <label className="text-xs font-semibold text-slate-300 block mb-1">Scenario Type</label>
                 <select
                   value={scenarioType}
                   onChange={(e) => {
@@ -550,7 +643,7 @@ export const DigitalTwinPage: React.FC = () => {
                     else if (t === 'hydraulic_surge') setScenarioName('Stormwater Hydraulic Surge (Flow 2x)');
                     else setScenarioName('Chemical Coagulant Overdosing');
                   }}
-                  className="w-full text-sm rounded-md border border-gray-300 p-2 focus:ring-1 focus:ring-indigo-500"
+                  className="w-full text-sm rounded-lg border border-slate-700 bg-slate-950 text-slate-200 p-2 focus:ring-1 focus:ring-sky-500"
                 >
                   <option value="influent_quality_change">Influent Quality Shock (Organic Overload)</option>
                   <option value="aeration_failure">Aeration Failure (Blower Outage)</option>
@@ -560,21 +653,21 @@ export const DigitalTwinPage: React.FC = () => {
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-gray-700 block mb-1">Scenario Name</label>
+                <label className="text-xs font-semibold text-slate-300 block mb-1">Scenario Name</label>
                 <input
                   type="text"
                   value={scenarioName}
                   onChange={(e) => setScenarioName(e.target.value)}
-                  className="w-full text-sm rounded-md border border-gray-300 p-2 focus:ring-1 focus:ring-indigo-500"
+                  className="w-full text-sm rounded-lg border border-slate-700 bg-slate-950 text-slate-200 p-2 focus:ring-1 focus:ring-sky-500"
                 />
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-gray-700 block mb-1">Duration (Minutes)</label>
+                <label className="text-xs font-semibold text-slate-300 block mb-1">Duration (Minutes)</label>
                 <select
                   value={durationMinutes}
                   onChange={(e) => setDurationMinutes(Number(e.target.value))}
-                  className="w-full text-sm rounded-md border border-gray-300 p-2 focus:ring-1 focus:ring-indigo-500"
+                  className="w-full text-sm rounded-lg border border-slate-700 bg-slate-950 text-slate-200 p-2 focus:ring-1 focus:ring-sky-500"
                 >
                   <option value={60}>60 Minutes (4 steps)</option>
                   <option value={120}>120 Minutes (8 steps)</option>
@@ -586,9 +679,9 @@ export const DigitalTwinPage: React.FC = () => {
             {/* Dynamic Slider based on type */}
             {scenarioType === 'influent_quality_change' && (
               <div>
-                <div className="flex justify-between text-xs font-semibold text-gray-700 mb-1">
+                <div className="flex justify-between text-xs font-semibold text-slate-300 mb-1">
                   <span>Influent BOD Shock Percentage</span>
-                  <span className="text-indigo-600">+{bodChange}%</span>
+                  <span className="text-sky-400">+{bodChange}%</span>
                 </div>
                 <input
                   type="range"
@@ -597,16 +690,16 @@ export const DigitalTwinPage: React.FC = () => {
                   step="5"
                   value={bodChange}
                   onChange={(e) => setBodChange(Number(e.target.value))}
-                  className="w-full accent-indigo-600 cursor-pointer"
+                  className="w-full accent-sky-500 cursor-pointer"
                 />
               </div>
             )}
 
             {scenarioType === 'aeration_failure' && (
               <div>
-                <div className="flex justify-between text-xs font-semibold text-gray-700 mb-1">
+                <div className="flex justify-between text-xs font-semibold text-slate-300 mb-1">
                   <span>Dissolved Oxygen Reduction Percentage</span>
-                  <span className="text-rose-600">-{doDrop}%</span>
+                  <span className="text-rose-400">-{doDrop}%</span>
                 </div>
                 <input
                   type="range"
@@ -615,7 +708,7 @@ export const DigitalTwinPage: React.FC = () => {
                   step="5"
                   value={doDrop}
                   onChange={(e) => setDoDrop(Number(e.target.value))}
-                  className="w-full accent-rose-600 cursor-pointer"
+                  className="w-full accent-rose-500 cursor-pointer"
                 />
               </div>
             )}
@@ -623,7 +716,7 @@ export const DigitalTwinPage: React.FC = () => {
             <button
               onClick={handleExecuteScenario}
               disabled={runScenarioMutation.isPending}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-md shadow-sm transition disabled:opacity-50"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-sky-600 hover:bg-sky-500 text-white text-sm font-semibold rounded-lg shadow-sm transition disabled:opacity-50"
             >
               <Play className="h-4 w-4" />
               {runScenarioMutation.isPending ? 'Simulating Kinetics...' : 'Execute What-If Scenario'}
@@ -632,11 +725,11 @@ export const DigitalTwinPage: React.FC = () => {
 
           {/* Scenario Results Comparative Visualization */}
           {scenarioResult && (
-            <div className="bg-white border border-gray-200 rounded-lg p-5 shadow-sm space-y-4">
+            <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-sm space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-base font-bold text-gray-900">Effluent BOD Trajectory Comparison</h3>
-                  <p className="text-xs text-gray-500">
+                  <h3 className="text-base font-bold text-slate-100">Effluent BOD Trajectory Comparison</h3>
+                  <p className="text-xs text-slate-400">
                     Baseline accepted state vs. Simulated what-if perturbation across forward timeline.
                   </p>
                 </div>
@@ -644,8 +737,8 @@ export const DigitalTwinPage: React.FC = () => {
                   <span
                     className={`px-3 py-1 text-xs font-bold rounded-full ${
                       scenarioResult.comparison_summary.compliance_risk_detected
-                        ? 'bg-rose-100 text-rose-800'
-                        : 'bg-emerald-100 text-emerald-800'
+                        ? 'bg-rose-950 text-rose-300 border border-rose-800'
+                        : 'bg-emerald-950 text-emerald-300 border border-emerald-800'
                     }`}
                   >
                     {scenarioResult.comparison_summary.compliance_risk_detected
@@ -658,14 +751,16 @@ export const DigitalTwinPage: React.FC = () => {
               <div className="h-72 w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={chartData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                    <XAxis dataKey="time" stroke="#888888" fontSize={12} />
+                    <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
+                    <XAxis dataKey="time" stroke="#64748b" fontSize={12} />
                     <YAxis
-                      stroke="#888888"
+                      stroke="#64748b"
                       fontSize={12}
-                      label={{ value: 'BOD (mg/L)', angle: -90, position: 'insideLeft', offset: 10 }}
+                      label={{ value: 'BOD (mg/L)', angle: -90, position: 'insideLeft', offset: 10, fill: '#94a3b8' }}
                     />
-                    <Tooltip />
+                    <Tooltip
+                      contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', color: '#f8fafc' }}
+                    />
                     <Legend />
                     <Line
                       type="monotone"
@@ -701,18 +796,20 @@ export const DigitalTwinPage: React.FC = () => {
         </div>
       )}
 
-      {/* TAB 3: Forward Predictive Horizon */}
+      {/* ========================================================= */}
+      {/* TAB 3: FORWARD PREDICTIVE HORIZON                         */}
+      {/* ========================================================= */}
       {activeTab === 'predictions' && (
         <div className="space-y-6">
-          <div className="bg-white border border-gray-200 rounded-lg p-5 shadow-sm space-y-4">
+          <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-sm space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-base font-bold text-gray-900">Steady-State Effluent Projection</h3>
-                <p className="text-xs text-gray-500">
+                <h3 className="text-base font-bold text-slate-100">Steady-State Effluent Projection</h3>
+                <p className="text-xs text-slate-400">
                   Evidence-gated effluent estimates calculated via first-principles CSTR kinetics with empirical holdout uncertainty bounds (±1.96 RMSE).
                 </p>
               </div>
-              <span className="text-xs bg-purple-100 text-purple-800 px-2.5 py-1 rounded font-semibold">
+              <span className="text-xs bg-purple-950 text-purple-300 border border-purple-800 px-2.5 py-1 rounded font-semibold">
                 [KINETIC PROJECTION]
               </span>
             </div>
@@ -720,8 +817,8 @@ export const DigitalTwinPage: React.FC = () => {
             {predictionsQuery.isLoading ? (
               <LoadingState message="Computing forward estimates..." />
             ) : predictionsQuery.data?.status === 'insufficient_data' ? (
-              <div className="bg-amber-50 border border-amber-200 rounded p-4 text-xs text-amber-800 flex items-center gap-2">
-                <AlertTriangle className="h-5 w-5 text-amber-600" />
+              <div className="bg-amber-950/40 border border-amber-800 rounded p-4 text-xs text-amber-300 flex items-center gap-2">
+                <AlertTriangle className="h-5 w-5 text-amber-400" />
                 <span>
                   Forward prediction gated: mandatory influent features are incomplete or pending validation.
                 </span>
@@ -733,13 +830,13 @@ export const DigitalTwinPage: React.FC = () => {
                   const valDisplay = typeof pVal === 'number' ? pVal : (pVal as any)?.value ?? '—';
                   const unitDisplay = typeof pVal === 'object' && (pVal as any)?.unit ? (pVal as any).unit : 'mg/L';
                   return (
-                    <div key={param} className="border border-purple-100 bg-purple-50/20 rounded-lg p-4 shadow-sm">
-                      <span className="text-xs uppercase font-bold text-purple-700">{param.toUpperCase()}</span>
-                      <div className="text-2xl font-extrabold text-gray-900 mt-1">
-                        {valDisplay} <span className="text-xs font-normal text-gray-500">{unitDisplay}</span>
+                    <div key={param} className="border border-purple-900/60 bg-purple-950/20 rounded-lg p-4 shadow-sm">
+                      <span className="text-xs uppercase font-bold text-purple-400">{param.toUpperCase()}</span>
+                      <div className="text-2xl font-extrabold text-slate-100 mt-1 font-mono">
+                        {valDisplay} <span className="text-xs font-normal text-slate-500">{unitDisplay}</span>
                       </div>
                       {bounds && bounds.lower_bound != null && bounds.upper_bound != null && (
-                        <div className="text-[11px] text-gray-500 mt-2">
+                        <div className="text-[11px] text-slate-400 mt-2 font-mono">
                           95% Confidence: [{bounds.lower_bound} – {bounds.upper_bound}]
                         </div>
                       )}
@@ -752,54 +849,56 @@ export const DigitalTwinPage: React.FC = () => {
         </div>
       )}
 
-      {/* TAB 4: Water Recycling & Sustainability */}
+      {/* ========================================================= */}
+      {/* TAB 4: WATER RECYCLING & SUSTAINABILITY                   */}
+      {/* ========================================================= */}
       {activeTab === 'sustainability' && (
         <div className="space-y-6">
           {sustainabilityQuery.isLoading ? (
             <LoadingState message="Calculating water reuse metrics..." />
           ) : sustainabilityQuery.data ? (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="bg-white border border-gray-200 rounded-lg p-5 shadow-sm space-y-2">
-                <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Daily Reclaimed Water</span>
-                <div className="text-3xl font-extrabold text-indigo-600">
+              <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-sm space-y-2">
+                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Daily Reclaimed Water</span>
+                <div className="text-3xl font-extrabold text-sky-400 font-mono">
                   {sustainabilityQuery.data.reuse_volume_m3_day != null ? sustainabilityQuery.data.reuse_volume_m3_day.toLocaleString() : '—'}{' '}
-                  <span className="text-sm font-normal text-gray-500">m³/day</span>
+                  <span className="text-sm font-normal text-slate-500 font-sans">m³/day</span>
                 </div>
-                <p className="text-xs text-gray-500">Based on 75% reuse allocation from operational STP throughput.</p>
+                <p className="text-xs text-slate-400">Based on 75% reuse allocation from operational STP throughput.</p>
               </div>
 
-              <div className="bg-white border border-gray-200 rounded-lg p-5 shadow-sm space-y-2">
-                <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Annual Freshwater Saved</span>
-                <div className="text-3xl font-extrabold text-emerald-600">
+              <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-sm space-y-2">
+                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Annual Freshwater Saved</span>
+                <div className="text-3xl font-extrabold text-emerald-400 font-mono">
                   {sustainabilityQuery.data.annual_freshwater_saved_m3 != null ? sustainabilityQuery.data.annual_freshwater_saved_m3.toLocaleString() : '—'}{' '}
-                  <span className="text-sm font-normal text-gray-500">m³/year</span>
+                  <span className="text-sm font-normal text-slate-500 font-sans">m³/year</span>
                 </div>
-                <p className="text-xs text-gray-500">Displaces municipal freshwater extraction for non-potable needs.</p>
+                <p className="text-xs text-slate-400">Displaces municipal freshwater extraction for non-potable needs.</p>
               </div>
 
-              <div className="bg-white border border-gray-200 rounded-lg p-5 shadow-sm space-y-2">
-                <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Safe Reuse Gate</span>
+              <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-sm space-y-2">
+                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Safe Reuse Gate</span>
                 <div className="flex items-center gap-2">
                   <span
-                    className={`inline-flex items-center gap-1 text-xl font-extrabold px-3 py-1 rounded-md ${
+                    className={`inline-flex items-center gap-1 text-xl font-extrabold px-3 py-1 rounded-lg ${
                       sustainabilityQuery.data.safe_reuse_gate === 'PASSED'
-                        ? 'bg-emerald-100 text-emerald-800'
-                        : 'bg-amber-100 text-amber-800'
+                        ? 'bg-emerald-950 text-emerald-300 border border-emerald-800'
+                        : 'bg-amber-950 text-amber-300 border border-amber-800'
                     }`}
                   >
                     <CheckCircle2 className="h-5 w-5" />
                     {sustainabilityQuery.data.safe_reuse_gate ?? 'HELD'}
                   </span>
                 </div>
-                <p className="text-xs text-gray-500">CPCB non-potable reuse standard verification.</p>
+                <p className="text-xs text-slate-400">CPCB non-potable reuse standard verification.</p>
               </div>
 
-              <div className="md:col-span-3 bg-white border border-gray-200 rounded-lg p-5 shadow-sm space-y-3">
-                <h4 className="text-sm font-bold text-gray-900">Approved Non-Potable Water Reuse Applications</h4>
+              <div className="md:col-span-3 bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-sm space-y-3">
+                <h4 className="text-sm font-bold text-slate-100">Approved Non-Potable Water Reuse Applications</h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {sustainabilityQuery.data.reuse_applications?.map((app, idx) => (
-                    <div key={idx} className="flex items-center gap-2 text-xs text-gray-700 bg-gray-50 p-2.5 rounded">
-                      <Droplets className="h-4 w-4 text-indigo-500 flex-shrink-0" />
+                    <div key={idx} className="flex items-center gap-2 text-xs text-slate-300 bg-slate-950 border border-slate-800 p-2.5 rounded-lg">
+                      <Droplets className="h-4 w-4 text-sky-400 flex-shrink-0" />
                       <span>{app}</span>
                     </div>
                   ))}

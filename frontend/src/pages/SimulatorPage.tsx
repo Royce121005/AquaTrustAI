@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   getSimulatorStatusApi,
@@ -20,6 +21,7 @@ import {
   Layers,
   Cpu,
   CheckCircle2,
+  ArrowRight,
 } from 'lucide-react';
 
 const AUTHORIZED_ANOMALY_SCENARIOS = [
@@ -185,6 +187,35 @@ export const SimulatorPage: React.FC = () => {
           Notice: {wsError}. HTTP polling fallback active.
         </div>
       )}
+
+      {/* Digital Twin Real-Time Sync Banner */}
+      <div className="bg-slate-900 border border-slate-800 rounded-lg p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-slate-200">
+        <div className="flex items-center gap-3">
+          <div className="p-2 rounded-lg bg-sky-950 border border-sky-800 text-sky-400">
+            <Cpu className="w-5 h-5 animate-pulse" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold uppercase tracking-wider text-sky-400">
+                Digital Twin SCADA Synchronization
+              </span>
+              <span className="px-1.5 py-0.5 rounded text-[10px] font-mono bg-emerald-950 text-emerald-400 border border-emerald-800">
+                SYNCHRONIZED
+              </span>
+            </div>
+            <p className="text-xs text-slate-400 mt-0.5">
+              Live telemetry is automatically mapped to virtual treatment basins in the 5-stage animated SCADA control room.
+            </p>
+          </div>
+        </div>
+        <Link
+          to={sim?.active_facility_id ? `/facilities/${sim.active_facility_id}/twin` : (facilities && facilities.length > 0 ? `/facilities/${facilities[0].facility_id}/twin` : '/facilities')}
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-sky-600 hover:bg-sky-500 text-white text-xs font-semibold shadow-sm transition-colors whitespace-nowrap self-start sm:self-auto"
+        >
+          <span>Open SCADA Control Room</span>
+          <ArrowRight className="w-3.5 h-3.5" />
+        </Link>
+      </div>
 
       {/* Simulator Runtime State */}
       <div className="bg-white border border-slate-200 rounded-lg p-6 shadow-sm">

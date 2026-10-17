@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { ApiClientError, setStoredToken, getStoredToken, TOKEN_STORAGE_KEY } from '../api/client';
 import {
   DltModeBadge,
@@ -13,6 +13,13 @@ import { ErrorState, EmptyState, ForbiddenState } from '../components/common/Sta
 import { VerificationPipeline } from '../components/verification/VerificationPipeline';
 import { Verification } from '../types';
 import { ErrorBoundary } from '../components/common/ErrorBoundary';
+import { getTwinWebSocketUrl } from '../api/digitalTwin';
+import { SynopticProcessFlow } from '../components/digitalTwin/SynopticProcessFlow';
+import { AlarmConsole } from '../components/digitalTwin/AlarmConsole';
+import { LiveTelemetryTrends } from '../components/digitalTwin/LiveTelemetryTrends';
+import { StageInspectionDrawer } from '../components/digitalTwin/StageInspectionDrawer';
+import { TwinAlarmEvent, TwinState } from '../types/digitalTwin';
+
 
 describe('AquaTrustAI Frontend Unit Test Suite', () => {
   beforeEach(() => {
@@ -258,5 +265,150 @@ describe('AquaTrustAI Frontend Unit Test Suite', () => {
       spy.mockRestore();
     });
   });
+
+  describe('Digital Twin SCADA Control Room Unit Tests', () => {
+    const mockTwinState: TwinState = {
+      facility_id: 'fac-delhi-001',
+      state_version: 42,
+      observed_at: '2026-10-18T12:00:00Z',
+      source_mode: 'live',
+      facility_profile_version: 'profile-v1.0',
+      data_quality: 'valid',
+      state_freshness: 'fresh',
+      stage_states: {
+        inlet: {
+          stage_name: 'Raw Influent',
+          parameters: { bod: 185.0, cod: 410.0, tss: 210.0, ph: 7.4 },
+        },
+        primary_clarifier: {
+          stage_name: 'Primary Clarifier',
+          parameters: { bod: 146.2, cod: 336.2, tss: 84.0, ph: 7.4 },
+        },
+        biological_aeration: {
+          stage_name: 'Biological Aeration Basin',
+          parameters: { bod: 22.7, cod: 78.5, tss: 2580.0, ph: 7.34 },
+          operating_variables: { do_mg_l: 2.1, hrt_hours: 8.0, temperature_c: 20.0 },
+        },
+        secondary_clarifier: {
+          stage_name: 'Secondary Clarifier',
+          parameters: { bod: 20.8, cod: 70.6, tss: 10.4, ph: 7.34 },
+        },
+        final_effluent: {
+          stage_name: 'Final Effluent',
+          parameters: { bod: 20.8, cod: 70.6, tss: 10.4, ph: 7.34 },
+        },
+      },
+    };
+
+    const mockAlarms: TwinAlarmEvent[] = [
+      {
+        alarm_id: 'alm-001',
+        facility_id: 'fac-delhi-001',
+        stage_id: 'final_effluent',
+        stage_name: 'Final Effluent',
+        parameter: 'bod',
+        severity: 'critical',
+        message: 'Effluent BOD (34.5 mg/L) exceeds CPCB discharge norm (30.0 mg/L).',
+        observed_value: 34.5,
+        threshold_value: 30.0,
+        unit: 'mg/L',
+        acknowledged: false,
+        first_seen_at: '2026-10-18T11:50:00Z',
+        last_updated_at: '2026-10-18T12:00:00Z',
+        status: 'active',
+      },
+      {
+        alarm_id: 'alm-002',
+        facility_id: 'fac-delhi-001',
+        stage_id: 'biological_aeration',
+        stage_name: 'Biological Aeration Basin',
+        parameter: 'do',
+        severity: 'warning',
+        message: 'Aeration DO (1.75 mg/L) below optimal setpoint (2.0 mg/L).',
+        observed_value: 1.75,
+        threshold_value: 2.0,
+        unit: 'mg/L',
+        acknowledged: true,
+        first_seen_at: '2026-10-18T11:40:00Z',
+        last_updated_at: '2026-10-18T12:00:00Z',
+        status: 'acknowledged',
+      },
+    ];
+
+    it('generates authenticated WebSocket URL with query token', () => {
+      setStoredToken('test-twin-token-123');
+      const wsUrl = getTwinWebSocketUrl('fac-delhi-001');
+      expect(wsUrl).toContain('/facilities/fac-delhi-001/twin/stream?token=test-twin-token-123');
+    });
+
+    it('renders SynopticProcessFlow with all 5 treatment stages and RAS loop', () => {
+      const onSelect = vi.fn();
+      render(
+        <SynopticProcessFlow
+          twinState={mockTwinState}
+          activeAlarms={mockAlarms}
+          selectedStageId="biological_aeration"
+          onSelectStage={onSelect}
+        />
+      );
+
+      expect(screen.getByText(/1\. RAW INFLUENT/i)).toBeInTheDocument();
+      expect(screen.getByText(/2\. PRIMARY CLARIFIER/i)).toBeInTheDocument();
+      expect(screen.getByText(/3\. BIOLOGICAL AERATION/i)).toBeInTheDocument();
+      expect(screen.getByText(/4\. SECONDARY CLARIFIER/i)).toBeInTheDocument();
+      expect(screen.getByText(/5\. FINAL EFFLUENT/i)).toBeInTheDocument();
+      expect(screen.getByText(/RAS PUMP/i)).toBeInTheDocument();
+      expect(screen.getByText(/v42/i)).toBeInTheDocument();
+    });
+
+    it('renders AlarmConsole with critical and warning badges and handles acknowledge', () => {
+      const onAck = vi.fn();
+      render(
+        <AlarmConsole
+          alarms={mockAlarms}
+          onAcknowledge={onAck}
+        />
+      );
+
+      expect(screen.getByText(/SCADA Alarm & Compliance Event Console/i)).toBeInTheDocument();
+      expect(screen.getByText(/Effluent BOD \(34\.5 mg\/L\) exceeds CPCB/i)).toBeInTheDocument();
+      expect(screen.getByText('Acknowledge')).toBeInTheDocument();
+
+      fireEvent.click(screen.getByText('Acknowledge'));
+      expect(onAck).toHaveBeenCalledWith('alm-001');
+    });
+
+    it('renders LiveTelemetryTrends with 5 parameter sparklines', () => {
+      render(<LiveTelemetryTrends twinState={mockTwinState} maxPoints={30} />);
+      expect(screen.getByText(/Real-Time SCADA Telemetry Instrumentation/i)).toBeInTheDocument();
+      expect(screen.getByText(/Effluent BOD/i)).toBeInTheDocument();
+      expect(screen.getByText(/Effluent COD/i)).toBeInTheDocument();
+      expect(screen.getByText(/Effluent TSS/i)).toBeInTheDocument();
+      expect(screen.getByText(/Aeration DO/i)).toBeInTheDocument();
+      expect(screen.getByText(/Effluent pH/i)).toBeInTheDocument();
+    });
+
+    it('renders StageInspectionDrawer with stage kinetics, CPCB limits, and close button', () => {
+      const onClose = vi.fn();
+      const onAck = vi.fn();
+      render(
+        <StageInspectionDrawer
+          stageId="final_effluent"
+          twinState={mockTwinState}
+          alarms={mockAlarms}
+          onClose={onClose}
+          onAcknowledgeAlarm={onAck}
+        />
+      );
+
+      expect(screen.getByText(/UV Disinfection & Safe Effluent Reuse/i)).toBeInTheDocument();
+      expect(screen.getByText(/Live Stage Concentrations & Limits/i)).toBeInTheDocument();
+      expect(screen.getByText(/Kinetic & Hydraulic Assumptions/i)).toBeInTheDocument();
+
+      fireEvent.click(screen.getByText(/Close Inspector/i));
+      expect(onClose).toHaveBeenCalled();
+    });
+  });
 });
+
 

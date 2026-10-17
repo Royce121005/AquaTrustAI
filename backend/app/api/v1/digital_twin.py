@@ -5,16 +5,21 @@ versioned history, configuration updates, what-if scenarios, process models,
 and evidence-gated predictions/recommendations.
 """
 
-from datetime import datetime
+from datetime import datetime, timezone
+import asyncio
+import logging
 from typing import List, Optional, Dict, Any
 from uuid import UUID
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status, WebSocket, WebSocketDisconnect, Body
 from sqlalchemy.orm import Session
 
-from app.db.session import get_db
-from app.core.security import get_current_user_claims, require_role
+from app.db.session import get_db, SessionLocal
+from app.core.security import get_current_user_claims, require_role, decode_access_token
 from app.models.user import UserRole
 from app.digital_twin.service import DigitalTwinService
+from app.digital_twin.engine_manager import TwinEngineManager
+from app.digital_twin.alarms import AlarmManager
+
 from app.digital_twin.schemas import (
     TwinStateResponse,
     TwinHistoryResponse,
@@ -332,3 +337,241 @@ def evaluate_twin_model(
     """Executes empirical temporal holdout benchmark evaluation against actual wastewater data."""
     service = DigitalTwinService(db)
     return service.evaluate_model(dataset_path)
+
+
+logger = logging.getLogger("aquatrust.twin_api")
+
+
+# -----------------------------------------------------------------------------
+# 6. Real-Time Engine Lifecycle & SCADA WebSocket
+# -----------------------------------------------------------------------------
+
+@router.post(
+    "/facilities/{facility_id}/twin/engine/start",
+    summary="Start Digital Twin SCADA execution engine",
+)
+async def start_twin_engine(
+    facility_id: UUID,
+    payload: Optional[Dict[str, Any]] = Body(default=None),
+    interval_seconds: Optional[float] = Query(None),
+    operating_mode: Optional[str] = Query(None),
+    claims: Dict[str, Any] = Depends(require_role(["operator", "admin"])),
+):
+    verify_facility_scope(facility_id, claims)
+    engine_mgr = TwinEngineManager.get_instance()
+    p = payload or {}
+    interval = interval_seconds if interval_seconds is not None else float(p.get("interval_seconds", 1.0))
+    mode = operating_mode if operating_mode is not None else p.get("operating_mode", "simulation")
+    seed = int(p.get("seed", 42))
+    facility_name = p.get("facility_name", "Central Delhi STP")
+    return engine_mgr.start_engine(
+        facility_id=facility_id,
+        facility_name=facility_name,
+        operating_mode=mode,
+        interval_seconds=interval,
+        seed=seed,
+    )
+
+
+@router.post(
+    "/facilities/{facility_id}/twin/engine/stop",
+    summary="Stop Digital Twin SCADA execution engine",
+)
+async def stop_twin_engine(
+    facility_id: UUID,
+    claims: Dict[str, Any] = Depends(require_role(["operator", "admin"])),
+):
+    verify_facility_scope(facility_id, claims)
+    engine_mgr = TwinEngineManager.get_instance()
+    return engine_mgr.stop_engine(facility_id)
+
+
+@router.post(
+    "/facilities/{facility_id}/twin/engine/pause",
+    summary="Pause Digital Twin SCADA execution engine",
+)
+async def pause_twin_engine(
+    facility_id: UUID,
+    claims: Dict[str, Any] = Depends(require_role(["operator", "admin"])),
+):
+    verify_facility_scope(facility_id, claims)
+    engine_mgr = TwinEngineManager.get_instance()
+    return engine_mgr.pause_engine(facility_id)
+
+
+@router.post(
+    "/facilities/{facility_id}/twin/engine/resume",
+    summary="Resume Digital Twin SCADA execution engine",
+)
+async def resume_twin_engine(
+    facility_id: UUID,
+    claims: Dict[str, Any] = Depends(require_role(["operator", "admin"])),
+):
+    verify_facility_scope(facility_id, claims)
+    engine_mgr = TwinEngineManager.get_instance()
+    return engine_mgr.resume_engine(facility_id)
+
+
+@router.get(
+    "/facilities/{facility_id}/twin/engine/status",
+    summary="Get Digital Twin execution engine status",
+)
+async def get_twin_engine_status(
+    facility_id: UUID,
+    claims: Dict[str, Any] = Depends(require_role(["operator", "admin", "auditor", "regulatory_stakeholder"])),
+):
+    verify_facility_scope(facility_id, claims)
+    engine_mgr = TwinEngineManager.get_instance()
+    return engine_mgr.get_status(facility_id)
+
+
+@router.get(
+    "/facilities/{facility_id}/twin/alarms",
+    summary="List active digital twin SCADA alarms and alarm history",
+)
+async def get_twin_alarms(
+    facility_id: UUID,
+    claims: Dict[str, Any] = Depends(require_role(["operator", "admin", "auditor", "regulatory_stakeholder"])),
+):
+    verify_facility_scope(facility_id, claims)
+    alarm_mgr = AlarmManager.get_instance()
+    active_alarms = alarm_mgr.get_active_alarms(facility_id)
+    alarm_history = alarm_mgr.get_alarm_history(facility_id)
+    return {
+        "facility_id": str(facility_id),
+        "active_alarms": [a.model_dump(mode="json") for a in active_alarms],
+        "alarm_history": [a.model_dump(mode="json") for a in alarm_history],
+        "total_active": len(active_alarms),
+        "total_historical": len(alarm_history),
+    }
+
+
+@router.post(
+    "/facilities/{facility_id}/twin/alarms/{alarm_id}/ack",
+    summary="Acknowledge active digital twin alarm",
+)
+async def acknowledge_twin_alarm(
+    facility_id: UUID,
+    alarm_id: str,
+    claims: Dict[str, Any] = Depends(require_role(["operator", "admin"])),
+):
+    verify_facility_scope(facility_id, claims)
+    alarm_mgr = AlarmManager.get_instance()
+    alarm = alarm_mgr.acknowledge_alarm(facility_id, alarm_id)
+    if not alarm:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Alarm not found or already resolved")
+    alarm_data = alarm.model_dump(mode="json")
+    await TwinEngineManager.get_instance().broadcast_to_facility(
+        facility_id,
+        {
+            "type": "ALARM_ACKNOWLEDGED",
+            "facility_id": str(facility_id),
+            "alarm_id": alarm_id,
+            "alarm": alarm_data,
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+        },
+    )
+    res = alarm_data.copy()
+    res["alarm"] = alarm_data
+    res["status"] = "acknowledged"
+    res["acknowledged"] = True
+    return res
+
+
+@router.websocket("/facilities/{facility_id}/twin/stream")
+async def websocket_twin_stream(
+    websocket: WebSocket,
+    facility_id: UUID,
+    token: Optional[str] = Query(None),
+):
+    """Real-time SCADA digital twin stream with snapshot and deltas."""
+    auth_token = token
+    if not auth_token:
+        auth_header = websocket.headers.get("authorization")
+        if auth_header and auth_header.startswith("Bearer "):
+            auth_token = auth_header.split(" ", 1)[1]
+        elif auth_header:
+            auth_token = auth_header
+
+    if not auth_token:
+        await websocket.close(code=status.WS_1008_POLICY_VIOLATION, reason="Authentication token required")
+        return
+
+    try:
+        claims = decode_access_token(auth_token)
+        verify_facility_scope(facility_id, claims)
+    except Exception:
+        await websocket.close(code=status.WS_1008_POLICY_VIOLATION, reason="Invalid or expired authentication token")
+        return
+
+    await websocket.accept()
+    engine_mgr = TwinEngineManager.get_instance()
+    alarm_mgr = AlarmManager.get_instance()
+
+    await engine_mgr.register_subscriber(facility_id, websocket)
+
+    async def send_twin_snapshot():
+        db = SessionLocal()
+        try:
+            twin_service = DigitalTwinService(db)
+            state_dto = twin_service.get_facility_state(facility_id)
+            active_alarms = alarm_mgr.get_active_alarms(facility_id)
+            worker = engine_mgr.get_worker(facility_id)
+            status_dict = worker.to_status_dict() if worker else engine_mgr.get_status(facility_id)
+            obs_map = {}
+            if hasattr(state_dto, "observations") and state_dto.observations:
+                obs_map = {k: (v.model_dump(mode="json") if hasattr(v, "model_dump") else v) for k, v in state_dto.observations.items()}
+            elif hasattr(state_dto, "latest_observations") and state_dto.latest_observations:
+                obs_map = {k: (v.model_dump(mode="json") if hasattr(v, "model_dump") else v) for k, v in state_dto.latest_observations.items()}
+
+            snapshot_msg = {
+                "type": "TWIN_SNAPSHOT",
+                "facility_id": str(facility_id),
+                "state_version": state_dto.state_version,
+                "observed_at": state_dto.observed_at.isoformat() if hasattr(state_dto.observed_at, "isoformat") else str(state_dto.observed_at),
+                "source_mode": state_dto.source_mode,
+                "data_quality": state_dto.data_quality,
+                "state_freshness": state_dto.state_freshness,
+                "stage_states": {k: (v.model_dump(mode="json") if hasattr(v, "model_dump") else v) for k, v in state_dto.stage_states.items()},
+                "latest_observations": obs_map,
+                "operating_variables": {
+                    "hrt_hours": 8.0,
+                    "do_mg_l": 2.0,
+                    "temperature_c": 20.0,
+                },
+                "active_alarms": [a.model_dump(mode="json") for a in active_alarms],
+                "engine_status": status_dict,
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+            }
+            await websocket.send_json(snapshot_msg)
+        finally:
+            db.close()
+
+    try:
+        await send_twin_snapshot()
+
+        while True:
+            data = await websocket.receive_json()
+            action = data.get("action")
+            if action == "RESYNC":
+                await send_twin_snapshot()
+            elif action == "ACK_ALARM":
+                alarm_id = data.get("alarm_id")
+                if alarm_id:
+                    acked = alarm_mgr.acknowledge_alarm(facility_id, alarm_id)
+                    if acked:
+                        ack_msg = {
+                            "type": "ALARM_ACKNOWLEDGED",
+                            "facility_id": str(facility_id),
+                            "alarm_id": alarm_id,
+                            "alarm": acked.model_dump(mode="json"),
+                            "timestamp": datetime.now(timezone.utc).isoformat(),
+                        }
+                        await engine_mgr.broadcast_to_facility(facility_id, ack_msg)
+    except (WebSocketDisconnect, asyncio.CancelledError):
+        pass
+    except Exception as ws_err:
+        logger.warning(f"WebSocket client loop exception for facility {facility_id}: {ws_err}")
+    finally:
+        await engine_mgr.unregister_subscriber(facility_id, websocket)
+

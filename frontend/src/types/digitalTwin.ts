@@ -198,3 +198,92 @@ export interface TwinModelVersion {
   validation_metrics?: Record<string, unknown>;
   created_at: string;
 }
+
+export type TwinLifecycleState = 'stopped' | 'starting' | 'running' | 'paused' | 'error';
+export type TwinOperatingMode = 'live' | 'simulation' | 'historical_replay' | 'scenario';
+export type AlarmSeverity = 'critical' | 'warning' | 'info';
+export type AlarmStatus = 'active' | 'acknowledged' | 'resolved';
+
+export interface TwinEngineStatus {
+  facility_id?: string;
+  facility_name?: string;
+  lifecycle_state: TwinLifecycleState;
+  operating_mode: TwinOperatingMode | string;
+  interval_seconds: number;
+  tick_count: number;
+  active_state_version: number;
+  last_tick_at: string | null;
+  current_scenario: string;
+  is_paused?: boolean;
+  is_healthy?: boolean;
+  error_message?: string | null;
+}
+
+export interface TwinAlarmEvent {
+  alarm_id: string;
+  facility_id: string;
+  stage_id: string;
+  stage_name: string;
+  parameter: string;
+  severity: AlarmSeverity;
+  alarm_type?: string;
+  message: string;
+  observed_value: number | null;
+  threshold_value: number | null;
+  unit: string;
+  acknowledged: boolean;
+  first_seen_at: string;
+  last_updated_at: string;
+  status: AlarmStatus;
+}
+
+export interface TwinSnapshotMessage {
+  type: 'TWIN_SNAPSHOT';
+  facility_id: string;
+  state_version: number;
+  observed_at: string;
+  source_mode: string;
+  data_quality: DataQuality;
+  state_freshness: StateFreshness;
+  stage_states: Record<string, StageState>;
+  latest_observations?: Record<string, ObservationValue>;
+  operating_variables?: Record<string, number | string> | null;
+  active_alarms: TwinAlarmEvent[];
+  engine_status?: TwinEngineStatus;
+  timestamp: string;
+}
+
+export interface TwinStateDeltaMessage {
+  type: 'TWIN_STATE_DELTA';
+  facility_id: string;
+  state_version: number;
+  observed_at: string;
+  source_mode: string;
+  data_quality: DataQuality;
+  state_freshness: StateFreshness;
+  stage_states: Record<string, StageState>;
+  latest_observations?: Record<string, ObservationValue>;
+  operating_variables?: Record<string, number | string> | null;
+  active_alarms: TwinAlarmEvent[];
+  engine_status?: TwinEngineStatus;
+  timestamp: string;
+}
+
+export interface TwinAlarmAcknowledgedMessage {
+  type: 'TWIN_ALARM_ACKNOWLEDGED';
+  alarm_id: string;
+  acknowledged_at?: string;
+  alarm?: TwinAlarmEvent;
+}
+
+export interface TwinHeartbeatMessage {
+  type: 'HEARTBEAT';
+  timestamp: string;
+}
+
+export type TwinWebSocketMessage =
+  | TwinSnapshotMessage
+  | TwinStateDeltaMessage
+  | TwinAlarmAcknowledgedMessage
+  | TwinHeartbeatMessage;
+

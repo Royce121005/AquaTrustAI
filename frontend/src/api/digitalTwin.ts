@@ -1,4 +1,4 @@
-import { apiClient } from './client';
+import { apiClient, getApiBaseUrl, getStoredToken } from './client';
 import {
   TwinState,
   TwinConfig,
@@ -9,6 +9,8 @@ import {
   TwinRecommendation,
   TwinSustainability,
   TwinModelVersion,
+  TwinEngineStatus,
+  TwinAlarmEvent,
 } from '../types/digitalTwin';
 
 export async function getFacilityTwinStateApi(facilityId: string): Promise<TwinState> {
@@ -110,3 +112,87 @@ export async function evaluateTwinModelApi(datasetPath?: string): Promise<Record
     params: datasetPath ? { dataset_path: datasetPath } : undefined,
   });
 }
+
+export async function startTwinEngineApi(
+  facilityId: string,
+  payload?: { interval_seconds?: number; operating_mode?: string; seed?: number }
+): Promise<{ status: string; worker?: TwinEngineStatus }> {
+  return apiClient<{ status: string; worker?: TwinEngineStatus }>(
+    `/facilities/${facilityId}/twin/engine/start`,
+    {
+      method: 'POST',
+      body: JSON.stringify(payload || {}),
+    }
+  );
+}
+
+export async function stopTwinEngineApi(
+  facilityId: string
+): Promise<{ status: string; worker?: TwinEngineStatus }> {
+  return apiClient<{ status: string; worker?: TwinEngineStatus }>(
+    `/facilities/${facilityId}/twin/engine/stop`,
+    {
+      method: 'POST',
+      body: JSON.stringify({}),
+    }
+  );
+}
+
+export async function pauseTwinEngineApi(
+  facilityId: string
+): Promise<{ status: string; worker?: TwinEngineStatus }> {
+  return apiClient<{ status: string; worker?: TwinEngineStatus }>(
+    `/facilities/${facilityId}/twin/engine/pause`,
+    {
+      method: 'POST',
+      body: JSON.stringify({}),
+    }
+  );
+}
+
+export async function resumeTwinEngineApi(
+  facilityId: string
+): Promise<{ status: string; worker?: TwinEngineStatus }> {
+  return apiClient<{ status: string; worker?: TwinEngineStatus }>(
+    `/facilities/${facilityId}/twin/engine/resume`,
+    {
+      method: 'POST',
+      body: JSON.stringify({}),
+    }
+  );
+}
+
+export async function getTwinEngineStatusApi(
+  facilityId: string
+): Promise<TwinEngineStatus> {
+  return apiClient<TwinEngineStatus>(`/facilities/${facilityId}/twin/engine/status`, {
+    method: 'GET',
+  });
+}
+
+export async function getTwinAlarmsApi(
+  facilityId: string
+): Promise<TwinAlarmEvent[]> {
+  return apiClient<TwinAlarmEvent[]>(`/facilities/${facilityId}/twin/alarms`, {
+    method: 'GET',
+  });
+}
+
+export async function acknowledgeTwinAlarmApi(
+  facilityId: string,
+  alarmId: string
+): Promise<TwinAlarmEvent> {
+  return apiClient<TwinAlarmEvent>(`/facilities/${facilityId}/twin/alarms/${alarmId}/ack`, {
+    method: 'POST',
+    body: JSON.stringify({}),
+  });
+}
+
+export function getTwinWebSocketUrl(facilityId: string): string {
+  const baseUrl = getApiBaseUrl();
+  const token = getStoredToken() || '';
+  const wsProto = baseUrl.startsWith('https') ? 'wss:' : 'ws:';
+  const cleanBase = baseUrl.replace(/^https?:\/\//, '');
+  return `${wsProto}//${cleanBase}/facilities/${facilityId}/twin/stream?token=${encodeURIComponent(token)}`;
+}
+
