@@ -19,6 +19,7 @@ import {
   Server,
   UserPlus,
   PlayCircle,
+  Cpu,
 } from 'lucide-react';
 
 interface NavItem {
@@ -39,6 +40,12 @@ const ALL_NAV_ITEMS: NavItem[] = [
     name: 'Facilities',
     to: '/facilities',
     icon: Building2,
+    roles: ['operator', 'auditor', 'regulatory_stakeholder', 'admin'],
+  },
+  {
+    name: 'Digital Twin',
+    to: '/digital-twin',
+    icon: Cpu,
     roles: ['operator', 'auditor', 'regulatory_stakeholder', 'admin'],
   },
   {

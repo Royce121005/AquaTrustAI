@@ -424,8 +424,9 @@ class ComplianceService:
             for r in rules
             if getattr(r, "active", True) and (r.parameter or "").strip()
         }
-        # If rules provided, require all active rule parameters; otherwise fall back to standard CPCB set
-        required_parameters = active_rule_params if active_rule_params else MANDATORY_FINAL_EFFLUENT_PARAMETERS
+        # Require mandatory CPCB parameters that have active rules; optional parameters (like TKN) only evaluated if present
+        mandatory_active = active_rule_params & MANDATORY_FINAL_EFFLUENT_PARAMETERS
+        required_parameters = mandatory_active if mandatory_active else (active_rule_params if active_rule_params else MANDATORY_FINAL_EFFLUENT_PARAMETERS)
 
         # Overall Status Determination
         if has_non_compliant:

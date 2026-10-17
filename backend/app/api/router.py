@@ -19,6 +19,7 @@ from app.api.v1.corrections import router as corrections_router
 from app.api.v1.audit import router as audit_router
 from app.api.v1.dlt import router as dlt_router
 from app.api.v1.auth import router as auth_router
+from app.api.v1.digital_twin import router as digital_twin_router
 
 api_router = APIRouter()
 
@@ -37,3 +38,4 @@ api_router.include_router(verification_router, prefix="", tags=["Cryptographic V
 api_router.include_router(corrections_router, prefix="", tags=["Append-Only Lineage & Corrections"])
 api_router.include_router(audit_router, prefix="", tags=["Security & Compliance Audit Logs"])
 api_router.include_router(dlt_router, prefix="", tags=["Distributed Ledger (DLT) Anchors"])
+api_router.include_router(digital_twin_router, prefix="", tags=["Digital Twin Engine"])

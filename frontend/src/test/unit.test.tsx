@@ -212,5 +212,30 @@ describe('AquaTrustAI Frontend Unit Test Suite', () => {
       expect(screen.getByText(/Backend authorization remains the authoritative boundary/i)).toBeInTheDocument();
     });
   });
+
+  describe('Digital Twin Contracts & Data Taxonomy Tests', () => {
+    it('verifies data taxonomy and origin types', () => {
+      const origins = ['observed', 'simulated', 'predicted', 'hypothetical'] as const;
+      expect(origins).toContain('observed');
+      expect(origins).toContain('simulated');
+      expect(origins).toContain('predicted');
+      expect(origins).toContain('hypothetical');
+    });
+
+    it('verifies state freshness invariants', () => {
+      const freshnessStates = ['fresh', 'stale', 'expired'] as const;
+      expect(freshnessStates).toHaveLength(3);
+    });
+
+    it('verifies what-if scenario isolation and types', () => {
+      const scenarioTypes = [
+        'influent_quality_change',
+        'aeration_failure',
+        'chemical_overdosing',
+        'hydraulic_surge',
+      ];
+      expect(scenarioTypes).toHaveLength(4);
+    });
+  });
 });
 

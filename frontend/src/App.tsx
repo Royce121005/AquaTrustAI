@@ -32,6 +32,7 @@ import { AuditPage } from './pages/AuditPage';
 import { SimulatorPage } from './pages/SimulatorPage';
 import { SystemStatusPage } from './pages/SystemStatusPage';
 import { UserRegistrationPage } from './pages/UserRegistrationPage';
+import { DigitalTwinPage } from './pages/DigitalTwinPage';
 import { NotFoundState } from './components/common/States';
 
 const queryClient = new QueryClient({
@@ -71,6 +72,10 @@ export const App: React.FC = () => {
               {/* Facilities */}
               <Route path="/facilities" element={<FacilitiesPage />} />
               <Route path="/facilities/:facilityId" element={<FacilityDetailPage />} />
+
+              {/* Digital Twin */}
+              <Route path="/digital-twin" element={<DigitalTwinPage />} />
+              <Route path="/facilities/:facilityId/twin" element={<DigitalTwinPage />} />
 
               {/* Telemetry & Validation */}
               <Route
