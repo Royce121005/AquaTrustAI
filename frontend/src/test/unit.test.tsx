@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { ApiClientError, setStoredToken, getStoredToken, TOKEN_STORAGE_KEY } from '../api/client';
@@ -12,6 +12,7 @@ import {
 import { ErrorState, EmptyState, ForbiddenState } from '../components/common/States';
 import { VerificationPipeline } from '../components/verification/VerificationPipeline';
 import { Verification } from '../types';
+import { ErrorBoundary } from '../components/common/ErrorBoundary';
 
 describe('AquaTrustAI Frontend Unit Test Suite', () => {
   beforeEach(() => {
@@ -235,6 +236,26 @@ describe('AquaTrustAI Frontend Unit Test Suite', () => {
         'hydraulic_surge',
       ];
       expect(scenarioTypes).toHaveLength(4);
+    });
+
+    it('verifies ErrorBoundary catches rendering crashes gracefully', () => {
+      const BombComponent = () => {
+        throw new Error('Simulated crash in component tree');
+      };
+
+      const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+      render(
+        <ErrorBoundary>
+          <BombComponent />
+        </ErrorBoundary>
+      );
+
+      expect(screen.getByText('Application Error Encountered')).toBeInTheDocument();
+      expect(screen.getByText('Simulated crash in component tree')).toBeInTheDocument();
+      expect(screen.getByText('Reload Page')).toBeInTheDocument();
+
+      spy.mockRestore();
     });
   });
 });

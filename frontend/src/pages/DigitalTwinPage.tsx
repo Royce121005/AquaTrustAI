@@ -42,6 +42,24 @@ import { LoadingState, ErrorState } from '../components/common/States';
 import { useAuth } from '../context/AuthContext';
 import { ScenarioCreateRequest, ScenarioResponse } from '../types/digitalTwin';
 
+const getParamDisplay = (param: unknown, decimals: number = 1): string => {
+  if (param === null || param === undefined) return '—';
+  if (typeof param === 'number') return isNaN(param) ? '—' : param.toFixed(decimals);
+  if (typeof param === 'object' && param !== null && 'value' in param) {
+    const val = (param as { value?: unknown }).value;
+    if (typeof val === 'number') return isNaN(val) ? '—' : val.toFixed(decimals);
+  }
+  return '—';
+};
+
+const getParamUnit = (param: unknown, defaultUnit: string = 'mg/L'): string => {
+  if (typeof param === 'object' && param !== null && 'unit' in param) {
+    const u = (param as { unit?: unknown }).unit;
+    if (typeof u === 'string' && u.trim().length > 0) return u;
+  }
+  return defaultUnit;
+};
+
 export const DigitalTwinPage: React.FC = () => {
   const { facilityId: routeFacilityId } = useParams<{ facilityId?: string }>();
   const navigate = useNavigate();
@@ -269,9 +287,11 @@ export const DigitalTwinPage: React.FC = () => {
             </span>
 
             {/* Model Hash Tooltip */}
-            <span className="text-xs text-gray-400 font-mono hidden lg:inline" title={twinState.process_model.configuration_hash}>
-              Hash: {twinState.process_model.configuration_hash.substring(0, 10)}...
-            </span>
+            {twinState.process_model?.configuration_hash && (
+              <span className="text-xs text-gray-400 font-mono hidden lg:inline" title={twinState.process_model.configuration_hash}>
+                Hash: {twinState.process_model.configuration_hash.substring(0, 10)}...
+              </span>
+            )}
           </div>
         </div>
       )}
@@ -370,29 +390,29 @@ export const DigitalTwinPage: React.FC = () => {
                           <div className="flex justify-between items-center">
                             <span className="text-gray-500">BOD:</span>
                             <span className="font-semibold text-gray-900">
-                              {stageData.parameters.bod?.toFixed(1) ?? '—'} <span className="text-[10px] text-gray-400">mg/L</span>
+                              {getParamDisplay(stageData.parameters.bod, 1)} <span className="text-[10px] text-gray-400">{getParamUnit(stageData.parameters.bod, 'mg/L')}</span>
                             </span>
                           </div>
                           <div className="flex justify-between items-center">
                             <span className="text-gray-500">COD:</span>
                             <span className="font-semibold text-gray-900">
-                              {stageData.parameters.cod?.toFixed(1) ?? '—'} <span className="text-[10px] text-gray-400">mg/L</span>
+                              {getParamDisplay(stageData.parameters.cod, 1)} <span className="text-[10px] text-gray-400">{getParamUnit(stageData.parameters.cod, 'mg/L')}</span>
                             </span>
                           </div>
                           <div className="flex justify-between items-center">
                             <span className="text-gray-500">TSS:</span>
                             <span className="font-semibold text-gray-900">
-                              {stageData.parameters.tss?.toFixed(1) ?? '—'} <span className="text-[10px] text-gray-400">mg/L</span>
+                              {getParamDisplay(stageData.parameters.tss, 1)} <span className="text-[10px] text-gray-400">{getParamUnit(stageData.parameters.tss, 'mg/L')}</span>
                             </span>
                           </div>
                           <div className="flex justify-between items-center">
                             <span className="text-gray-500">pH:</span>
-                            <span className="font-semibold text-gray-900">{stageData.parameters.ph?.toFixed(2) ?? '—'}</span>
+                            <span className="font-semibold text-gray-900">{getParamDisplay(stageData.parameters.ph, 2)}</span>
                           </div>
                           <div className="flex justify-between items-center">
                             <span className="text-gray-500">NH4-N:</span>
                             <span className="font-semibold text-gray-900">
-                              {stageData.parameters.nh4_n?.toFixed(1) ?? '—'} <span className="text-[10px] text-gray-400">mg/L</span>
+                              {getParamDisplay(stageData.parameters.nh4_n, 1)} <span className="text-[10px] text-gray-400">{getParamUnit(stageData.parameters.nh4_n, 'mg/L')}</span>
                             </span>
                           </div>
                         </div>
@@ -401,18 +421,18 @@ export const DigitalTwinPage: React.FC = () => {
                       )}
                     </div>
 
-                    {isAeration && twinState.operating_variables && (
+                    {isAeration && (stageData.operating_variables || twinState.operating_variables) && (
                       <div className="mt-3 pt-2 border-t border-gray-100 text-[10px] text-gray-500 space-y-0.5">
-                        <div>HRT: {twinState.operating_variables.hrt_hours}h</div>
-                        <div>DO Setpoint: {twinState.operating_variables.do_mg_l} mg/L</div>
-                        <div>Temp: {twinState.operating_variables.temperature_c}°C</div>
+                        <div>HRT: {String((stageData.operating_variables as any)?.hrt_hours ?? (twinState.operating_variables as any)?.hrt_hours ?? '8.0')}h</div>
+                        <div>DO Setpoint: {String((stageData.operating_variables as any)?.do_mg_l ?? (twinState.operating_variables as any)?.do_mg_l ?? '2.0')} mg/L</div>
+                        <div>Temp: {String((stageData.operating_variables as any)?.temperature_c ?? (twinState.operating_variables as any)?.temperature_c ?? '20')}°C</div>
                       </div>
                     )}
 
-                    {isFinal && twinState.process_model.overall_removal_efficiencies && (
+                    {isFinal && twinState.process_model?.overall_removal_efficiencies?.bod_removal_percent != null && (
                       <div className="mt-3 pt-2 border-t border-indigo-100 text-[11px] font-medium text-indigo-700">
                         Overall BOD Removal:{' '}
-                        {twinState.process_model.overall_removal_efficiencies.bod_removal_percent?.toFixed(1)}%
+                        {twinState.process_model.overall_removal_efficiencies.bod_removal_percent.toFixed(1)}%
                       </div>
                     )}
                   </div>
@@ -710,13 +730,15 @@ export const DigitalTwinPage: React.FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 {Object.entries(predictionsQuery.data.predicted_values).map(([param, pVal]) => {
                   const bounds = predictionsQuery.data.uncertainty_bounds?.[param];
+                  const valDisplay = typeof pVal === 'number' ? pVal : (pVal as any)?.value ?? '—';
+                  const unitDisplay = typeof pVal === 'object' && (pVal as any)?.unit ? (pVal as any).unit : 'mg/L';
                   return (
                     <div key={param} className="border border-purple-100 bg-purple-50/20 rounded-lg p-4 shadow-sm">
                       <span className="text-xs uppercase font-bold text-purple-700">{param.toUpperCase()}</span>
                       <div className="text-2xl font-extrabold text-gray-900 mt-1">
-                        {pVal.value} <span className="text-xs font-normal text-gray-500">{pVal.unit}</span>
+                        {valDisplay} <span className="text-xs font-normal text-gray-500">{unitDisplay}</span>
                       </div>
-                      {bounds && (
+                      {bounds && bounds.lower_bound != null && bounds.upper_bound != null && (
                         <div className="text-[11px] text-gray-500 mt-2">
                           95% Confidence: [{bounds.lower_bound} – {bounds.upper_bound}]
                         </div>
@@ -740,7 +762,7 @@ export const DigitalTwinPage: React.FC = () => {
               <div className="bg-white border border-gray-200 rounded-lg p-5 shadow-sm space-y-2">
                 <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Daily Reclaimed Water</span>
                 <div className="text-3xl font-extrabold text-indigo-600">
-                  {sustainabilityQuery.data.reuse_volume_m3_day?.toLocaleString()}{' '}
+                  {sustainabilityQuery.data.reuse_volume_m3_day != null ? sustainabilityQuery.data.reuse_volume_m3_day.toLocaleString() : '—'}{' '}
                   <span className="text-sm font-normal text-gray-500">m³/day</span>
                 </div>
                 <p className="text-xs text-gray-500">Based on 75% reuse allocation from operational STP throughput.</p>
@@ -749,7 +771,7 @@ export const DigitalTwinPage: React.FC = () => {
               <div className="bg-white border border-gray-200 rounded-lg p-5 shadow-sm space-y-2">
                 <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Annual Freshwater Saved</span>
                 <div className="text-3xl font-extrabold text-emerald-600">
-                  {sustainabilityQuery.data.annual_freshwater_saved_m3?.toLocaleString()}{' '}
+                  {sustainabilityQuery.data.annual_freshwater_saved_m3 != null ? sustainabilityQuery.data.annual_freshwater_saved_m3.toLocaleString() : '—'}{' '}
                   <span className="text-sm font-normal text-gray-500">m³/year</span>
                 </div>
                 <p className="text-xs text-gray-500">Displaces municipal freshwater extraction for non-potable needs.</p>
@@ -766,7 +788,7 @@ export const DigitalTwinPage: React.FC = () => {
                     }`}
                   >
                     <CheckCircle2 className="h-5 w-5" />
-                    {sustainabilityQuery.data.safe_reuse_gate}
+                    {sustainabilityQuery.data.safe_reuse_gate ?? 'HELD'}
                   </span>
                 </div>
                 <p className="text-xs text-gray-500">CPCB non-potable reuse standard verification.</p>

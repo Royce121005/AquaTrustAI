@@ -8,11 +8,18 @@ export type StateFreshness = 'fresh' | 'stale' | 'expired';
 export type DataQuality = 'valid' | 'suspect' | 'invalid' | 'insufficient_data';
 export type ComplianceRisk = 'compliant' | 'non_compliant' | 'insufficient_data';
 
+export interface StageParameterValue {
+  value: number | null;
+  unit?: string;
+  source?: string;
+  quality_status?: string;
+}
+
 export interface StageState {
   stage_id?: string;
   stage_name: string;
   sequence_order?: number;
-  parameters: Record<string, number>;
+  parameters: Record<string, number | StageParameterValue>;
   removal_efficiencies?: Record<string, number>;
   operating_variables?: Record<string, number | string>;
 }
@@ -25,23 +32,24 @@ export interface ObservationValue {
 }
 
 export interface TwinState {
-  state_id: string;
+  state_id?: string;
   facility_id: string;
   state_version: number;
   observed_at: string;
   source_mode: 'live' | 'replay' | 'simulated' | string;
   facility_profile_version: string;
   stage_states: Record<string, StageState>;
-  sensor_states: Record<string, unknown>;
-  operating_variables: Record<string, number | string>;
+  sensor_states?: Record<string, unknown>;
+  operating_variables?: Record<string, number | string> | null;
   data_quality: DataQuality;
   state_freshness: StateFreshness;
-  last_accepted_observation_at: string | null;
-  latest_received_observation_at: string | null;
-  latest_observations: Record<string, ObservationValue>;
-  process_model: {
-    version: string;
-    configuration_hash: string;
+  last_accepted_observation_at?: string | null;
+  latest_received_observation_at?: string | null;
+  latest_observations?: Record<string, ObservationValue>;
+  process_model?: {
+    version?: string;
+    configuration_hash?: string;
+    status?: string;
     overall_removal_efficiencies?: Record<string, number>;
   };
 }
