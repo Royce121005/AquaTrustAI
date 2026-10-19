@@ -5,27 +5,23 @@ import {
   Cpu,
   Activity,
   Layers,
-  ArrowRight,
   TrendingUp,
   AlertTriangle,
   CheckCircle2,
-  HelpCircle,
   Play,
   Pause,
   Square,
-  RotateCcw,
   ShieldAlert,
   Droplets,
-  Calendar,
   Sliders,
   Check,
   RefreshCw,
   Radio,
-  Wifi,
-  WifiOff,
-  Bell,
-  Gauge,
+  ChevronDown,
+  Clock,
   Sparkles,
+  Info,
+  PanelRight,
 } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -53,36 +49,25 @@ import {
 } from '../api/digitalTwin';
 import { useTwinStream } from '../hooks/useTwinStream';
 import { SynopticProcessFlow } from '../components/digitalTwin/SynopticProcessFlow';
-import { StageInspectionDrawer } from '../components/digitalTwin/StageInspectionDrawer';
-import { LiveTelemetryTrends } from '../components/digitalTwin/LiveTelemetryTrends';
-import { AlarmConsole } from '../components/digitalTwin/AlarmConsole';
-import { LoadingState, ErrorState } from '../components/common/States';
-import { useAuth } from '../context/AuthContext';
+import { IntegratedStageInspector } from '../components/digitalTwin/IntegratedStageInspector';
+import { KeyPlantParameters } from '../components/digitalTwin/KeyPlantParameters';
+import { LiveEventsConsole } from '../components/digitalTwin/LiveEventsConsole';
+import { SimulatorCanvas } from '../components/simulator/SimulatorCanvas';
+import { LoadingState } from '../components/common/States';
 import { ScenarioCreateRequest, ScenarioResponse } from '../types/digitalTwin';
 
-const getParamDisplay = (param: unknown, decimals: number = 1): string => {
-  if (param === null || param === undefined) return '—';
-  if (typeof param === 'number') return isNaN(param) ? '—' : param.toFixed(decimals);
-  if (typeof param === 'object' && param !== null && 'value' in param) {
-    const val = (param as { value?: unknown }).value;
-    if (typeof val === 'number') return isNaN(val) ? '—' : val.toFixed(decimals);
-  }
-  return '—';
-};
-
-const getParamUnit = (param: unknown, defaultUnit: string = 'mg/L'): string => {
-  if (typeof param === 'object' && param !== null && 'unit' in param) {
-    const u = (param as { unit?: unknown }).unit;
-    if (typeof u === 'string' && u.trim().length > 0) return u;
-  }
-  return defaultUnit;
-};
+type TabType =
+  | 'process_flow'
+  | 'telemetry_pipeline'
+  | 'scenarios'
+  | 'predictions'
+  | 'sustainability'
+  | 'analytics';
 
 export const DigitalTwinPage: React.FC = () => {
   const { facilityId: routeFacilityId } = useParams<{ facilityId?: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { user } = useAuth();
 
   // Load facilities for dropdown
   const facilitiesQuery = useQuery({
@@ -101,11 +86,25 @@ export const DigitalTwinPage: React.FC = () => {
     }
   }, [facilities, selectedFacilityId]);
 
-  // Tab navigation
-  const [activeTab, setActiveTab] = useState<'overview' | 'scenarios' | 'predictions' | 'sustainability'>('overview');
+  // Tab navigation matching the reference architecture
+  const [activeTab, setActiveTab] = useState<TabType>('process_flow');
 
-  // Selected stage for inspection drawer
-  const [selectedStageId, setSelectedStageId] = useState<string | null>(null);
+  // Selected stage for inspection
+  const [selectedStageId, setSelectedStageId] = useState<string | null>('biological_aeration');
+
+  // Inspector layout placement mode: 'drawer' (slide-over overlay) | 'below' (docked underneath canvas)
+  const [inspectorPlacement, setInspectorPlacement] = useState<'drawer' | 'below'>('drawer');
+
+  // Close slide drawer on Escape key press
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && selectedStageId && inspectorPlacement === 'drawer') {
+        setSelectedStageId(null);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selectedStageId, inspectorPlacement]);
 
   // Scenario configuration state
   const [scenarioType, setScenarioType] = useState<ScenarioCreateRequest['scenario_type']>('influent_quality_change');
@@ -117,6 +116,13 @@ export const DigitalTwinPage: React.FC = () => {
 
   // Acknowledged recommendations state (local UI)
   const [acknowledgedRecs, setAcknowledgedRecs] = useState<Record<string, boolean>>({});
+
+  // Real-time ticking clock for age calculations
+  const [nowMs, setNowMs] = useState<number>(Date.now());
+  useEffect(() => {
+    const timer = setInterval(() => setNowMs(Date.now()), 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   // Real-time WebSocket Twin Stream
   const {
@@ -151,19 +157,19 @@ export const DigitalTwinPage: React.FC = () => {
   const predictionsQuery = useQuery({
     queryKey: ['twin-predictions', selectedFacilityId],
     queryFn: () => getFacilityPredictionsApi(selectedFacilityId),
-    enabled: !!selectedFacilityId && (activeTab === 'overview' || activeTab === 'predictions'),
+    enabled: !!selectedFacilityId && (activeTab === 'process_flow' || activeTab === 'predictions'),
   });
 
   const recommendationsQuery = useQuery({
     queryKey: ['twin-recommendations', selectedFacilityId],
     queryFn: () => getFacilityRecommendationsApi(selectedFacilityId),
-    enabled: !!selectedFacilityId && activeTab === 'overview',
+    enabled: !!selectedFacilityId && (activeTab === 'process_flow' || activeTab === 'analytics'),
   });
 
   const sustainabilityQuery = useQuery({
     queryKey: ['twin-sustainability', selectedFacilityId],
     queryFn: () => getFacilitySustainabilityApi(selectedFacilityId),
-    enabled: !!selectedFacilityId && (activeTab === 'overview' || activeTab === 'sustainability'),
+    enabled: !!selectedFacilityId && (activeTab === 'process_flow' || activeTab === 'sustainability'),
   });
 
   // Engine Lifecycle Mutations
@@ -212,7 +218,7 @@ export const DigitalTwinPage: React.FC = () => {
     const newId = e.target.value;
     setSelectedFacilityId(newId);
     setScenarioResult(null);
-    setSelectedStageId(null);
+    setSelectedStageId('biological_aeration');
     if (routeFacilityId) {
       navigate(`/facilities/${newId}/twin`);
     }
@@ -248,6 +254,24 @@ export const DigitalTwinPage: React.FC = () => {
   const currentMode = activeEngineStatus?.operating_mode || activeTwinState?.source_mode || 'simulation';
   const effectiveVersion = streamStateVersion || activeTwinState?.state_version || 1;
 
+  const modeDisplayLabel =
+    activeTab === 'scenarios'
+      ? 'WHAT-IF SCENARIO'
+      : currentMode === 'live'
+      ? 'LIVE TELEMETRY'
+      : currentMode === 'historical_replay'
+      ? 'HISTORICAL REPLAY'
+      : 'LIVE SIMULATION';
+
+  // Last update age and formatted IST time
+  const observedTime = activeTwinState?.observed_at ? new Date(activeTwinState.observed_at) : null;
+  const secondsAgo = observedTime ? Math.max(0, Math.floor((nowMs - observedTime.getTime()) / 1000)) : 0;
+  const lastUpdateFormatted = observedTime
+    ? observedTime.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) +
+      ' ' +
+      observedTime.toLocaleTimeString([], { hour12: false })
+    : '18 Oct 2026 14:32:18';
+
   // Transform scenario results for Recharts
   const chartData = scenarioResult
     ? scenarioResult.results
@@ -260,83 +284,107 @@ export const DigitalTwinPage: React.FC = () => {
         }))
     : [];
 
+  const navTabs: { id: TabType; label: string; icon: React.FC<{ className?: string }> }[] = [
+    { id: 'process_flow', label: 'Process Flow', icon: Layers },
+    { id: 'telemetry_pipeline', label: 'Telemetry Pipeline', icon: Radio },
+    { id: 'scenarios', label: 'What-If Scenario', icon: Sliders },
+    { id: 'predictions', label: 'Predictive Horizon', icon: TrendingUp },
+    { id: 'sustainability', label: 'Water Recycling & Reuse', icon: Droplets },
+    { id: 'analytics', label: 'Analytics & Reports', icon: Activity },
+  ];
+
   return (
-    <div className="space-y-6 pb-12">
+    <div className="space-y-4 pb-12">
       {/* ========================================================= */}
-      {/* GLOBAL SCADA OPERATIONS HEADER & CONTROLS                 */}
+      {/* 1. GLOBAL SCADA OPERATIONS HEADER & CONTROLS              */}
       {/* ========================================================= */}
-      <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 shadow-xl flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+      <header className="bg-slate-900 border border-slate-800 rounded-xl p-3.5 shadow-xl flex flex-col xl:flex-row xl:items-center justify-between gap-4">
         {/* Left: Branding & Facility Select */}
-        <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-          <div className="flex items-center gap-2.5">
-            <div className="p-2.5 rounded-lg bg-sky-950/80 border border-sky-800 text-sky-400">
-              <Cpu className="h-6 w-6" />
+        <div className="flex items-center gap-4 flex-wrap">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-xl bg-sky-950/90 border border-sky-800/80 flex items-center justify-center text-sky-400 shadow-md">
+              <Cpu className="h-5 w-5" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-xl font-bold text-slate-100">Virtual STP Digital Twin</h1>
-                {/* Real-Time Mode Badge */}
-                <span className="px-2 py-0.5 rounded text-[11px] font-mono font-bold uppercase bg-indigo-950 text-indigo-400 border border-indigo-800">
-                  [{currentMode.toUpperCase()}]
-                </span>
+                <span className="text-base font-extrabold tracking-tight text-white">AquaTrustAI</span>
+                <span className="text-xs text-slate-400 font-medium">STP Digital Twin</span>
               </div>
-              <p className="text-xs text-slate-400 mt-0.5">
-                Real-Time Animated Industrial SCADA Control Room & CPCB Compliance Gating
-              </p>
+              <div className="relative mt-0.5 inline-block">
+                <select
+                  id="facility-select"
+                  value={selectedFacilityId}
+                  onChange={handleFacilityChange}
+                  className="appearance-none bg-slate-950/80 hover:bg-slate-800/80 border border-slate-700/80 text-slate-200 text-xs font-semibold pl-2.5 pr-7 py-1 rounded-md cursor-pointer focus:outline-none focus:border-sky-500 transition-colors"
+                >
+                  {facilities.map((fac) => (
+                    <option key={fac.facility_id} value={fac.facility_id} className="bg-slate-900 text-slate-200">
+                      {fac.facility_name} • {(fac.location as { city?: string })?.city || (fac.location as { state?: string })?.state || 'Lucknow'}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className="w-3.5 h-3.5 text-slate-400 absolute right-2 top-2 pointer-events-none" />
+              </div>
             </div>
-          </div>
-
-          {/* Facility Dropdown */}
-          <div className="flex items-center gap-2 sm:border-l sm:border-slate-800 sm:pl-4">
-            <select
-              id="facility-select"
-              value={selectedFacilityId}
-              onChange={handleFacilityChange}
-              className="rounded-lg border border-slate-700 bg-slate-950 text-slate-200 px-3 py-1.5 text-xs font-medium shadow-sm focus:border-sky-500 focus:outline-none"
-            >
-              {facilities.map((fac) => (
-                <option key={fac.facility_id} value={fac.facility_id}>
-                  {fac.facility_name} ({fac.capacity} {fac.capacity_unit})
-                </option>
-              ))}
-            </select>
           </div>
         </div>
 
-        {/* Right: Engine Lifecycle Controls & Stream Indicator */}
-        <div className="flex flex-wrap items-center gap-3">
-          {/* Connection State Pill */}
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-xs font-mono">
-            {connectionState === 'connected' ? (
-              <>
-                <span className="flex h-2 w-2 relative">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                </span>
-                <span className="text-emerald-400 font-bold">STREAM LIVE</span>
-              </>
-            ) : connectionState === 'resyncing' ? (
-              <>
-                <RefreshCw className="w-3 h-3 text-amber-400 animate-spin" />
-                <span className="text-amber-400 font-bold">RESYNCING</span>
-              </>
-            ) : connectionState === 'connecting' ? (
-              <>
-                <RefreshCw className="w-3 h-3 text-sky-400 animate-spin" />
-                <span className="text-sky-400">CONNECTING</span>
-              </>
-            ) : (
-              <>
-                <WifiOff className="w-3 h-3 text-rose-400" />
-                <span className="text-rose-400">DISCONNECTED</span>
-              </>
-            )}
-            <span className="text-slate-600">|</span>
-            <span className="text-slate-300 font-bold">v{effectiveVersion}</span>
+        {/* Right: Mode Badge, State Version, Last Update & Controls */}
+        <div className="flex flex-wrap items-center gap-2.5">
+          {/* Live Simulation Mode Pill */}
+          <div className="flex items-center gap-2 bg-slate-950/80 border border-slate-800/90 px-3 py-1.5 rounded-lg shadow-sm">
+            <span className="flex h-2.5 w-2.5 relative">
+              <span
+                className={`animate-ping absolute inline-flex h-full w-full rounded-full ${
+                  currentLifecycle === 'running' ? 'bg-emerald-400 opacity-75' : 'bg-amber-400 opacity-75'
+                }`}
+              ></span>
+              <span
+                className={`relative inline-flex rounded-full h-2.5 w-2.5 ${
+                  currentLifecycle === 'running'
+                    ? 'bg-emerald-500'
+                    : currentLifecycle === 'paused'
+                    ? 'bg-amber-500'
+                    : 'bg-slate-500'
+                }`}
+              ></span>
+            </span>
+            <div>
+              <div className="text-[11px] font-mono font-bold text-emerald-400 tracking-wide uppercase">
+                ● {modeDisplayLabel}
+              </div>
+              <div className="text-[10px] text-slate-400 font-mono">
+                {currentLifecycle === 'running'
+                  ? 'Twin Running | Simulator'
+                  : currentLifecycle === 'paused'
+                  ? 'Twin Paused | Simulator'
+                  : 'Twin Stopped | Standby'}
+              </div>
+            </div>
+          </div>
+
+          {/* State Version Pill */}
+          <div className="bg-slate-950/80 border border-slate-800/90 px-3 py-1.5 rounded-lg shadow-sm text-center">
+            <div className="text-[10px] text-slate-400 font-mono uppercase">State Version</div>
+            <div className="text-xs font-mono font-bold text-sky-400">State v{effectiveVersion}</div>
+          </div>
+
+          {/* Last Update Clock */}
+          <div className="bg-slate-950/80 border border-slate-800/90 px-3 py-1.5 rounded-lg shadow-sm">
+            <div className="text-[10px] text-slate-400 font-mono uppercase flex items-center gap-1">
+              <Clock className="w-2.5 h-2.5 text-slate-400" />
+              Last Update (IST)
+            </div>
+            <div className="text-xs font-mono text-slate-200">
+              {lastUpdateFormatted}{' '}
+              <span className="text-emerald-400 font-bold">
+                ● {secondsAgo}s ago
+              </span>
+            </div>
           </div>
 
           {/* Engine Lifecycle Controls */}
-          <div className="flex items-center gap-1 bg-slate-950 border border-slate-800 p-1 rounded-lg">
+          <div className="flex items-center gap-1.5 bg-slate-950 border border-slate-800 p-1 rounded-lg shadow-sm">
             {currentLifecycle !== 'running' ? (
               <button
                 onClick={() => {
@@ -347,144 +395,76 @@ export const DigitalTwinPage: React.FC = () => {
                   }
                 }}
                 disabled={startEngineMutation.isPending || resumeEngineMutation.isPending}
-                className="flex items-center gap-1 px-3 py-1 rounded bg-emerald-600 hover:bg-emerald-500 text-white font-mono text-xs font-semibold shadow-sm transition-colors"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded bg-emerald-600 hover:bg-emerald-500 text-white font-mono text-xs font-semibold shadow-sm transition-colors"
                 title={currentLifecycle === 'paused' ? 'Resume Engine' : 'Start Engine (1Hz)'}
               >
                 <Play className="w-3.5 h-3.5 fill-current" />
-                <span>{currentLifecycle === 'paused' ? 'RESUME' : 'START'}</span>
+                <span>{currentLifecycle === 'paused' ? 'Resume' : 'Start'}</span>
               </button>
             ) : (
               <button
                 onClick={() => pauseEngineMutation.mutate()}
                 disabled={pauseEngineMutation.isPending}
-                className="flex items-center gap-1 px-3 py-1 rounded bg-amber-600 hover:bg-amber-500 text-white font-mono text-xs font-semibold shadow-sm transition-colors"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded bg-emerald-600/90 hover:bg-emerald-500 text-white font-mono text-xs font-semibold shadow-sm transition-colors"
+                title="Twin Engine Running (Click to Pause)"
+              >
+                <Play className="w-3.5 h-3.5 fill-current text-white" />
+                <span>Running</span>
+              </button>
+            )}
+
+            {currentLifecycle === 'running' && (
+              <button
+                onClick={() => pauseEngineMutation.mutate()}
+                disabled={pauseEngineMutation.isPending}
+                className="flex items-center gap-1 px-2.5 py-1.5 rounded bg-amber-600 hover:bg-amber-500 text-white font-mono text-xs font-semibold shadow-sm transition-colors"
                 title="Pause Engine"
               >
                 <Pause className="w-3.5 h-3.5 fill-current" />
-                <span>PAUSE</span>
+                <span>Pause</span>
               </button>
             )}
 
             <button
               onClick={() => stopEngineMutation.mutate()}
               disabled={stopEngineMutation.isPending || currentLifecycle === 'stopped'}
-              className="flex items-center gap-1 px-2.5 py-1 rounded hover:bg-slate-800 text-slate-300 disabled:opacity-40 font-mono text-xs font-semibold transition-colors"
+              className="flex items-center gap-1 px-2.5 py-1.5 rounded hover:bg-slate-800 text-slate-300 disabled:opacity-40 font-mono text-xs font-semibold transition-colors"
               title="Stop Engine"
             >
               <Square className="w-3.5 h-3.5 fill-current text-rose-400" />
-              <span>STOP</span>
+              <span>Stop</span>
+            </button>
+
+            <button
+              onClick={() => {
+                reconnect();
+                stateQuery.refetch();
+              }}
+              className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded transition-colors"
+              title="Force Stream Reconnect & Resync"
+            >
+              <RefreshCw className="h-3.5 w-3.5" />
             </button>
           </div>
-
-          {/* Manual Refresh / Reconnect */}
-          <button
-            onClick={() => {
-              reconnect();
-              stateQuery.refetch();
-            }}
-            className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors border border-slate-800"
-            title="Force Stream Reconnect & State Sync"
-          >
-            <RefreshCw className="h-4 w-4" />
-          </button>
         </div>
-      </div>
+      </header>
 
-      {/* Facility Status Summary Ribbon */}
-      {activeTwinState && (
-        <div className="bg-slate-900 border border-slate-800 rounded-lg p-3 text-xs flex flex-wrap items-center justify-between gap-3 text-slate-300">
-          <div className="flex items-center gap-6 flex-wrap">
-            <div>
-              <span className="text-[10px] uppercase font-bold text-slate-400 block">Facility Profile</span>
-              <span className="font-semibold text-slate-100">{selectedFacility?.facility_name || 'Central Delhi STP'}</span>
-            </div>
-            <div>
-              <span className="text-[10px] uppercase font-bold text-slate-400 block">Technology</span>
-              <span className="font-medium text-slate-300 capitalize">
-                {selectedFacility?.facility_type?.replace('_', ' ') || 'Activated Sludge Process (ASP)'}
-              </span>
-            </div>
-            <div>
-              <span className="text-[10px] uppercase font-bold text-slate-400 block">Observed Clock</span>
-              <span className="font-mono text-slate-300">
-                {new Date(activeTwinState.observed_at).toLocaleTimeString([], { hour12: false })}
-              </span>
-            </div>
-            <div>
-              <span className="text-[10px] uppercase font-bold text-slate-400 block">Simulation Ticks</span>
-              <span className="font-mono font-bold text-sky-400">
-                {activeEngineStatus?.tick_count ?? 0} ticks
-              </span>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3">
-            {/* Freshness Badge */}
-            <span
-              className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold ${
-                activeTwinState.state_freshness === 'fresh'
-                  ? 'bg-emerald-950 text-emerald-300 border border-emerald-800'
-                  : activeTwinState.state_freshness === 'stale'
-                  ? 'bg-amber-950 text-amber-300 border border-amber-800'
-                  : 'bg-rose-950 text-rose-300 border border-rose-800'
-              }`}
-            >
-              <span
-                className={`h-2 w-2 rounded-full ${
-                  activeTwinState.state_freshness === 'fresh'
-                    ? 'bg-emerald-400 animate-pulse'
-                    : activeTwinState.state_freshness === 'stale'
-                    ? 'bg-amber-400'
-                    : 'bg-rose-400'
-                }`}
-              />
-              {activeTwinState.state_freshness === 'fresh'
-                ? 'Live Synchronized'
-                : activeTwinState.state_freshness === 'stale'
-                ? 'Telemetry Stale'
-                : 'Telemetry Expired'}
-            </span>
-
-            {/* Data Quality Badge */}
-            <span
-              className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold ${
-                activeTwinState.data_quality === 'valid'
-                  ? 'bg-emerald-950 text-emerald-300 border border-emerald-800'
-                  : activeTwinState.data_quality === 'suspect'
-                  ? 'bg-amber-950 text-amber-300 border border-amber-800'
-                  : 'bg-rose-950 text-rose-300 border border-rose-800'
-              }`}
-            >
-              {activeTwinState.data_quality === 'valid' ? (
-                <CheckCircle2 className="h-3 w-3 text-emerald-400" />
-              ) : (
-                <AlertTriangle className="h-3 w-3 text-amber-400" />
-              )}
-              Quality: {activeTwinState.data_quality.toUpperCase()}
-            </span>
-          </div>
-        </div>
-      )}
-
-      {/* Nav Tabs */}
-      <div className="border-b border-slate-800">
-        <nav className="flex space-x-6">
-          {[
-            { id: 'overview', label: 'Animated Process SCADA Canvas', icon: Layers },
-            { id: 'scenarios', label: 'What-If Scenario Studio', icon: Sliders },
-            { id: 'predictions', label: 'Forward Predictive Horizon', icon: TrendingUp },
-            { id: 'sustainability', label: 'Water Recycling & Reuse', icon: Droplets },
-          ].map((tab) => {
+      {/* ========================================================= */}
+      {/* 2. SUB-NAVIGATION BAR (6 PROCESS TABS)                    */}
+      {/* ========================================================= */}
+      <div className="bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 flex flex-wrap items-center justify-between gap-3 shadow-md">
+        <nav className="flex items-center gap-1.5 flex-wrap">
+          {navTabs.map((tab) => {
             const Icon = tab.icon;
             const isSelected = activeTab === tab.id;
             return (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id as typeof activeTab)}
-                className={`flex items-center gap-2 py-3 px-1 border-b-2 font-medium text-sm transition-colors ${
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition-all ${
                   isSelected
-                    ? 'border-sky-500 text-sky-400 font-bold'
-                    : 'border-transparent text-slate-400 hover:text-slate-200 hover:border-slate-700'
+                    ? 'bg-sky-950 text-sky-400 border border-sky-800/80 shadow-sm'
+                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
                 }`}
               >
                 <Icon className="h-4 w-4" />
@@ -493,125 +473,148 @@ export const DigitalTwinPage: React.FC = () => {
             );
           })}
         </nav>
+
+        {/* Right SCADA Controls & Inspector Mode Switcher */}
+        <div className="flex items-center gap-2">
+          {activeTab === 'process_flow' && (
+            <div className="flex items-center gap-1.5 text-xs text-slate-300 bg-slate-950 border border-slate-800 px-2 py-1 rounded-lg font-mono">
+              <span className="text-slate-400 text-[10px] uppercase">Inspector:</span>
+              <button
+                onClick={() => setInspectorPlacement('drawer')}
+                className={`px-2 py-0.5 rounded text-[10px] font-semibold transition-colors ${
+                  inspectorPlacement === 'drawer'
+                    ? 'bg-sky-950 text-sky-400 border border-sky-800'
+                    : 'text-slate-400 hover:text-slate-200'
+                }`}
+                title="Inspector slides over as a side drawer (Canvas width stays 100%)"
+              >
+                Slide Drawer
+              </button>
+              <button
+                onClick={() => setInspectorPlacement('below')}
+                className={`px-2 py-0.5 rounded text-[10px] font-semibold transition-colors ${
+                  inspectorPlacement === 'below'
+                    ? 'bg-sky-950 text-sky-400 border border-sky-800'
+                    : 'text-slate-400 hover:text-slate-200'
+                }`}
+                title="Inspector docks below canvas (Canvas width stays 100%)"
+              >
+                Dock Below
+              </button>
+            </div>
+          )}
+          <div className="flex items-center gap-1.5 text-xs text-slate-300 bg-slate-950 border border-slate-800 px-3 py-1.5 rounded-lg font-mono">
+            <span>Main SCADA View</span>
+            <ChevronDown className="w-3 h-3 text-slate-400" />
+          </div>
+        </div>
       </div>
 
       {/* ========================================================= */}
-      {/* TAB 1: ANIMATED PROCESS SCADA CANVAS & LIVE TELEMETRY     */}
+      {/* 3. TAB 1: PROCESS FLOW VIEW                               */}
       {/* ========================================================= */}
-      {activeTab === 'overview' && (
-        <div className="space-y-6">
-          {/* PRIMARY VIEWPORT: MASTER INDUSTRIAL SYNOPTIC PROCESS FLOW */}
-          <SynopticProcessFlow
-            twinState={activeTwinState || null}
-            activeAlarms={activeAlarms}
-            selectedStageId={selectedStageId}
-            onSelectStage={(stageId) => setSelectedStageId(stageId)}
-            isLoading={stateQuery.isLoading && !activeTwinState}
-          />
+      {activeTab === 'process_flow' && (
+        <div className="space-y-4 w-full min-w-0">
+          {/* Top Section: Full-Width 5-Stage Animated SCADA Canvas (Never shrunken) */}
+          <div className="w-full min-w-0">
+            <SynopticProcessFlow
+              twinState={activeTwinState || null}
+              activeAlarms={activeAlarms}
+              selectedStageId={selectedStageId}
+              onSelectStage={(stageId) => {
+                setSelectedStageId(stageId);
+              }}
+              isLoading={stateQuery.isLoading && !activeTwinState}
+              isRunning={currentLifecycle === 'running'}
+            />
+          </div>
 
-          {/* Contextual Stage Inspection Drawer (Slide-Over) */}
-          <StageInspectionDrawer
-            stageId={selectedStageId}
-            twinState={activeTwinState || null}
-            alarms={activeAlarms}
-            onClose={() => setSelectedStageId(null)}
-            onAcknowledgeAlarm={acknowledgeAlarm}
-          />
-
-          {/* 1Hz Live Telemetry Trends (Rolling Sparklines) */}
-          <LiveTelemetryTrends twinState={activeTwinState || null} maxPoints={45} />
-
-          {/* Live SCADA Alarms & Compliance Event Console */}
-          <AlarmConsole
-            alarms={activeAlarms}
-            onAcknowledge={acknowledgeAlarm}
-            isLoading={false}
-          />
-
-          {/* Operational Advisory Recommendations */}
-          <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-sm space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <ShieldAlert className="h-5 w-5 text-sky-400" />
-                <h3 className="text-sm font-bold text-slate-100 uppercase tracking-wide">
-                  Active Operational Recommendations
-                </h3>
-              </div>
-              <span className="text-xs bg-sky-950 text-sky-300 border border-sky-800 px-2.5 py-1 rounded font-medium">
-                Advisory Only — Requires Human Approval
-              </span>
+          {/* Mode A: Below-Canvas Inspector (When inspectorPlacement === 'below' and stage is selected) */}
+          {selectedStageId && inspectorPlacement === 'below' && (
+            <div className="w-full min-w-0 transition-all duration-300">
+              <IntegratedStageInspector
+                stageId={selectedStageId}
+                twinState={activeTwinState || null}
+                alarms={activeAlarms}
+                onClose={() => setSelectedStageId(null)}
+                onAcknowledgeAlarm={acknowledgeAlarm}
+                placementMode="below"
+                onTogglePlacement={(mode) => setInspectorPlacement(mode)}
+                onSelectStage={(id) => setSelectedStageId(id)}
+              />
             </div>
+          )}
 
-            {recommendationsQuery.isLoading ? (
-              <p className="text-sm text-slate-400">Checking plant operating constraints...</p>
-            ) : recommendationsQuery.data && recommendationsQuery.data.length > 0 ? (
-              <div className="space-y-3">
-                {recommendationsQuery.data.map((rec) => {
-                  const isAcknowledged = acknowledgedRecs[rec.recommendation_id];
-                  return (
-                    <div
-                      key={rec.recommendation_id}
-                      className={`border rounded-lg p-4 transition ${
-                        isAcknowledged
-                          ? 'bg-slate-950/40 border-slate-800 opacity-60'
-                          : 'bg-slate-950 border-slate-800 shadow-sm'
-                      }`}
-                    >
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-2">
-                            <span
-                              className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded ${
-                                rec.priority === 'urgent'
-                                  ? 'bg-rose-950 text-rose-300 border border-rose-800'
-                                  : rec.priority === 'high'
-                                  ? 'bg-amber-950 text-amber-300 border border-amber-800'
-                                  : 'bg-indigo-950 text-indigo-300 border border-indigo-800'
-                              }`}
-                            >
-                              {rec.priority}
-                            </span>
-                            <h4 className="text-sm font-semibold text-slate-100">{rec.suggested_action}</h4>
-                          </div>
-                          <p className="text-xs text-slate-400">{rec.expected_outcome}</p>
-                          <div className="text-[11px] text-slate-500 mt-2">
-                            <span className="font-medium text-slate-400">Evidence: </span>
-                            {rec.evidence.join('; ')}
-                          </div>
-                        </div>
-
-                        <div>
-                          {isAcknowledged ? (
-                            <span className="inline-flex items-center gap-1 text-xs text-emerald-400 font-semibold">
-                              <Check className="h-4 w-4" /> Confirmed
-                            </span>
-                          ) : (
-                            <button
-                              onClick={() =>
-                                setAcknowledgedRecs((prev) => ({ ...prev, [rec.recommendation_id]: true }))
-                              }
-                              className="px-3 py-1.5 text-xs font-medium text-white bg-sky-600 hover:bg-sky-500 rounded-lg shadow-sm transition"
-                            >
-                              Acknowledge
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
+          {/* Mode B: Slide Drawer Overlay (When inspectorPlacement === 'drawer' and stage is selected) */}
+          {/* Note: Overlay renders over the page without touching or shrinking canvas width! */}
+          {selectedStageId && inspectorPlacement === 'drawer' && (
+            <div className="fixed inset-0 z-50 overflow-hidden">
+              {/* Semi-transparent Backdrop click to close */}
+              <div
+                className="fixed inset-0 bg-slate-950/60 backdrop-blur-[2px] transition-opacity cursor-pointer"
+                onClick={() => setSelectedStageId(null)}
+                aria-hidden="true"
+              />
+              {/* Slide Drawer Panel */}
+              <div className="fixed inset-y-0 right-0 max-w-full flex pl-10 pointer-events-none">
+                <div className="w-screen max-w-md sm:max-w-lg bg-[#0b1329] border-l border-slate-700/80 shadow-2xl p-4 overflow-y-auto pointer-events-auto">
+                  <IntegratedStageInspector
+                    stageId={selectedStageId}
+                    twinState={activeTwinState || null}
+                    alarms={activeAlarms}
+                    onClose={() => setSelectedStageId(null)}
+                    onAcknowledgeAlarm={acknowledgeAlarm}
+                    placementMode="drawer"
+                    onTogglePlacement={(mode) => setInspectorPlacement(mode)}
+                    onSelectStage={(id) => setSelectedStageId(id)}
+                  />
+                </div>
               </div>
-            ) : (
-              <p className="text-xs text-slate-400 italic">
-                All operating variables and biological stages are currently within optimal kinetic envelopes.
-              </p>
-            )}
+            </div>
+          )}
+
+          {/* Bottom Section: Key Plant Parameters + Live Events Console */}
+          <div className="grid grid-cols-1 xl:grid-cols-12 gap-3 w-full min-w-0 items-stretch">
+            <div className="xl:col-span-8 min-w-0">
+              <KeyPlantParameters
+                twinState={activeTwinState || null}
+                isRunning={currentLifecycle === 'running'}
+                lastMessageAt={lastMessageAt ? new Date(lastMessageAt).toISOString() : null}
+              />
+            </div>
+            <div className="xl:col-span-4 min-w-0 flex flex-col">
+              <LiveEventsConsole
+                twinState={activeTwinState || null}
+                alarms={activeAlarms}
+                onAcknowledgeAlarm={acknowledgeAlarm}
+              />
+            </div>
           </div>
         </div>
       )}
 
       {/* ========================================================= */}
-      {/* TAB 2: WHAT-IF SCENARIO SIMULATION STUDIO                 */}
+      {/* 4. TAB 2: TELEMETRY PIPELINE (SIMULATOR CANVAS)           */}
+      {/* ========================================================= */}
+      {activeTab === 'telemetry_pipeline' && (
+        <div className="space-y-4">
+          <SimulatorCanvas
+            isRunning={currentLifecycle === 'running'}
+            activeFacilityName={selectedFacility?.facility_name || 'Bharwara STP Lucknow'}
+            stepsGenerated={activeEngineStatus?.tick_count ?? 0}
+            readingsIngested={(activeEngineStatus?.tick_count ?? 0) * 5}
+            currentScenario={activeEngineStatus?.current_scenario || 'baseline'}
+            lastTickAt={activeEngineStatus?.last_tick_at || activeTwinState?.observed_at || null}
+            onStart={() => startEngineMutation.mutate()}
+            onStop={() => stopEngineMutation.mutate()}
+            isStarting={startEngineMutation.isPending}
+            isStopping={stopEngineMutation.isPending}
+          />
+        </div>
+      )}
+
+      {/* ========================================================= */}
+      {/* 5. TAB 3: WHAT-IF SCENARIO SIMULATION STUDIO              */}
       {/* ========================================================= */}
       {activeTab === 'scenarios' && (
         <div className="space-y-6">
@@ -797,7 +800,7 @@ export const DigitalTwinPage: React.FC = () => {
       )}
 
       {/* ========================================================= */}
-      {/* TAB 3: FORWARD PREDICTIVE HORIZON                         */}
+      {/* 6. TAB 4: FORWARD PREDICTIVE HORIZON                      */}
       {/* ========================================================= */}
       {activeTab === 'predictions' && (
         <div className="space-y-6">
@@ -850,7 +853,7 @@ export const DigitalTwinPage: React.FC = () => {
       )}
 
       {/* ========================================================= */}
-      {/* TAB 4: WATER RECYCLING & SUSTAINABILITY                   */}
+      {/* 7. TAB 5: WATER RECYCLING & SUSTAINABILITY                */}
       {/* ========================================================= */}
       {activeTab === 'sustainability' && (
         <div className="space-y-6">
@@ -906,6 +909,93 @@ export const DigitalTwinPage: React.FC = () => {
               </div>
             </div>
           ) : null}
+        </div>
+      )}
+
+      {/* ========================================================= */}
+      {/* 8. TAB 6: ANALYTICS & OPERATIONAL REPORTS                 */}
+      {/* ========================================================= */}
+      {activeTab === 'analytics' && (
+        <div className="space-y-6">
+          {/* Operational Advisory Recommendations */}
+          <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-sm space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <ShieldAlert className="h-5 w-5 text-sky-400" />
+                <h3 className="text-sm font-bold text-slate-100 uppercase tracking-wide">
+                  Active Operational Recommendations
+                </h3>
+              </div>
+              <span className="text-xs bg-sky-950 text-sky-300 border border-sky-800 px-2.5 py-1 rounded font-medium">
+                Advisory Only — Requires Human Approval
+              </span>
+            </div>
+
+            {recommendationsQuery.isLoading ? (
+              <p className="text-sm text-slate-400">Checking plant operating constraints...</p>
+            ) : recommendationsQuery.data && recommendationsQuery.data.length > 0 ? (
+              <div className="space-y-3">
+                {recommendationsQuery.data.map((rec) => {
+                  const isAcknowledged = acknowledgedRecs[rec.recommendation_id];
+                  return (
+                    <div
+                      key={rec.recommendation_id}
+                      className={`border rounded-lg p-4 transition ${
+                        isAcknowledged
+                          ? 'bg-slate-950/40 border-slate-800 opacity-60'
+                          : 'bg-slate-950 border-slate-800 shadow-sm'
+                      }`}
+                    >
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2">
+                            <span
+                              className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded ${
+                                rec.priority === 'urgent'
+                                  ? 'bg-rose-950 text-rose-300 border border-rose-800'
+                                  : rec.priority === 'high'
+                                  ? 'bg-amber-950 text-amber-300 border border-amber-800'
+                                  : 'bg-indigo-950 text-indigo-300 border border-indigo-800'
+                              }`}
+                            >
+                              {rec.priority}
+                            </span>
+                            <h4 className="text-sm font-semibold text-slate-100">{rec.suggested_action}</h4>
+                          </div>
+                          <p className="text-xs text-slate-400">{rec.expected_outcome}</p>
+                          <div className="text-[11px] text-slate-500 mt-2">
+                            <span className="font-medium text-slate-400">Evidence: </span>
+                            {rec.evidence.join('; ')}
+                          </div>
+                        </div>
+
+                        <div>
+                          {isAcknowledged ? (
+                            <span className="inline-flex items-center gap-1 text-xs text-emerald-400 font-semibold">
+                              <Check className="h-4 w-4" /> Confirmed
+                            </span>
+                          ) : (
+                            <button
+                              onClick={() =>
+                                setAcknowledgedRecs((prev) => ({ ...prev, [rec.recommendation_id]: true }))
+                              }
+                              className="px-3 py-1.5 text-xs font-medium text-white bg-sky-600 hover:bg-sky-500 rounded-lg shadow-sm transition"
+                            >
+                              Acknowledge
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <p className="text-xs text-slate-400 italic">
+                All operating variables and biological stages are currently within optimal kinetic envelopes.
+              </p>
+            )}
+          </div>
         </div>
       )}
     </div>

@@ -52,6 +52,7 @@ export interface TwinState {
     status?: string;
     overall_removal_efficiencies?: Record<string, number>;
   };
+  engine_status?: TwinEngineStatus;
 }
 
 export interface TwinConfig {

@@ -18,7 +18,16 @@ import { SynopticProcessFlow } from '../components/digitalTwin/SynopticProcessFl
 import { AlarmConsole } from '../components/digitalTwin/AlarmConsole';
 import { LiveTelemetryTrends } from '../components/digitalTwin/LiveTelemetryTrends';
 import { StageInspectionDrawer } from '../components/digitalTwin/StageInspectionDrawer';
+import { SimulatorCanvas } from '../components/simulator/SimulatorCanvas';
 import { TwinAlarmEvent, TwinState } from '../types/digitalTwin';
+import {
+  ScadaPipe,
+  ScadaPump,
+  ScadaBlower,
+  ScadaTerminalStation,
+  ScadaLegend,
+  ScadaFloatingCard,
+} from '../components/digitalTwin/scada/ScadaPrimitives';
 
 
 describe('AquaTrustAI Frontend Unit Test Suite', () => {
@@ -359,6 +368,54 @@ describe('AquaTrustAI Frontend Unit Test Suite', () => {
       expect(screen.getByText(/5\. FINAL EFFLUENT/i)).toBeInTheDocument();
       expect(screen.getByText(/RAS PUMP/i)).toBeInTheDocument();
       expect(screen.getByText(/v42/i)).toBeInTheDocument();
+
+      // Sensor callout pins matching reference image
+      expect(screen.getByText('LIT-101')).toBeInTheDocument();
+      expect(screen.getByText('AIT-201')).toBeInTheDocument();
+      expect(screen.getByText('AIT-302')).toBeInTheDocument();
+      expect(screen.getByText('AIT-401')).toBeInTheDocument();
+      expect(screen.getByText('AIT-501')).toBeInTheDocument();
+    });
+
+    it('truthfully handles null or missing twinState with Unavailable indicators', () => {
+      render(
+        <SynopticProcessFlow
+          twinState={null}
+          activeAlarms={[]}
+          selectedStageId={null}
+          onSelectStage={vi.fn()}
+        />
+      );
+
+      // Verify that all stages render with Unavailable instead of hardcoded fake values
+      const unavailableBadges = screen.getAllByText(/Unavailable/i);
+      expect(unavailableBadges.length).toBeGreaterThan(0);
+    });
+
+    it('toggles SCADA animation speed between Normal, Fast, Slow, and Paused', () => {
+      render(
+        <SynopticProcessFlow
+          twinState={mockTwinState}
+          activeAlarms={mockAlarms}
+          selectedStageId="inlet"
+          onSelectStage={vi.fn()}
+        />
+      );
+
+      const speedBtn = screen.getByTitle(/Toggle Animation Speed/i);
+      expect(speedBtn).toHaveTextContent(/1x Normal/i);
+
+      // Click to toggle to 2x Fast
+      fireEvent.click(speedBtn);
+      expect(speedBtn).toHaveTextContent(/2x Fast/i);
+
+      // Click to toggle to 0.5x Slow
+      fireEvent.click(speedBtn);
+      expect(speedBtn).toHaveTextContent(/0.5x Slow/i);
+
+      // Click to toggle to 0x Paused
+      fireEvent.click(speedBtn);
+      expect(speedBtn).toHaveTextContent(/0x Paused/i);
     });
 
     it('renders AlarmConsole with critical and warning badges and handles acknowledge', () => {
@@ -408,7 +465,247 @@ describe('AquaTrustAI Frontend Unit Test Suite', () => {
       fireEvent.click(screen.getByText(/Close Inspector/i));
       expect(onClose).toHaveBeenCalled();
     });
+
+    it('differentiates stage data across all treatment stages in StageInspectionDrawer', () => {
+      // 1. Check Stage 1: Inlet
+      const { rerender } = render(
+        <StageInspectionDrawer
+          stageId="inlet"
+          twinState={mockTwinState}
+          alarms={[]}
+          onClose={vi.fn()}
+          onAcknowledgeAlarm={vi.fn()}
+        />
+      );
+      expect(screen.getByText(/Raw Influent Inlet & Bar Screening/i)).toBeInTheDocument();
+      expect(screen.getByText(/Influent Flow Rate/i)).toBeInTheDocument();
+      expect(screen.getByText(/SCR-101A/i)).toBeInTheDocument();
+
+      // 2. Rerender with Stage 3: Aeration
+      rerender(
+        <StageInspectionDrawer
+          stageId="biological_aeration"
+          twinState={mockTwinState}
+          alarms={[]}
+          onClose={vi.fn()}
+          onAcknowledgeAlarm={vi.fn()}
+        />
+      );
+      expect(screen.getByText(/Biological Aeration Basin \(CSTR Activated Sludge\)/i)).toBeInTheDocument();
+      expect(screen.getByText(/Dissolved Oxygen \(DO\)/i)).toBeInTheDocument();
+      expect(screen.getByText(/BLW-301A\/B/i)).toBeInTheDocument();
+    });
+
+    it('renders SimulatorCanvas with animated SCADA telemetry pipeline, live gauges, and controls', () => {
+      const onStart = vi.fn();
+      const onStop = vi.fn();
+      render(
+        <SimulatorCanvas
+          isRunning={true}
+          activeFacilityName="Bharwara STP Lucknow"
+          stepsGenerated={142}
+          readingsIngested={140}
+          currentScenario="baseline_normal"
+          lastTickAt="2026-10-18T09:00:00Z"
+          onStart={onStart}
+          onStop={onStop}
+        />
+      );
+
+      expect(screen.getByText(/SCADA Telemetry Pipeline & Treatment Basin Visualizer/i)).toBeInTheDocument();
+      expect(screen.getByText(/TRANSMITTING 1Hz/i)).toBeInTheDocument();
+      expect(screen.getByText(/1. INFLUENT HEADWORKS/i)).toBeInTheDocument();
+      expect(screen.getByText(/3. BIOLOGICAL AERATION/i)).toBeInTheDocument();
+      expect(screen.getByText(/5. UV EFFLUENT/i)).toBeInTheDocument();
+      expect(screen.getByText(/SCADA EDGE RTU GATEWAY/i)).toBeInTheDocument();
+      expect(screen.getByText(/PLANT INFLOW/i)).toBeInTheDocument();
+
+      fireEvent.click(screen.getByText(/Stop Stream/i));
+      expect(onStop).toHaveBeenCalled();
+    });
+
+    it('opens PipelineNodeInspector when clicking on a sensor or pipeline node in SimulatorCanvas', () => {
+      render(
+        <SimulatorCanvas
+          isRunning={true}
+          activeFacilityName="Bharwara STP Lucknow"
+          stepsGenerated={40}
+          readingsIngested={200}
+          currentScenario="baseline_normal"
+          lastTickAt="2026-10-18T09:00:00Z"
+          onStart={vi.fn()}
+          onStop={vi.fn()}
+        />
+      );
+
+      // Click on Basin 1 / SN-101
+      fireEvent.click(screen.getByText(/1. INFLUENT HEADWORKS/i));
+
+      // Inspector drawer should be rendered
+      expect(screen.getByText(/Stage 1: Raw Influent Sensor Tap/i)).toBeInTheDocument();
+      expect(screen.getByText(/Multi-Stage Pre-AI & CPCB Validation Audit/i)).toBeInTheDocument();
+      expect(screen.getByText(/Raw Telemetry Frame Preview/i)).toBeInTheDocument();
+
+      // Click close button
+      fireEvent.click(screen.getByText(/Close Drawer/i));
+      expect(screen.queryByText(/Stage 1: Raw Influent Sensor Tap/i)).not.toBeInTheDocument();
+
+      // Click on Edge RTU Gateway node
+      fireEvent.click(screen.getByText(/SCADA EDGE RTU GATEWAY/i));
+      expect(screen.getByText(/SCADA Edge RTU Telemetry Gateway/i)).toBeInTheDocument();
+      expect(screen.getByText(/Edge Ingestion & Packet Serialization/i)).toBeInTheDocument();
+    });
+
+    it('displays disturbance alerts and out-of-bounds validation checks under anomaly injection', () => {
+      render(
+        <SimulatorCanvas
+          isRunning={true}
+          activeFacilityName="Bharwara STP Lucknow"
+          stepsGenerated={55}
+          readingsIngested={275}
+          currentScenario="organic_shock"
+          lastTickAt="2026-10-18T09:00:00Z"
+          onStart={vi.fn()}
+          onStop={vi.fn()}
+        />
+      );
+
+      // Verify disturbance badge in header
+      expect(screen.getByText(/DISTURBANCE: ORGANIC_SHOCK/i)).toBeInTheDocument();
+      expect(screen.getByText(/SHOCK SPIKE/i)).toBeInTheDocument();
+
+      // Click Basin 1 to inspect anomaly details
+      fireEvent.click(screen.getByText(/1. INFLUENT HEADWORKS/i));
+      expect(screen.getByText(/ORGANIC SHOCK INFLUX DETECTED/i)).toBeInTheDocument();
+      expect(screen.getByText(/BOD exceeds upper 3σ threshold/i)).toBeInTheDocument();
+    });
+  });
+
+  describe('SCADA Industrial Graphics & Primitives Unit Tests', () => {
+    it('renders ScadaPipe with was and air variants and correct flow classes', () => {
+      const { container } = render(
+        <svg>
+          <ScadaPipe id="test-was" path="M 0 0 L 100 0" variant="was" />
+          <ScadaPipe id="test-air" path="M 0 0 L 100 0" variant="air" />
+        </svg>
+      );
+      const wasGroup = container.querySelector('#pipe-group-test-was');
+      expect(wasGroup).toBeInTheDocument();
+      const wasFlowPath = wasGroup?.querySelector('.pipe-flow-was');
+      expect(wasFlowPath).toBeInTheDocument();
+
+      const airGroup = container.querySelector('#pipe-group-test-air');
+      expect(airGroup).toBeInTheDocument();
+      const airFlowPath = airGroup?.querySelector('.pipe-flow-air');
+      expect(airFlowPath).toBeInTheDocument();
+    });
+
+    it('renders ScadaBlower with casing, turbine runner, tag, and name', () => {
+      const { container } = render(
+        <svg>
+          <ScadaBlower id="test-blower" x={50} y={50} tag="BLW-301" name="Aeration Air Blower" isRunning={true} />
+        </svg>
+      );
+      expect(screen.getByText('BLW-301')).toBeInTheDocument();
+      expect(screen.getByText('Aeration Air Blower')).toBeInTheDocument();
+      const blowerGroup = container.querySelector('#blower-test-blower');
+      expect(blowerGroup).toBeInTheDocument();
+      expect(blowerGroup?.classList.contains('scada-blower')).toBe(true);
+      expect(blowerGroup?.querySelector('.blower-spin')).toBeInTheDocument();
+    });
+
+    it('renders ScadaTerminalStation with variant styling, tags, and status badge', () => {
+      render(
+        <svg>
+          <ScadaTerminalStation
+            id="outfall"
+            x={10}
+            y={10}
+            tag="OUTFALL-701"
+            title="Treated Effluent Outfall"
+            subtitle="CPCB Compliant"
+            variant="outfall"
+            status="nominal"
+          />
+          <ScadaTerminalStation
+            id="solids"
+            x={150}
+            y={10}
+            tag="SLD-601"
+            title="Solids Dewatering"
+            subtitle="Filter Press Cake"
+            variant="solids"
+            status="warning"
+          />
+          <ScadaTerminalStation
+            id="inlet"
+            x={300}
+            y={10}
+            tag="INLET-001"
+            title="Municipal Headworks"
+            subtitle="10 MLD Wet Well"
+            variant="inlet"
+            status="alarm"
+          />
+        </svg>
+      );
+
+      // Verify tags, titles, and subtitles
+      expect(screen.getByText('OUTFALL-701')).toBeInTheDocument();
+      expect(screen.getByText('Treated Effluent Outfall')).toBeInTheDocument();
+      expect(screen.getByText('CPCB Compliant')).toBeInTheDocument();
+      expect(screen.getByText('COMPLIANT')).toBeInTheDocument();
+
+      expect(screen.getByText('SLD-601')).toBeInTheDocument();
+      expect(screen.getByText('Solids Dewatering')).toBeInTheDocument();
+      expect(screen.getByText('Filter Press Cake')).toBeInTheDocument();
+      expect(screen.getByText('WARN')).toBeInTheDocument();
+
+      expect(screen.getByText('INLET-001')).toBeInTheDocument();
+      expect(screen.getByText('Municipal Headworks')).toBeInTheDocument();
+      expect(screen.getByText('10 MLD Wet Well')).toBeInTheDocument();
+      expect(screen.getByText('ALARM')).toBeInTheDocument();
+    });
+
+    it('renders ScadaLegend with width 490 and 5 process streams', () => {
+      const { container } = render(
+        <svg>
+          <ScadaLegend x={20} y={20} />
+        </svg>
+      );
+      const rect = container.querySelector('.scada-legend rect');
+      expect(rect).toHaveAttribute('width', '490');
+
+      expect(screen.getByText('Main Process Flow')).toBeInTheDocument();
+      expect(screen.getByText('RAS Recycle')).toBeInTheDocument();
+      expect(screen.getByText('WAS Purge')).toBeInTheDocument();
+      expect(screen.getByText('UV Disinfection')).toBeInTheDocument();
+      expect(screen.getByText('Air Header')).toBeInTheDocument();
+    });
+
+    it('renders ScadaFloatingCard with dimensions 214x96 and status badge at width - 48', () => {
+      const { container } = render(
+        <svg>
+          <ScadaFloatingCard
+            x={10}
+            y={10}
+            width={214}
+            height={96}
+            title="Biological Aeration Basin"
+            status="nominal"
+            metrics={[{ label: 'DO', value: 2.1, unit: 'mg/L' }]}
+          />
+        </svg>
+      );
+      const cardRect = container.querySelector('.scada-floating-card rect');
+      expect(cardRect).toHaveAttribute('width', '214');
+      expect(cardRect).toHaveAttribute('height', '96');
+      expect(screen.getByText('Biological Aeration Basin')).toBeInTheDocument();
+      expect(screen.getByText('NORMAL')).toBeInTheDocument();
+      expect(screen.getByText('DO')).toBeInTheDocument();
+    });
   });
 });
+
 
 
