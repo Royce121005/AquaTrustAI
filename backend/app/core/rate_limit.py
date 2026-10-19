@@ -32,6 +32,35 @@ class SlidingWindowRateLimiter:
             return True
 
 
+class RateLimiter:
+    """Configurable sliding-window rate limiter callable for endpoint/test dependency injection."""
+
+    def __init__(self, max_requests: int = 120, window_seconds: float = 60.0, enabled: bool = True):
+        self.max_requests = max_requests
+        self.window_seconds = float(window_seconds)
+        self.enabled = enabled
+        self._history: Dict[str, List[float]] = defaultdict(list)
+        self._lock = Lock()
+
+    def __call__(self, request: Request) -> bool:
+        if not self.enabled:
+            return True
+        forwarded = request.headers.get("X-Forwarded-For")
+        client_ip = forwarded.split(",")[0].strip() if forwarded else (request.client.host if request.client else "127.0.0.1")
+        now = time.time()
+        with self._lock:
+            cutoff = now - self.window_seconds
+            self._history[client_ip] = [t for t in self._history[client_ip] if t > cutoff]
+            if len(self._history[client_ip]) >= self.max_requests:
+                raise HTTPException(
+                    status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                    detail=f"Rate limit exceeded: maximum {self.max_requests} requests per {int(self.window_seconds)}s.",
+                    headers={"Retry-After": str(int(self.window_seconds))},
+                )
+            self._history[client_ip].append(now)
+            return True
+
+
 # Global rate limiter instances:
 # 1. Telemetry Ingestion: 120 requests per minute per client/gateway
 ingestion_limiter = SlidingWindowRateLimiter(requests_per_minute=120)

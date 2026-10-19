@@ -262,6 +262,11 @@ class SimulatorService:
                             # Validate & Anomaly detect
                             ValidationService.validate_reading(db, reading_row)
                             AnomalyService.infer_reading(db, reading_row)
+                            try:
+                                from app.digital_twin.service import DigitalTwinService
+                                DigitalTwinService(db).synchronize_reading(reading_row)
+                            except Exception:
+                                pass
                             self.readings_ingested += 1
 
                         db.commit()

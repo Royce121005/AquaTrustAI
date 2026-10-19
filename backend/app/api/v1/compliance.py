@@ -56,7 +56,7 @@ def get_compliance_rules(db: Session = Depends(get_db)):
     "/compliance/evaluate",
     response_model=ComplianceEvaluateResponse,
     summary="Evaluate environmental compliance for a treatment record",
-    dependencies=[Depends(require_role(["operator", "auditor", "regulatory_stakeholder", "admin"]))],
+    dependencies=[Depends(require_role(["auditor", "regulatory_stakeholder", "admin"]))],
 )
 def evaluate_compliance(payload: ComplianceEvaluateRequest, db: Session = Depends(get_db)):
     """Evaluate compliance for a treatment record or ad-hoc parameters."""
