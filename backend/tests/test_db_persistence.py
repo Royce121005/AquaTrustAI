@@ -61,9 +61,9 @@ def db_session() -> Session:
 
 
 def test_schema_table_count(db_session: Session):
-    """Verify all 17 tables are initialized in the schema metadata."""
+    """Verify all 17 core tables and 8 digital twin tables (25 total) are initialized in schema metadata."""
     tables = list(Base.metadata.tables.keys())
-    assert len(tables) == 17
+    assert len(tables) == 25
     assert "facilities" in tables
     assert "sensors" in tables
     assert "readings" in tables
@@ -77,6 +77,15 @@ def test_schema_table_count(db_session: Session):
     assert "corrections" in tables
     assert "audit_logs" in tables
     assert "users" in tables
+    # Digital Twin extension tables
+    assert "twin_configurations" in tables
+    assert "twin_states" in tables
+    assert "twin_state_events" in tables
+    assert "twin_model_versions" in tables
+    assert "twin_scenarios" in tables
+    assert "twin_scenario_results" in tables
+    assert "twin_predictions" in tables
+    assert "twin_recommendations" in tables
 
 
 def test_facility_and_sensor_repository(db_session: Session):

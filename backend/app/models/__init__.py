@@ -21,6 +21,16 @@ from app.models.correction import Correction
 from app.models.audit_log import AuditLog
 from app.models.user import User
 from app.models.experiment import ExperimentRun, ExperimentMetric
+from app.models.digital_twin import (
+    TwinConfiguration,
+    TwinState,
+    TwinStateEvent,
+    TwinModelVersion,
+    TwinScenario,
+    TwinScenarioResult,
+    TwinPrediction,
+    TwinRecommendation,
+)
 
 __all__ = [
     "Base",
@@ -44,4 +54,12 @@ __all__ = [
     "User",
     "ExperimentRun",
     "ExperimentMetric",
+    "TwinConfiguration",
+    "TwinState",
+    "TwinStateEvent",
+    "TwinModelVersion",
+    "TwinScenario",
+    "TwinScenarioResult",
+    "TwinPrediction",
+    "TwinRecommendation",
 ]

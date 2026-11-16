@@ -95,6 +95,13 @@ export const FacilityDetailPage: React.FC = () => {
           </div>
           <div className="flex items-center gap-2">
             <Link
+              to={`/facilities/${fac.facility_id}/twin`}
+              className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded-md shadow-sm transition-colors flex items-center gap-1"
+            >
+              <Cpu className="h-3.5 w-3.5" />
+              Digital Twin
+            </Link>
+            <Link
               to={`/readings?facility_id=${fac.facility_id}`}
               className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-md transition-colors"
             >

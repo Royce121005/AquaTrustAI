@@ -131,6 +131,13 @@ def ingest_reading(
     # 2. AI Anomaly Inference
     anom_res = AnomalyService.infer_reading(db, reading)
 
+    # 3. Synchronize Digital Twin Virtual State
+    try:
+        from app.digital_twin.service import DigitalTwinService
+        DigitalTwinService(db).synchronize_reading(reading)
+    except Exception:
+        pass
+
     try:
         db.commit()
         db.refresh(reading)
@@ -208,6 +215,7 @@ def ingest_batch(
 
     reading_repo = ReadingRepository(db)
     created_ids: List[UUID] = []
+    created_readings: List[Reading] = []
 
     for r_in in payload.readings:
         # Sensor integrity verification
@@ -252,6 +260,14 @@ def ingest_batch(
         ValidationService.validate_reading(db, reading)
         AnomalyService.infer_reading(db, reading)
         created_ids.append(reading_id)
+        created_readings.append(reading)
+
+    if created_readings:
+        try:
+            from app.digital_twin.service import DigitalTwinService
+            DigitalTwinService(db).updater.apply_batch(created_readings)
+        except Exception:
+            pass
 
     try:
         db.commit()

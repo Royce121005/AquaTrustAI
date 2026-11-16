@@ -1,0 +1,448 @@
+/* AquaTrustAI — Industrial SCADA Digital Twin GPU Animations */
+
+/* ========================================================================= */
+/* 1. PIPE FLOW ANIMATIONS (GPU-ACCELERATED STROKE DASH & PARTICLES)         */
+/* ========================================================================= */
+
+@keyframes flowDash {
+  from {
+    stroke-dashoffset: 48;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes flowDashReverse {
+  from {
+    stroke-dashoffset: 0;
+  }
+  to {
+    stroke-dashoffset: 48;
+  }
+}
+
+.pipe-flow {
+  stroke-dasharray: 10 6;
+  animation: flowDash 1.2s linear infinite;
+  will-change: stroke-dashoffset;
+}
+
+.pipe-flow-fast {
+  stroke-dasharray: 10 6;
+  animation: flowDash 0.6s linear infinite;
+  will-change: stroke-dashoffset;
+}
+
+.pipe-flow-slow {
+  stroke-dasharray: 10 6;
+  animation: flowDash 2.4s linear infinite;
+  will-change: stroke-dashoffset;
+}
+
+.pipe-flow-ras {
+  stroke-dasharray: 9 5;
+  animation: flowDash 1.4s linear infinite;
+  will-change: stroke-dashoffset;
+}
+
+.pipe-flow-reverse {
+  stroke-dasharray: 9 5;
+  animation: flowDashReverse 1.4s linear infinite;
+  will-change: stroke-dashoffset;
+}
+
+.pipe-flow-uv {
+  stroke-dasharray: 8 4;
+  animation: flowDash 1.0s linear infinite;
+  will-change: stroke-dashoffset;
+}
+
+@keyframes flowDashWas {
+  from {
+    stroke-dashoffset: 40;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.pipe-flow-was {
+  stroke-dasharray: 8 6;
+  animation: flowDashWas 1.8s linear infinite;
+  will-change: stroke-dashoffset;
+}
+
+@keyframes flowPulseAir {
+  0% {
+    stroke-dashoffset: 32;
+    opacity: 0.7;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    stroke-dashoffset: 0;
+    opacity: 0.7;
+  }
+}
+
+.pipe-flow-air {
+  stroke-dasharray: 6 6;
+  animation: flowPulseAir 0.8s linear infinite;
+  will-change: stroke-dashoffset, opacity;
+}
+
+/* ========================================================================= */
+/* 2. AERATION BASIN MICRO-BUBBLES (VARIED, BOUNDED TO BASIN INTERIOR)       */
+/* ========================================================================= */
+
+@keyframes bubbleRise {
+  0% {
+    transform: translate3d(0, 0, 0) scale(0.6);
+    opacity: 0.15;
+  }
+  20% {
+    opacity: 0.9;
+  }
+  80% {
+    opacity: 0.95;
+  }
+  100% {
+    transform: translate3d(2px, -65px, 0) scale(1.15);
+    opacity: 0;
+  }
+}
+
+@keyframes bubbleRiseAlt {
+  0% {
+    transform: translate3d(0, 0, 0) scale(0.5);
+    opacity: 0.1;
+  }
+  25% {
+    transform: translate3d(-2px, -20px, 0) scale(0.8);
+    opacity: 0.85;
+  }
+  75% {
+    transform: translate3d(2px, -50px, 0) scale(1.05);
+    opacity: 0.9;
+  }
+  100% {
+    transform: translate3d(-1px, -70px, 0) scale(1.2);
+    opacity: 0;
+  }
+}
+
+@keyframes bubbleChurn {
+  0%, 100% {
+    transform: translate3d(0, 0, 0) scale(1);
+    opacity: 0.8;
+  }
+  50% {
+    transform: translate3d(0, -6px, 0) scale(1.08);
+    opacity: 1;
+  }
+}
+
+.scada-bubble-1 {
+  animation: bubbleRise 1.6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  transform-box: fill-box;
+  transform-origin: center bottom;
+  will-change: transform, opacity;
+}
+
+.scada-bubble-2 {
+  animation: bubbleRiseAlt 2.1s cubic-bezier(0.35, 0, 0.25, 1) infinite;
+  transform-box: fill-box;
+  transform-origin: center bottom;
+  will-change: transform, opacity;
+}
+
+.scada-bubble-3 {
+  animation: bubbleRise 2.6s cubic-bezier(0.45, 0, 0.3, 1) infinite;
+  transform-box: fill-box;
+  transform-origin: center bottom;
+  will-change: transform, opacity;
+}
+
+.scada-churn {
+  animation: bubbleChurn 2.2s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+  will-change: transform;
+}
+
+/* ========================================================================= */
+/* 3. WATER WAVE & SURFACE RIPPLE DISTURBANCE                                */
+/* ========================================================================= */
+
+@keyframes waterWave {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(-14px, 1px, 0);
+  }
+  100% {
+    transform: translate3d(-28px, 0, 0);
+  }
+}
+
+@keyframes surfaceRipple {
+  0% {
+    transform: scaleX(0.98) scaleY(0.95);
+    opacity: 0.6;
+  }
+  50% {
+    transform: scaleX(1.02) scaleY(1.05);
+    opacity: 0.95;
+  }
+  100% {
+    transform: scaleX(0.98) scaleY(0.95);
+    opacity: 0.6;
+  }
+}
+
+.scada-wave {
+  animation: waterWave 3s ease-in-out infinite alternate;
+  transform-box: fill-box;
+  transform-origin: center;
+  will-change: transform;
+}
+
+.scada-ripple {
+  animation: surfaceRipple 2.4s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+  will-change: transform, opacity;
+}
+
+/* ========================================================================= */
+/* 4. CENTRIFUGAL PUMP IMPELLER ROTATION (PMP-401 RAS PUMP)                  */
+/* ========================================================================= */
+
+@keyframes impellerSpin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.scada-impeller {
+  animation: impellerSpin 1.1s linear infinite;
+  transform-box: fill-box;
+  transform-origin: center center;
+  will-change: transform;
+}
+
+.scada-impeller-fast {
+  animation: impellerSpin 0.55s linear infinite;
+  transform-box: fill-box;
+  transform-origin: center center;
+  will-change: transform;
+}
+
+.scada-impeller-slow {
+  animation: impellerSpin 2.2s linear infinite;
+  transform-box: fill-box;
+  transform-origin: center center;
+  will-change: transform;
+}
+
+@keyframes blowerSpin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.blower-spin {
+  animation: blowerSpin 0.8s linear infinite;
+  transform-box: fill-box;
+  transform-origin: center center;
+  will-change: transform;
+}
+
+.scada-blower {
+  transition: filter 0.2s ease-in-out;
+}
+
+.scada-blower:hover {
+  filter: brightness(1.25) drop-shadow(0 0 8px rgba(56, 189, 248, 0.45));
+}
+
+/* ========================================================================= */
+/* 5. UV LAMP TUBE PULSE (GERMICIDAL PHOTOCHEMICAL GLOW)                     */
+/* ========================================================================= */
+
+@keyframes uvPulse {
+  0%, 100% {
+    opacity: 0.55;
+    filter: drop-shadow(0 0 4px #a855f7) drop-shadow(0 0 8px rgba(168, 85, 247, 0.4));
+  }
+  50% {
+    opacity: 1;
+    filter: drop-shadow(0 0 10px #c084fc) drop-shadow(0 0 16px rgba(192, 132, 252, 0.7));
+  }
+}
+
+.scada-uv-lamp {
+  animation: uvPulse 1.8s ease-in-out infinite;
+  will-change: opacity, filter;
+}
+
+/* ========================================================================= */
+/* 6. CLARIFIER ROTATING SCRAPER BRIDGE & SLUDGE SETTLING                    */
+/* ========================================================================= */
+
+@keyframes scraperSweep {
+  0% {
+    transform: rotate(-14deg);
+  }
+  50% {
+    transform: rotate(14deg);
+  }
+  100% {
+    transform: rotate(-14deg);
+  }
+}
+
+@keyframes sludgeSettle {
+  0% {
+    transform: translate3d(0, 0, 0);
+    opacity: 0.7;
+  }
+  50% {
+    opacity: 0.95;
+  }
+  100% {
+    transform: translate3d(0, 50px, 0);
+    opacity: 0.2;
+  }
+}
+
+.scada-scraper {
+  animation: scraperSweep 5s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: center center;
+  will-change: transform;
+}
+
+.scada-sludge-settle {
+  animation: sludgeSettle 3.6s ease-out infinite;
+  transform-box: fill-box;
+  transform-origin: center top;
+  will-change: transform, opacity;
+}
+
+/* ========================================================================= */
+/* 7. AMBER SELECTION GLOW PULSE                                             */
+/* ========================================================================= */
+
+@keyframes selectionAmberPulse {
+  0%, 100% {
+    opacity: 0.75;
+    filter: drop-shadow(0 0 6px rgba(245, 158, 11, 0.6));
+  }
+  50% {
+    opacity: 1;
+    filter: drop-shadow(0 0 14px rgba(245, 158, 11, 0.95)) drop-shadow(0 0 20px rgba(245, 158, 11, 0.4));
+  }
+}
+
+.selection-amber-glow {
+  animation: selectionAmberPulse 2s ease-in-out infinite;
+}
+
+/* ========================================================================= */
+/* 8. SPEED CONTROLS & LIFECYCLE STATES                                      */
+/* ========================================================================= */
+
+.anim-paused * {
+  animation-play-state: paused !important;
+}
+
+.anim-stopped * {
+  animation: none !important;
+}
+
+.anim-fast .pipe-flow,
+.anim-fast .pipe-flow-ras,
+.anim-fast .pipe-flow-uv,
+.anim-fast .pipe-flow-was {
+  animation-duration: 0.6s !important;
+}
+
+.anim-fast .pipe-flow-air {
+  animation-duration: 0.4s !important;
+}
+
+.anim-fast .scada-impeller,
+.anim-fast .blower-spin {
+  animation-duration: 0.45s !important;
+}
+
+.anim-fast .scada-bubble-1,
+.anim-fast .scada-bubble-2,
+.anim-fast .scada-bubble-3 {
+  animation-duration: 1s !important;
+}
+
+.anim-slow .pipe-flow,
+.anim-slow .pipe-flow-ras,
+.anim-slow .pipe-flow-uv,
+.anim-slow .pipe-flow-was {
+  animation-duration: 2.8s !important;
+}
+
+.anim-slow .pipe-flow-air {
+  animation-duration: 1.6s !important;
+}
+
+.anim-slow .scada-impeller,
+.anim-slow .blower-spin {
+  animation-duration: 1.8s !important;
+}
+
+.anim-slow .scada-bubble-1,
+.anim-slow .scada-bubble-2,
+.anim-slow .scada-bubble-3 {
+  animation-duration: 3.8s !important;
+}
+
+/* ========================================================================= */
+/* 9. ACCESSIBILITY: REDUCED MOTION PREFERENCE SUPPORT                      */
+/* ========================================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .pipe-flow,
+  .pipe-flow-ras,
+  .pipe-flow-uv,
+  .pipe-flow-was,
+  .pipe-flow-air,
+  .blower-spin,
+  .scada-bubble-1,
+  .scada-bubble-2,
+  .scada-bubble-3,
+  .scada-wave,
+  .scada-ripple,
+  .scada-impeller,
+  .scada-uv-lamp,
+  .scada-scraper,
+  .selection-amber-glow {
+    animation: none !important;
+  }
+}
