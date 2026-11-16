@@ -1,0 +1,50 @@
+{
+  "bod": {
+    "target_column": "DBO-S",
+    "model_type": "RandomForest",
+    "train_samples": 346,
+    "test_samples": 79,
+    "train_r2": 0.5165,
+    "test_r2": -0.0402,
+    "test_rmse": 6.1572,
+    "test_mae": 4.9376,
+    "residual_std": 13.4451,
+    "mean_effluent_value": 16.78
+  },
+  "cod": {
+    "target_column": "DQO-S",
+    "model_type": "RandomForest",
+    "train_samples": 354,
+    "test_samples": 78,
+    "train_r2": 0.628,
+    "test_r2": -0.3177,
+    "test_rmse": 27.0487,
+    "test_mae": 20.508,
+    "residual_std": 23.5543,
+    "mean_effluent_value": 72.13
+  },
+  "tss": {
+    "target_column": "SS-S",
+    "model_type": "RandomForest",
+    "train_samples": 365,
+    "test_samples": 79,
+    "train_r2": 0.5585,
+    "test_r2": -0.4413,
+    "test_rmse": 7.3002,
+    "test_mae": 5.6005,
+    "residual_std": 11.8446,
+    "mean_effluent_value": 19.32
+  },
+  "ph": {
+    "target_column": "PH-S",
+    "model_type": "RandomForest",
+    "train_samples": 367,
+    "test_samples": 80,
+    "train_r2": 0.6748,
+    "test_r2": -0.6777,
+    "test_rmse": 0.1663,
+    "test_mae": 0.1309,
+    "residual_std": 0.1149,
+    "mean_effluent_value": 7.73
+  }
+}

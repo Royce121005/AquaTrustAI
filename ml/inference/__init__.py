@@ -11,6 +11,12 @@ from ml.inference.schemas import (
     CANONICAL_PARAM_MAP,
     CANONICAL_UNITS
 )
+from ml.inference.sensor_trust import (
+    SensorTrustClassifier,
+    SensorTrustResult,
+    SensorTrustAnomalyType,
+    SensorTrustSeverity
+)
 from ml.inference.stream_cache import StreamContextCache
 from ml.inference.exceptions import (
     InferenceEngineError,
@@ -25,6 +31,10 @@ __all__ = [
     "CanonicalReadingInput",
     "AnomalyInferenceOutput",
     "StreamContextCache",
+    "SensorTrustClassifier",
+    "SensorTrustResult",
+    "SensorTrustAnomalyType",
+    "SensorTrustSeverity",
     "canonicalize_parameter_name",
     "CANONICAL_PARAM_MAP",
     "CANONICAL_UNITS",

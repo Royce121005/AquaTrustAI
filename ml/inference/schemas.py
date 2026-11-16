@@ -107,7 +107,7 @@ class CanonicalReadingInput:
 @dataclass
 class AnomalyInferenceOutput:
     """
-    Standard output contract produced by AquaTrust AI Inference Engine.
+    Standard output contract produced by AquaTrust AI Inference Engine (Phase 2 Hardened).
     """
     facility_id: str
     timestamp: str
@@ -125,6 +125,12 @@ class AnomalyInferenceOutput:
     features_used: Optional[Dict[str, float]] = None
     explanation: str = ""
     inference_latency_ms: Optional[float] = None
+    # Phase 2 Standardized Sensor Trust Fields
+    anomaly_type: str = "NORMAL"  # "NORMAL", "STUCK_SENSOR", "SUDDEN_SPIKE", "SENSOR_DRIFT", "PARAMETER_INCONSISTENCY", "SENSOR_FAILURE", etc.
+    severity: str = "NORMAL"      # "NORMAL", "LOW", "MEDIUM", "HIGH", "CRITICAL"
+    severity_score: float = 0.0   # 0.0 to 1.0 calibrated severity score
+    is_sensor_fault: bool = False
+    sensor_trust: Optional[Dict[str, Any]] = None
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert to standard serializable dictionary."""

@@ -21,6 +21,12 @@ from ml.inference.schemas import (
     CANONICAL_UNITS
 )
 from ml.inference.stream_cache import StreamContextCache
+from ml.inference.sensor_trust import (
+    SensorTrustClassifier,
+    SensorTrustResult,
+    SensorTrustAnomalyType,
+    SensorTrustSeverity
+)
 from ml.inference.exceptions import (
     InferenceEngineError,
     UnsupportedParameterError,
@@ -59,6 +65,7 @@ class AquaTrustAnomalyInferenceEngine:
         self.min_history_required = min_history_required
         self.strict_units = strict_units
         self.cache = StreamContextCache(max_history_size=20, min_history_required=min_history_required)
+        self.sensor_trust_classifier = SensorTrustClassifier()
 
         self._load_artifacts()
         self._build_fallback_scalers()
@@ -227,15 +234,35 @@ class AquaTrustAnomalyInferenceEngine:
 
         # 4. Sliding window cache update & feature computation
         stream_key = inp.stream_key
+        # Extract previous observations before update
+        prev_history = [item[1] for item in self.cache.get_stream_history(stream_key)]
+
         if update_cache:
             is_ready, features = self.cache.update(stream_key, inp.timestamp, inp.value)
         else:
             is_ready, features = self.cache.peek_features(stream_key, inp.value)
 
+        contemporaneous = inp.metadata.get("contemporaneous_readings", {})
+        is_dup = inp.metadata.get("is_duplicate", False)
+
         # 5. Handle insufficient historical context window (k < 3)
         if not is_ready or features is None:
             latency_ms = (time.perf_counter() - start_time) * 1000.0
             history_count = self.cache.get_history_length(stream_key)
+            
+            # Evaluate Phase 2 sensor trust even on early / insufficient context readings
+            trust_res = self.sensor_trust_classifier.evaluate(
+                current_value=inp.value,
+                parameter=param_slug,
+                unit=inp.unit,
+                timestamp=inp.timestamp,
+                sliding_history=prev_history,
+                iforest_anomaly=False,
+                iforest_score=None,
+                contemporaneous_readings=contemporaneous,
+                is_duplicate=is_dup,
+            )
+
             return AnomalyInferenceOutput(
                 facility_id=inp.facility_id,
                 timestamp=inp.timestamp,
@@ -253,9 +280,15 @@ class AquaTrustAnomalyInferenceEngine:
                 features_used=None,
                 explanation=(
                     f"Sliding window has {history_count}/{self.min_history_required} readings. "
-                    f"Status set to 'insufficient_data' without synthetic imputation."
+                    f"Status set to 'insufficient_data' without synthetic imputation. "
+                    f"Sensor trust diagnostic: {trust_res.reason}"
                 ),
-                inference_latency_ms=round(latency_ms, 3)
+                inference_latency_ms=round(latency_ms, 3),
+                anomaly_type=trust_res.anomaly_type.value,
+                severity=trust_res.severity.value,
+                severity_score=round(trust_res.severity_score, 4),
+                is_sensor_fault=trust_res.is_sensor_fault,
+                sensor_trust=trust_res.to_dict(),
             )
 
         # 6. Feature scaling
@@ -275,15 +308,30 @@ class AquaTrustAnomalyInferenceEngine:
         is_anomalous = (raw_score < threshold)
         anomaly_status = "anomalous" if is_anomalous else "normal"
 
+        # 8. Phase 2 Sensor Trust Classification
+        trust_res = self.sensor_trust_classifier.evaluate(
+            current_value=inp.value,
+            parameter=param_slug,
+            unit=inp.unit,
+            timestamp=inp.timestamp,
+            sliding_history=prev_history,
+            iforest_anomaly=is_anomalous,
+            iforest_score=raw_score,
+            contemporaneous_readings=contemporaneous,
+            is_duplicate=is_dup,
+        )
+
         if is_anomalous:
             explanation = (
                 f"Anomalous observation detected (score={raw_score:.4f} < {threshold}). "
-                f"Value {inp.value} {inp.unit} exhibits anomalous trajectory/dispersion."
+                f"Value {inp.value} {inp.unit} exhibits anomalous trajectory/dispersion. "
+                f"Classification: {trust_res.anomaly_type.value} ({trust_res.severity.value}). {trust_res.reason}"
             )
         else:
             explanation = (
                 f"Normal observation (score={raw_score:.4f} >= {threshold}). "
-                f"Value {inp.value} {inp.unit} aligns with baseline pattern."
+                f"Value {inp.value} {inp.unit} aligns with baseline pattern. "
+                f"Diagnostic: {trust_res.reason}"
             )
 
         latency_ms = (time.perf_counter() - start_time) * 1000.0
@@ -304,7 +352,12 @@ class AquaTrustAnomalyInferenceEngine:
             compliance_status=inp.compliance_status,
             features_used={k: round(v, 4) for k, v in features.items()},
             explanation=explanation,
-            inference_latency_ms=round(latency_ms, 3)
+            inference_latency_ms=round(latency_ms, 3),
+            anomaly_type=trust_res.anomaly_type.value,
+            severity=trust_res.severity.value,
+            severity_score=round(trust_res.severity_score, 4),
+            is_sensor_fault=trust_res.is_sensor_fault,
+            sensor_trust=trust_res.to_dict(),
         )
 
     def predict_batch(
