@@ -83,16 +83,26 @@ class CorrectionService:
     ) -> TreatmentRecord:
         """Authorize a correction: supersedes previous record, creates new versioned record, and anchors link on DLT."""
         treatment_repo = TreatmentRepository(db)
-        correction = db.query(Correction).filter(Correction.correction_id == correction_id).first()
+        # 0. Acquire row-level lock for concurrency safety and validate states
+        correction = db.query(Correction).filter(Correction.correction_id == correction_id).with_for_update().first()
         if not correction:
             raise ValueError(f"Correction {correction_id} not found")
+        if correction.status != "pending":
+            raise ValueError(f"Correction {correction_id} is already in state '{correction.status}'")
 
-        original_record = treatment_repo.get_by_id(correction.original_record_id)
+        original_record = db.query(TreatmentRecord).filter(
+            TreatmentRecord.record_id == correction.original_record_id
+        ).with_for_update().first()
         if not original_record:
             raise ValueError(f"Original record {correction.original_record_id} not found")
+        if original_record.record_state == "superseded_by_correction":
+            raise ValueError(f"Original record {original_record.record_id} has already been superseded")
 
         # 1. Mark original record as superseded
         original_record.record_state = "superseded_by_correction"
+
+        target_version = original_record.record_version + 1
+        source_tag = "correction" if target_version == 2 else f"correction_v{target_version}"
 
         # 2. Append corrected readings without mutating historical raw telemetry in-place
         param_delta = correction.proposed_changes.get("parameters", {}) if correction.proposed_changes else {}
@@ -111,39 +121,44 @@ class CorrectionService:
                     **(existing.provenance or {}),
                     "superseded_by_correction_id": str(correction.correction_id),
                 }
-                # Insert append-only corrected reading with distinct microsecond offset to respect uq_readings_natural_key
+                # Preserve exact physical observed_at timestamp without microsecond distortion
+                target_obs_at = existing.observed_at
+
                 r = Reading(
                     reading_id=uuid4(),
                     facility_id=original_record.facility_id,
                     sensor_id=existing.sensor_id,
-                    observed_at=existing.observed_at + timedelta(microseconds=1000),
+                    observed_at=target_obs_at,
                     treatment_stage="final_effluent",
                     parameter=param,
                     value=Decimal(str(val)),
                     unit=existing.unit,
-                    source="correction",
+                    source=source_tag,
                     quality_status="valid",
                     provenance={
                         "correction_id": str(correction.correction_id),
                         "supersedes_reading_id": str(existing.reading_id),
                         "original_value": str(existing.value),
+                        "original_observed_at": existing.observed_at.isoformat(),
                     },
                 )
                 db.add(r)
             else:
+                target_obs_at = original_record.period_start
+
                 r = Reading(
                     reading_id=uuid4(),
                     facility_id=original_record.facility_id,
-                    observed_at=original_record.period_start + timedelta(microseconds=1000),
+                    observed_at=target_obs_at,
                     treatment_stage="final_effluent",
                     parameter=param,
                     value=Decimal(str(val)),
                     unit="mg/L" if param != "PH" else "pH units",
-                    source="correction",
+                    source=source_tag,
                     quality_status="valid",
                     provenance={
                         "correction_id": str(correction.correction_id),
-                        "supersedes": str(original_record.record_id),
+                        "supersedes_record_id": str(original_record.record_id),
                     },
                 )
                 db.add(r)
@@ -156,7 +171,7 @@ class CorrectionService:
             facility_id=original_record.facility_id,
             period_start=original_record.period_start,
             period_end=original_record.period_end,
-            record_version=original_record.record_version + 1,
+            record_version=target_version,
             record_state="eligible_for_finalization",
             quality_status=original_record.quality_status,
             anomaly_status=original_record.anomaly_status,

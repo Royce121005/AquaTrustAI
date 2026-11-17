@@ -34,7 +34,7 @@ class Reading(Base):
         Index("ix_readings_parameter_observed", "parameter", "observed_at"),
         Index("ix_readings_ingestion_batch", "ingestion_batch_id"),
         Index("ix_readings_dedup_lookup", "facility_id", "parameter", "treatment_stage", "observed_at"),
-        UniqueConstraint("facility_id", "parameter", "treatment_stage", "observed_at", name="uq_readings_natural_key"),
+        UniqueConstraint("facility_id", "parameter", "treatment_stage", "observed_at", "source", name="uq_readings_natural_key"),
     )
 
     # Relationships

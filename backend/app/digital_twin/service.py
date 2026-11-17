@@ -163,6 +163,10 @@ class DigitalTwinService:
         Prior active configuration is archived.
         """
         current = self.updater.get_or_create_configuration(facility_id)
+        if payload.expected_version is not None and current.version != payload.expected_version:
+            raise ValueError(
+                f"Configuration conflict: active configuration is version {current.version}, but expected {payload.expected_version}"
+            )
         new_version = current.version + 1
 
         # Deactivate previous active configuration

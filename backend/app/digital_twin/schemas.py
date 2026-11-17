@@ -104,6 +104,7 @@ class TwinConfigResponse(BaseModel):
 
 class TwinConfigUpdateRequest(BaseModel):
     """Request to update facility configuration and create a new version."""
+    expected_version: Optional[int] = Field(None, description="Expected active version for optimistic concurrency control")
     facility_profile_version: Optional[str] = None
     technology_type: Optional[str] = None
     treatment_stages: Optional[List[Dict[str, Any]]] = None

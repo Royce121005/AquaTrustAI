@@ -156,7 +156,10 @@ def update_facility_twin_config(
     """Create a new versioned facility configuration. Operator cannot mutate configuration."""
     service = DigitalTwinService(db)
     actor_id = claims.get("username") or claims.get("sub")
-    return service.update_configuration(facility_id, payload, actor_id=actor_id)
+    try:
+        return service.update_configuration(facility_id, payload, actor_id=actor_id)
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e))
 
 
 # -----------------------------------------------------------------------------
