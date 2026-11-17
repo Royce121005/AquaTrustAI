@@ -7,6 +7,7 @@ from fastapi import APIRouter
 from app.api.v1.health import router as health_router
 from app.api.v1.ingestion import router as ingestion_router
 from app.api.v1.facilities import router as facilities_router
+from app.api.v1.sensors import router as sensors_router
 from app.api.v1.validation import router as validation_router
 from app.api.v1.anomalies import router as anomalies_router
 from app.api.v1.simulator import router as simulator_router
@@ -28,6 +29,7 @@ api_router.include_router(health_router, prefix="", tags=["health"])
 api_router.include_router(auth_router, prefix="", tags=["Authentication & RBAC"])
 api_router.include_router(ingestion_router, prefix="", tags=["Telemetry Ingestion"])
 api_router.include_router(facilities_router, prefix="", tags=["Facilities"])
+api_router.include_router(sensors_router, prefix="", tags=["Sensor Health & Calibration"])
 api_router.include_router(validation_router, prefix="", tags=["Pre-AI Validation"])
 api_router.include_router(anomalies_router, prefix="", tags=["AI Anomaly Detection"])
 api_router.include_router(simulator_router, prefix="", tags=["Telemetry Simulator Bridge"])

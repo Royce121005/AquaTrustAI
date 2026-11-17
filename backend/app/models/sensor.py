@@ -1,7 +1,7 @@
 """AquaTrust AI — Sensor ORM Model."""
 
 from uuid import uuid4
-from sqlalchemy import Column, String, ForeignKey
+from sqlalchemy import Column, String, ForeignKey, Boolean
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 
@@ -21,6 +21,9 @@ class Sensor(Base):
     treatment_stage = Column(String, nullable=True)  # e.g., 'inlet', 'secondary_aeration', 'final_effluent'
     sensor_metadata = Column("metadata", JSONField, nullable=True, default=dict)
     status = Column(String, nullable=False, default="active")  # 'active', 'offline', 'calibrating'
+    last_calibrated_at = Column(UTCDateTime, nullable=True)
+    calibration_status = Column(String, nullable=False, default="calibrated")  # 'calibrated', 'due', 'overdue', 'failed'
+    drift_flag = Column(Boolean, nullable=False, default=False)
     created_at = Column(UTCDateTime, nullable=False, default=utc_now)
     updated_at = Column(UTCDateTime, nullable=False, default=utc_now, onupdate=utc_now)
 
