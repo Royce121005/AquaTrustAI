@@ -123,22 +123,22 @@ def ingest_reading(
         provenance=provenance,
         quality_status="pending",
     )
-    reading_repo.create(reading)
-
-    # 1. Deterministic Data-Trust Validation
-    ValidationService.validate_reading(db, reading)
-
-    # 2. AI Anomaly Inference
-    anom_res = AnomalyService.infer_reading(db, reading)
-
-    # 3. Synchronize Digital Twin Virtual State
     try:
-        from app.digital_twin.service import DigitalTwinService
-        DigitalTwinService(db).synchronize_reading(reading)
-    except Exception:
-        pass
+        reading_repo.create(reading)
 
-    try:
+        # 1. Deterministic Data-Trust Validation
+        ValidationService.validate_reading(db, reading)
+
+        # 2. AI Anomaly Inference
+        anom_res = AnomalyService.infer_reading(db, reading)
+
+        # 3. Synchronize Digital Twin Virtual State
+        try:
+            from app.digital_twin.service import DigitalTwinService
+            DigitalTwinService(db).synchronize_reading(reading)
+        except Exception:
+            pass
+
         db.commit()
         db.refresh(reading)
     except IntegrityError:
@@ -266,6 +266,26 @@ def ingest_batch(
         try:
             from app.digital_twin.service import DigitalTwinService
             DigitalTwinService(db).updater.apply_batch(created_readings)
+        except Exception:
+            pass
+
+        try:
+            from app.models.audit_log import AuditLog
+            audit_entry = AuditLog(
+                actor_id=None,
+                actor_role="system",
+                action="TELEMETRY_INGESTION_BATCH",
+                resource_type="facility",
+                resource_id=payload.facility_id,
+                outcome="success",
+                audit_metadata={
+                    "facility_id": str(payload.facility_id),
+                    "batch_id": str(payload.batch_id or ""),
+                    "reading_count": len(created_readings),
+                    "parameters": list(set(r.parameter for r in created_readings if r.parameter)),
+                },
+            )
+            db.add(audit_entry)
         except Exception:
             pass
 

@@ -196,3 +196,28 @@ def get_facility_sensors(
         for s in sensors
     ]
 
+
+@router.get(
+    "/facilities/{facility_id}/optimization",
+    summary="Get resource optimization and sustainability KPIs for a facility",
+    dependencies=[Depends(require_role(["operator", "admin", "auditor", "regulatory_stakeholder"]))],
+)
+def get_facility_resource_optimization(
+    facility_id: UUID,
+    flow_rate_override: Optional[float] = Query(None, description="Optional flow rate override in m3/day"),
+    reuse_rate_override: Optional[float] = Query(None, description="Optional treated water reuse rate in m3/day"),
+    db: Session = Depends(get_db),
+):
+    """Calculates aeration power and coagulant dosing optimization for the facility."""
+    from app.services.sustainability_service import SustainabilityService
+    service = SustainabilityService(db)
+    try:
+        return service.get_facility_optimization(
+            facility_id=facility_id,
+            flow_rate_override=flow_rate_override,
+            reuse_rate_override=reuse_rate_override,
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+
+
