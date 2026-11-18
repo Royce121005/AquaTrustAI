@@ -63,11 +63,11 @@ def apply_recommendation(
 ):
     """Marks a recommendation as applied, attributing the operator identity and logging an immutable audit record."""
     service = RecommendationService(db)
-    actor_id_str = claims.get("sub")
+    actor_id_str = claims.get("user_id") or claims.get("sub")
     actor_id = None
     if actor_id_str:
         try:
-            actor_id = UUID(actor_id_str)
+            actor_id = UUID(str(actor_id_str))
         except (ValueError, TypeError, AttributeError):
             actor_id = None
     actor_role = claims.get("role", "operator")
