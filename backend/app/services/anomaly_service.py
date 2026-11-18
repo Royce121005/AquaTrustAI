@@ -143,5 +143,29 @@ class AnomalyService:
             model_metadata=metadata,
         )
         reading_repo.add_anomaly_result(anom_res)
+
+        if anomaly_status == "anomalous":
+            try:
+                from app.models.audit_log import AuditLog
+                audit_entry = AuditLog(
+                    actor_id=None,
+                    actor_role="system",
+                    action="ANOMALY_TRIGGERED",
+                    resource_type="sensor",
+                    resource_id=reading.sensor_id,
+                    outcome="warning",
+                    audit_metadata={
+                        "facility_id": str(reading.facility_id),
+                        "reading_id": str(reading.reading_id),
+                        "parameter": reading.parameter,
+                        "value": float(reading.value) if reading.value is not None else None,
+                        "unit": reading.unit,
+                        "anomaly_score": float(anomaly_score) if anomaly_score is not None else None,
+                    },
+                )
+                db.add(audit_entry)
+            except Exception:
+                pass
+
         db.flush()
         return anom_res

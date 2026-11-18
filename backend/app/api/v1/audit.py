@@ -1,15 +1,45 @@
 """AquaTrust AI — Immutable Audit Log Router."""
 
+from datetime import datetime
 from typing import Optional
 from uuid import UUID
 from fastapi import APIRouter, Depends, Query
+from sqlalchemy.orm import Session
 
+from app.db.session import get_db
 from app.repositories.audit_repository import AuditLogRepository
 from app.repositories.deps import get_audit_repository
-from app.schemas.audit import AuditLogResponse, AuditLogListResponse
+from app.schemas.audit import AuditLogResponse, AuditLogListResponse, AuditTimelineResponse
 from app.core.security import require_role
+from app.services.audit_service import AuditService
 
 router = APIRouter(tags=["Security & Compliance Audit Logs"])
+
+
+@router.get(
+    "/audit/timeline",
+    response_model=AuditTimelineResponse,
+    summary="Get unified chronological lifecycle audit trail",
+    dependencies=[Depends(require_role(["auditor", "regulatory_stakeholder", "admin", "operator"]))],
+)
+def get_audit_timeline(
+    facility_id: Optional[UUID] = Query(None, description="Optional facility filter"),
+    from_date: Optional[datetime] = Query(None, description="Start date filter"),
+    to_date: Optional[datetime] = Query(None, description="End date filter"),
+    category: Optional[str] = Query(None, description="Filter category e.g. TELEMETRY, ANOMALY, PREDICTION, RECOMMENDATION, COMPLIANCE, CORRECTION, FINALIZATION"),
+    limit: int = Query(50, ge=1, le=200),
+    db: Session = Depends(get_db),
+):
+    """Retrieves an interactive visual timeline of all operational, AI, and verification events."""
+    service = AuditService(db)
+    return service.get_audit_timeline(
+        facility_id=facility_id,
+        from_date=from_date,
+        to_date=to_date,
+        category=category,
+        limit=limit,
+    )
+
 
 
 @router.get(
