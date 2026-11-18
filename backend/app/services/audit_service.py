@@ -52,8 +52,13 @@ class AuditService:
             stmt = stmt.where(AuditLog.created_at >= from_date)
         if to_date:
             stmt = stmt.where(AuditLog.created_at <= to_date)
+        if category:
+            cat_upper = category.upper()
+            matching_actions = [act for act, c in self.ACTION_CATEGORY_MAP.items() if c.upper() == cat_upper]
+            if matching_actions:
+                stmt = stmt.where(AuditLog.action.in_(matching_actions))
 
-        stmt = stmt.order_by(desc(AuditLog.created_at)).limit(limit * 2)
+        stmt = stmt.order_by(desc(AuditLog.created_at)).limit(max(limit * 4, 200))
         rows = list(self.db.scalars(stmt).all())
 
         items: List[AuditTimelineItem] = []
