@@ -16,7 +16,7 @@ class ProposeCorrectionRequest(BaseModel):
 
 
 class AuthorizeCorrectionRequest(BaseModel):
-    authorized_by: str
+    authorized_by: Optional[str] = None
     comments: Optional[str] = None
     key_id: Optional[str] = "key-ecdsa-p256-01"
 

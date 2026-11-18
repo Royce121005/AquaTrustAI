@@ -492,5 +492,25 @@ class ComplianceService:
             evaluated_at=utc_now(),
         )
         treatment_repo.add_compliance_result(comp_res)
+
+        try:
+            from app.models.audit_log import AuditLog
+            audit_entry = AuditLog(
+                actor_id=None,
+                actor_role="system",
+                action="COMPLIANCE_EVALUATION",
+                resource_type="treatment_record",
+                resource_id=record.record_id,
+                outcome="success",
+                audit_metadata={
+                    "facility_id": str(record.facility_id),
+                    "compliance_status": overall_status,
+                    "evaluated_readings_count": len(readings),
+                },
+            )
+            db.add(audit_entry)
+        except Exception:
+            pass
+
         db.flush()
         return comp_res
