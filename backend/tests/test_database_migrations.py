@@ -20,7 +20,7 @@ def test_alembic_configuration_and_revisions():
     script_dir = ScriptDirectory.from_config(alembic_cfg)
     heads = script_dir.get_heads()
     assert len(heads) == 1, f"Expected exactly 1 head revision, got {heads}"
-    assert heads[0] == "002_digital_twin_schema"
+    assert heads[0] == "003_member2_intelligence_schema"
 
 
 def test_alembic_offline_sql_generation():
@@ -43,3 +43,5 @@ def test_alembic_offline_sql_generation():
     assert "CREATE TABLE dlt_anchors" in result.stdout
     assert "CREATE TABLE twin_states" in result.stdout
     assert "CREATE TABLE twin_scenarios" in result.stdout
+    assert "CREATE TABLE predictions" in result.stdout
+    assert "CREATE TABLE recommendations" in result.stdout

@@ -31,6 +31,8 @@ from app.models.digital_twin import (
     TwinPrediction,
     TwinRecommendation,
 )
+from app.models.prediction import Prediction
+from app.models.recommendation import Recommendation
 
 __all__ = [
     "Base",
@@ -54,6 +56,8 @@ __all__ = [
     "User",
     "ExperimentRun",
     "ExperimentMetric",
+    "Prediction",
+    "Recommendation",
     "TwinConfiguration",
     "TwinState",
     "TwinStateEvent",
