@@ -10,6 +10,8 @@ from app.api.v1.facilities import router as facilities_router
 from app.api.v1.sensors import router as sensors_router
 from app.api.v1.validation import router as validation_router
 from app.api.v1.anomalies import router as anomalies_router
+from app.api.v1.predictions import router as predictions_router
+from app.api.v1.recommendations import router as recommendations_router
 from app.api.v1.simulator import router as simulator_router
 
 from app.api.v1.compliance import router as compliance_router
@@ -32,6 +34,8 @@ api_router.include_router(facilities_router, prefix="", tags=["Facilities"])
 api_router.include_router(sensors_router, prefix="", tags=["Sensor Health & Calibration"])
 api_router.include_router(validation_router, prefix="", tags=["Pre-AI Validation"])
 api_router.include_router(anomalies_router, prefix="", tags=["AI Anomaly Detection"])
+api_router.include_router(predictions_router, prefix="", tags=["Treatment Quality Predictions"])
+api_router.include_router(recommendations_router, prefix="", tags=["Prescriptive Process Recommendations"])
 api_router.include_router(simulator_router, prefix="", tags=["Telemetry Simulator Bridge"])
 api_router.include_router(compliance_router, prefix="", tags=["Compliance Rules & Evaluation"])
 api_router.include_router(treatment_records_router, prefix="", tags=["Treatment Records"])
