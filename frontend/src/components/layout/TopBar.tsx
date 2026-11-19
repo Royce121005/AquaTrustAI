@@ -5,7 +5,7 @@ import { getHealthApi } from '../../api/health';
 import { getDLTStatusApi } from '../../api/dlt';
 import { listFacilitiesApi } from '../../api/facilities';
 import { RoleBadge, BackendHealthBadge, DltModeBadge } from '../common/Badges';
-import { LogOut, Building2, Droplets, RefreshCw } from 'lucide-react';
+import { LogOut, Building2, Droplets } from 'lucide-react';
 
 export const TopBar: React.FC = () => {
   const { user, logout, selectedFacilityId, setSelectedFacilityId } = useAuth();
@@ -31,35 +31,53 @@ export const TopBar: React.FC = () => {
     staleTime: 60000,
   });
 
+  // Automatically map non-UUID facility codes (e.g. "FAC-CPCB-001") to actual facility UUID
+  React.useEffect(() => {
+    if (facilities && facilities.length > 0 && selectedFacilityId) {
+      const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(selectedFacilityId);
+      if (!isUUID) {
+        const match = facilities.find(
+          (f) =>
+            f.facility_id === selectedFacilityId ||
+            f.facility_name.toLowerCase().includes('delhi') ||
+            f.facility_name.toLowerCase().includes('cpcb')
+        );
+        if (match) {
+          setSelectedFacilityId(match.facility_id);
+        }
+      }
+    }
+  }, [facilities, selectedFacilityId, setSelectedFacilityId]);
+
   return (
-    <header className="h-16 bg-slate-900 border-b border-slate-800 text-slate-100 flex items-center justify-between px-6 shrink-0 z-30">
-      <div className="flex items-center gap-6">
+    <header className="h-14 bg-[#0B0F17]/95 backdrop-blur-md border-b border-[#1F293D] text-slate-100 flex items-center justify-between px-4 sm:px-6 shrink-0 z-30 select-none">
+      <div className="flex items-center gap-4 sm:gap-6">
+        {/* Brand Group */}
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded bg-brand-600 flex items-center justify-center text-white shadow-sm font-bold">
-            <Droplets className="w-5 h-5 text-white" />
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center text-white shadow-md shadow-cyan-500/20 font-bold shrink-0">
+            <Droplets className="w-4 h-4 text-white fill-current" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="font-bold text-sm tracking-tight text-white">IWM-BTS</span>
-              <span className="text-[10px] uppercase font-mono px-1.5 py-0.2 bg-slate-800 text-brand-300 rounded border border-slate-700">
-                v0.1.0
+              <span className="font-bold text-sm tracking-tight text-white font-mono">
+                AquaTrust<span className="text-cyan-400">AI</span>
               </span>
             </div>
-            <p className="text-[11px] text-slate-400 font-medium leading-none">
-              Intelligent Wastewater Monitoring &amp; Blockchain Traceability System
+            <p className="text-[10px] text-slate-400 font-mono hidden md:block">
+              Intelligent Wastewater Monitoring &amp; Blockchain Traceability
             </p>
           </div>
         </div>
 
-        {/* Facility Context Selector / Display */}
-        <div className="hidden lg:flex items-center gap-2 pl-4 border-l border-slate-800 text-xs">
-          <Building2 className="w-4 h-4 text-slate-400" />
-          <span className="text-slate-400 font-mono text-[11px]">Facility Scope:</span>
+        {/* Facility Context Selector */}
+        <div className="hidden lg:flex items-center gap-2 pl-4 border-l border-[#1F293D] text-xs">
+          <Building2 className="w-3.5 h-3.5 text-cyan-400" />
+          <span className="text-slate-400 font-mono text-[11px]">Plant Scope:</span>
           {facilities && facilities.length > 0 ? (
             <select
               value={selectedFacilityId || ''}
               onChange={(e) => setSelectedFacilityId(e.target.value || null)}
-              className="bg-slate-800 border border-slate-700 text-slate-200 text-xs rounded px-2.5 py-1 focus:outline-none focus:ring-1 focus:ring-brand-500 font-mono"
+              className="bg-[#111827] border border-[#1F293D] text-slate-200 text-xs rounded-md px-2.5 py-1 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/30 font-mono cursor-pointer transition-colors"
             >
               <option value="">All Facilities (Unfiltered)</option>
               {facilities.map((f) => (
@@ -76,7 +94,7 @@ export const TopBar: React.FC = () => {
         </div>
       </div>
 
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-3 sm:gap-4">
         {/* Infrastructure Indicators */}
         <div className="hidden sm:flex items-center gap-2">
           <BackendHealthBadge
@@ -91,9 +109,9 @@ export const TopBar: React.FC = () => {
 
         {/* User Identity and Role */}
         {user && (
-          <div className="flex items-center gap-3 pl-3 border-l border-slate-800">
+          <div className="flex items-center gap-3 pl-3 border-l border-[#1F293D]">
             <div className="text-right hidden md:block">
-              <div className="text-xs font-semibold text-slate-200 leading-snug">
+              <div className="text-xs font-semibold text-slate-200 leading-snug font-mono">
                 {user.display_name || user.username}
               </div>
               <div className="flex justify-end mt-0.5">
@@ -104,7 +122,7 @@ export const TopBar: React.FC = () => {
             <button
               onClick={() => logout()}
               title="Logout session and revoke token"
-              className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded transition-colors"
+              className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-800/80 rounded-lg border border-transparent hover:border-slate-700 transition-colors"
             >
               <LogOut className="w-4 h-4" />
             </button>

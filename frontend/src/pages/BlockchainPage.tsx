@@ -89,22 +89,27 @@ export const BlockchainPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#1F293D]">
         <div>
-          <h1 className="text-xl font-bold tracking-tight text-slate-900 flex items-center gap-2">
-            <Blocks className="w-5 h-5 text-brand-600" />
-            Distributed Ledger (DLT) & Anchor Verification
-          </h1>
-          <p className="text-xs text-slate-500 mt-0.5">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg bg-[#0EA5E9]/10 border border-[#0EA5E9]/30 flex items-center justify-center text-[#0EA5E9]">
+              <Blocks className="w-4 h-4" />
+            </div>
+            <h1 className="text-xl font-bold tracking-tight text-white flex items-center gap-2">
+              Distributed Ledger (DLT) & Anchor Verification
+            </h1>
+          </div>
+          <p className="text-xs text-slate-400 mt-1">
             Immutable anchoring boundary connecting certified wastewater digests to Hyperledger Fabric or local simulation.
           </p>
         </div>
         <div className="flex items-center gap-2">
           <Link
             to="/blockchain/merkle"
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-white rounded-md text-xs font-semibold shadow-sm transition-colors"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#0EA5E9]/15 hover:bg-[#0EA5E9]/25 text-[#0EA5E9] border border-[#0EA5E9]/30 rounded-lg text-xs font-semibold shadow-sm transition-colors"
           >
-            <Layers className="w-4 h-4" />
+            <Layers className="w-3.5 h-3.5" />
             RFC 6962 Merkle Batch Tool
           </Link>
           <button
@@ -113,24 +118,24 @@ export const BlockchainPage: React.FC = () => {
               anchorsQuery.refetch();
             }}
             disabled={dltStatusQuery.isFetching || anchorsQuery.isFetching}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 rounded-md text-xs font-medium shadow-sm transition-colors disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#111827] border border-[#1F293D] hover:bg-[#161F30] text-slate-300 rounded-lg text-xs font-medium shadow-sm transition-colors disabled:opacity-50"
           >
-            <RefreshCw className={`w-3.5 h-3.5 ${anchorsQuery.isFetching ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`w-3.5 h-3.5 ${anchorsQuery.isFetching ? 'animate-spin text-[#0EA5E9]' : ''}`} />
             Refresh
           </button>
         </div>
       </div>
 
       {/* Prominent DLT Mode & Infrastructure Status Banner */}
-      <div className="bg-white border border-slate-200 rounded-lg p-6 shadow-sm">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+      <div className="bg-[#111827] border border-[#1F293D] rounded-xl p-6 shadow-xl">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#1F293D]">
           <div className="flex items-center gap-3">
-            <div className="p-3 bg-slate-900 text-brand-400 rounded-lg">
-              <Cpu className="w-6 h-6" />
+            <div className="p-3 bg-[#0B0F17] border border-[#1F293D] text-[#0EA5E9] rounded-xl shadow-[0_0_15px_rgba(14,165,233,0.15)]">
+              <Cpu className="w-6 h-6 text-[#0EA5E9]" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-base font-bold text-slate-900">
+                <h2 className="text-base font-bold text-white">
                   DLT Gateway Transport Mode
                 </h2>
                 <DltModeBadge
@@ -138,18 +143,18 @@ export const BlockchainPage: React.FC = () => {
                   distributedLedger={dltStatus?.distributed_ledger}
                 />
               </div>
-              <p className="text-xs text-slate-500 font-mono mt-0.5">
-                Channel: {dltStatus?.channel || 'aquatrust-channel'} • Chaincode:{' '}
-                {dltStatus?.chaincode || 'aquatrust-records'}
+              <p className="text-xs text-slate-400 font-mono mt-0.5">
+                Channel: <span className="text-slate-300">{dltStatus?.channel || 'aquatrust-channel'}</span> • Chaincode:{' '}
+                <span className="text-slate-300">{dltStatus?.chaincode || 'aquatrust-records'}</span>
               </p>
             </div>
           </div>
 
           <div className="text-right text-xs font-mono">
-            <span className="text-slate-400 block">Connection State:</span>
+            <span className="text-slate-400 block text-[11px]">Connection State:</span>
             <span
               className={`font-semibold ${
-                dltStatus?.is_connected ? 'text-emerald-600' : 'text-slate-600'
+                dltStatus?.is_connected ? 'text-emerald-400' : 'text-slate-400'
               }`}
             >
               {dltStatus?.status?.toUpperCase() || 'INITIALIZING'} (Connected: {String(dltStatus?.is_connected)})
@@ -158,15 +163,15 @@ export const BlockchainPage: React.FC = () => {
         </div>
 
         {/* Operational Truth Notice */}
-        <div className="mt-4 p-3 rounded-lg text-xs font-mono bg-slate-50 border border-slate-200 text-slate-700">
+        <div className="mt-4 p-3.5 rounded-lg text-xs font-mono bg-[#0B0F17] border border-[#1F293D] text-slate-300">
           {dltStatus?.mode === 'FABRIC' ? (
             <div>
-              <strong className="text-emerald-700">PRODUCTION HYPERLEDGER FABRIC CONNECTED:</strong>{' '}
+              <strong className="text-emerald-400">PRODUCTION HYPERLEDGER FABRIC CONNECTED:</strong>{' '}
               Transaction commitments are endorsed across consensus peers and recorded in immutable ledger blocks.
             </div>
           ) : (
             <div>
-              <strong className="text-amber-700">LOCAL CRYPTOGRAPHIC SIMULATION ACTIVE:</strong>{' '}
+              <strong className="text-amber-400">LOCAL CRYPTOGRAPHIC SIMULATION ACTIVE:</strong>{' '}
               Transactions are validated locally in-memory. State is not committed to a distributed blockchain network.
               Pending anchors intentionally remain in pending status upon reconciliation.
             </div>
@@ -175,32 +180,32 @@ export const BlockchainPage: React.FC = () => {
 
         {dltStatus && (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4 text-xs font-mono">
-            <div>
+            <div className="p-3 bg-[#161F30]/60 rounded-lg border border-[#1F293D]">
               <span className="text-slate-400 block text-[11px]">Peer Endpoint</span>
-              <span className="text-slate-800">{dltStatus.peer_endpoint || 'Local Simulator'}</span>
+              <span className="text-white font-medium">{dltStatus.peer_endpoint || 'Local Simulator'}</span>
             </div>
 
-            <div>
+            <div className="p-3 bg-[#161F30]/60 rounded-lg border border-[#1F293D]">
               <span className="text-slate-400 block text-[11px]">Simulation Sequence</span>
-              <span className="text-slate-800">
+              <span className="text-white font-medium">
                 {dltStatus.simulation_sequence !== undefined && dltStatus.simulation_sequence !== null
                   ? dltStatus.simulation_sequence
                   : 'N/A (Fabric Active)'}
               </span>
             </div>
 
-            <div>
+            <div className="p-3 bg-[#161F30]/60 rounded-lg border border-[#1F293D]">
               <span className="text-slate-400 block text-[11px]">Simulated Entries</span>
-              <span className="text-slate-800">
+              <span className="text-white font-medium">
                 {dltStatus.simulated_entries_count !== undefined && dltStatus.simulated_entries_count !== null
                   ? dltStatus.simulated_entries_count
                   : 'N/A'}
               </span>
             </div>
 
-            <div>
+            <div className="p-3 bg-[#161F30]/60 rounded-lg border border-[#1F293D]">
               <span className="text-slate-400 block text-[11px]">Last Error</span>
-              <span className="text-slate-600">{dltStatus.last_error || 'None'}</span>
+              <span className="text-slate-400">{dltStatus.last_error || 'None'}</span>
             </div>
           </div>
         )}
@@ -208,9 +213,9 @@ export const BlockchainPage: React.FC = () => {
 
       {/* Reconcile mutation notification */}
       {reconcileMutation.isSuccess && (
-        <div className="p-4 bg-emerald-50 border border-emerald-300 rounded-lg text-xs font-mono text-emerald-950">
-          <div className="font-bold flex items-center gap-1.5 mb-1">
-            <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+        <div className="p-4 bg-[#10B981]/10 border border-[#10B981]/40 rounded-xl text-xs font-mono text-emerald-200">
+          <div className="font-bold flex items-center gap-1.5 mb-1 text-emerald-400">
+            <CheckCircle2 className="w-4 h-4 text-emerald-400" />
             Anchor Reconciliation Executed by Backend Gateway
           </div>
           <div>Record: {reconcileMutation.data.record_id}</div>
@@ -227,18 +232,18 @@ export const BlockchainPage: React.FC = () => {
       )}
 
       {/* Anchors Filter Bar */}
-      <div className="bg-white border border-slate-200 rounded-lg p-3.5 shadow-sm flex flex-wrap items-center gap-4 text-xs">
-        <div className="flex items-center gap-1.5 text-slate-500 font-medium">
-          <Filter className="w-3.5 h-3.5" />
+      <div className="bg-[#111827] border border-[#1F293D] rounded-xl p-3.5 shadow-xl flex flex-wrap items-center gap-4 text-xs">
+        <div className="flex items-center gap-1.5 text-slate-400 font-medium">
+          <Filter className="w-3.5 h-3.5 text-[#0EA5E9]" />
           <span>Filters:</span>
         </div>
 
         <div className="flex items-center gap-1.5">
-          <label className="text-slate-500 font-mono text-[11px]">Facility:</label>
+          <label className="text-slate-400 font-mono text-[11px]">Facility:</label>
           <select
             value={facilityId}
             onChange={(e) => updateParam('facility_id', e.target.value)}
-            className="bg-slate-50 border border-slate-300 rounded px-2.5 py-1 text-slate-800 font-mono focus:ring-1 focus:ring-brand-500"
+            className="bg-[#0B0F17] border border-[#1F293D] rounded px-2.5 py-1 text-white font-mono focus:outline-none focus:border-[#0EA5E9]"
           >
             <option value="">All Facilities</option>
             {facilities?.map((f) => (
@@ -250,11 +255,11 @@ export const BlockchainPage: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-1.5">
-          <label className="text-slate-500 font-mono text-[11px]">Anchor Status:</label>
+          <label className="text-slate-400 font-mono text-[11px]">Anchor Status:</label>
           <select
             value={anchorStatus}
             onChange={(e) => updateParam('anchor_status', e.target.value)}
-            className="bg-slate-50 border border-slate-300 rounded px-2.5 py-1 text-slate-800 font-mono focus:ring-1 focus:ring-brand-500"
+            className="bg-[#0B0F17] border border-[#1F293D] rounded px-2.5 py-1 text-white font-mono focus:outline-none focus:border-[#0EA5E9]"
           >
             <option value="">All Anchor States</option>
             <option value="pending">pending</option>
@@ -267,14 +272,11 @@ export const BlockchainPage: React.FC = () => {
       </div>
 
       {/* DLT Anchors Table */}
-      <div className="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden">
-        <div className="p-4 border-b border-slate-200 flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-slate-800 uppercase tracking-wide">
+      <div className="bg-[#111827] border border-[#1F293D] rounded-xl shadow-xl overflow-hidden">
+        <div className="px-5 py-4 border-b border-[#1F293D] flex items-center justify-between bg-[#161F30]/60">
+          <h2 className="text-xs font-mono uppercase tracking-wider text-slate-300">
             DLT Record Anchors
           </h2>
-          <span className="text-xs text-slate-500 font-mono">
-            Source: GET /dlt/anchors
-          </span>
         </div>
 
         {anchorsQuery.isLoading ? (
@@ -292,7 +294,7 @@ export const BlockchainPage: React.FC = () => {
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse text-xs">
               <thead>
-                <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 font-mono uppercase text-[11px]">
+                <tr className="bg-[#161F30] border-b border-[#1F293D] text-slate-400 font-mono uppercase text-[11px]">
                   <th className="py-2.5 px-4">Anchor ID</th>
                   <th className="py-2.5 px-4">Record ID</th>
                   <th className="py-2.5 px-4">Canonical Hash</th>
@@ -303,39 +305,39 @@ export const BlockchainPage: React.FC = () => {
                   <th className="py-2.5 px-4 text-right">Reconcile / Verify</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 font-mono">
+              <tbody className="divide-y divide-[#1F293D] font-mono">
                 {anchorsQuery.data.map((a) => (
-                  <tr key={a.anchor_id} className="hover:bg-slate-50/80 transition-colors">
-                    <td className="py-2.5 px-4 font-semibold text-slate-800 select-all">
+                  <tr key={a.anchor_id} className="hover:bg-[#161F30] transition-colors">
+                    <td className="py-2.5 px-4 font-semibold text-slate-300 select-all">
                       {a.anchor_id.slice(0, 8)}...
                     </td>
-                    <td className="py-2.5 px-4 text-brand-700 select-all">
+                    <td className="py-2.5 px-4 text-[#0EA5E9] select-all">
                       <Link to={`/treatment-records/${a.record_id}`} className="hover:underline">
                         {a.record_id.slice(0, 8)}...
                       </Link>
                     </td>
-                    <td className="py-2.5 px-4 text-slate-600 select-all max-w-[120px] truncate">
+                    <td className="py-2.5 px-4 text-slate-400 select-all max-w-[120px] truncate">
                       {a.canonical_hash}
                     </td>
                     <td className="py-2.5 px-4">
                       <StatusBadge status={a.anchor_status} />
                     </td>
-                    <td className="py-2.5 px-4 text-slate-600 select-all max-w-[130px] truncate">
+                    <td className="py-2.5 px-4 text-slate-400 select-all max-w-[130px] truncate">
                       {a.transaction_id ? (
                         <Link
                           to={`/blockchain/transactions/${a.transaction_id}`}
-                          className="text-brand-600 hover:underline"
+                          className="text-[#0EA5E9] hover:underline"
                         >
                           {a.transaction_id.slice(0, 10)}...
                         </Link>
                       ) : (
-                        'null'
+                        <span className="text-slate-600">null</span>
                       )}
                     </td>
-                    <td className="py-2.5 px-4 text-slate-700">
+                    <td className="py-2.5 px-4 text-slate-300">
                       {a.block_number !== null ? `#${a.block_number}` : '—'}
                     </td>
-                    <td className="py-2.5 px-4 text-slate-500 text-[11px] whitespace-nowrap">
+                    <td className="py-2.5 px-4 text-slate-400 text-[11px] whitespace-nowrap">
                       {a.anchored_at ? new Date(a.anchored_at).toLocaleString() : 'Pending Confirmation'}
                     </td>
                     <td className="py-2.5 px-4 text-right font-sans whitespace-nowrap">
@@ -344,7 +346,7 @@ export const BlockchainPage: React.FC = () => {
                           <button
                             onClick={() => reconcileMutation.mutate(a.record_id)}
                             disabled={reconcileMutation.isPending}
-                            className="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded text-[11px] font-semibold transition-colors disabled:opacity-50"
+                            className="px-2.5 py-1 bg-[#0B0F17] hover:bg-[#161F30] border border-[#1F293D] text-slate-300 rounded text-[11px] font-semibold transition-colors disabled:opacity-50"
                             title="Reconcile with DLT Gateway"
                           >
                             Reconcile
@@ -352,7 +354,7 @@ export const BlockchainPage: React.FC = () => {
                         )}
                         <Link
                           to={`/verification?recordId=${a.record_id}`}
-                          className="inline-flex items-center gap-1 text-brand-600 hover:text-brand-800 font-medium"
+                          className="inline-flex items-center gap-1 text-[#0EA5E9] hover:text-cyan-300 font-medium"
                         >
                           <Shield className="w-3.5 h-3.5" />
                           Verify
@@ -366,10 +368,11 @@ export const BlockchainPage: React.FC = () => {
           </div>
         )}
 
-        <div className="p-3 bg-slate-50 border-t border-slate-200 flex items-center justify-between text-xs font-mono text-slate-500">
+        {/* Pagination Footer */}
+        <div className="p-3.5 bg-[#161F30]/40 border-t border-[#1F293D] flex items-center justify-between text-xs font-mono text-slate-400">
           <div>
-            Offset: <span className="font-semibold text-slate-700">{page * PAGE_SIZE}</span> |
-            Limit: <span className="font-semibold text-slate-700">{PAGE_SIZE}</span>
+            Offset: <span className="font-semibold text-white">{page * PAGE_SIZE}</span> |{' '}
+            Limit: <span className="font-semibold text-white">{PAGE_SIZE}</span>
           </div>
           <div className="flex items-center gap-2">
             <button
@@ -377,18 +380,18 @@ export const BlockchainPage: React.FC = () => {
                 if (page > 0) updateParam('page', String(page - 1));
               }}
               disabled={page === 0 || anchorsQuery.isLoading}
-              className="px-2.5 py-1 bg-white border border-slate-300 rounded hover:bg-slate-100 disabled:opacity-40 transition-colors inline-flex items-center gap-1"
+              className="px-2.5 py-1 bg-[#0B0F17] border border-[#1F293D] rounded hover:bg-[#161F30] text-slate-300 disabled:opacity-40 transition-colors inline-flex items-center gap-1"
             >
               <ChevronLeft className="w-3.5 h-3.5" />
               Previous
             </button>
-            <span className="px-2 font-semibold text-slate-700">Page {page + 1}</span>
+            <span className="px-2 font-semibold text-white">Page {page + 1}</span>
             <button
               onClick={() => {
                 updateParam('page', String(page + 1));
               }}
               disabled={anchorsQuery.isLoading || !anchorsQuery.data || anchorsQuery.data.length < PAGE_SIZE}
-              className="px-2.5 py-1 bg-white border border-slate-300 rounded hover:bg-slate-100 disabled:opacity-40 transition-colors inline-flex items-center gap-1"
+              className="px-2.5 py-1 bg-[#0B0F17] border border-[#1F293D] rounded hover:bg-[#161F30] text-slate-300 disabled:opacity-40 transition-colors inline-flex items-center gap-1"
             >
               Next
               <ChevronRight className="w-3.5 h-3.5" />

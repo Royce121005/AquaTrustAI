@@ -61,15 +61,15 @@ export const PredictionForecastCard: React.FC<PredictionForecastCardProps> = ({ 
   const isCompliant = pred.is_cpcb_compliant;
 
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-lg">
-      <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-800">
+    <div className="bg-[#111827] border border-[#1F293D] rounded-xl p-5 shadow-xl">
+      <div className="flex items-center justify-between mb-4 pb-3 border-b border-[#1F293D]">
         <div className="flex items-center space-x-3">
-          <div className="p-2 rounded-lg bg-indigo-500/10 text-indigo-400">
+          <div className="p-2 rounded-lg bg-indigo-500/15 text-indigo-400 border border-indigo-500/30">
             <TrendingUp className="h-5 w-5" />
           </div>
           <div>
-            <h3 className="text-sm font-semibold text-white">AI Predictive Effluent Forecast</h3>
-            <p className="text-xs text-slate-400 flex items-center gap-1.5 mt-0.5">
+            <h3 className="text-sm font-bold text-white">AI Predictive Effluent Forecast</h3>
+            <p className="text-xs text-slate-400 flex items-center gap-1.5 mt-0.5 font-mono">
               <Clock className="h-3 w-3" />
               Horizon: {pred.horizon_hours}h ahead | Model: {pred.model_version}
             </p>
@@ -78,10 +78,10 @@ export const PredictionForecastCard: React.FC<PredictionForecastCardProps> = ({ 
 
         <div className="flex items-center space-x-2">
           <span
-            className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold ${
+            className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold font-mono ${
               isCompliant
-                ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-                : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
+                ? 'bg-[#10B981]/15 text-emerald-400 border border-[#10B981]/30'
+                : 'bg-[#EF4444]/15 text-rose-400 border border-[#EF4444]/30'
             }`}
           >
             {isCompliant ? (
@@ -107,27 +107,27 @@ export const PredictionForecastCard: React.FC<PredictionForecastCardProps> = ({ 
           return (
             <div
               key={paramKey}
-              className={`p-3.5 rounded-lg border transition ${
+              className={`p-3.5 rounded-xl border transition ${
                 isBreach
-                  ? 'bg-rose-950/20 border-rose-900/50'
+                  ? 'bg-[#EF4444]/10 border-[#EF4444]/30'
                   : isBorderline
-                  ? 'bg-amber-950/20 border-amber-900/50'
-                  : 'bg-slate-800/40 border-slate-700/60'
+                  ? 'bg-[#F59E0B]/10 border-[#F59E0B]/30'
+                  : 'bg-[#161F30]/60 border-[#1F293D]'
               }`}
             >
-              <div className="flex items-center justify-between text-xs text-slate-400 mb-1">
-                <span className="font-semibold uppercase text-slate-300">{p.parameter}</span>
-                <span className="text-[10px] text-slate-500">Max {p.cpcb_discharge_limit}</span>
+              <div className="flex items-center justify-between text-xs text-slate-400 mb-1 font-mono">
+                <span className="font-bold uppercase text-white">{p.parameter}</span>
+                <span className="text-[10px] text-slate-400">Max {p.cpcb_discharge_limit}</span>
               </div>
-              <div className="flex items-baseline space-x-1.5 my-1">
-                <span className="text-xl font-bold text-white tracking-tight">
+              <div className="flex items-baseline space-x-1.5 my-1 font-mono">
+                <span className="text-xl font-extrabold text-white tracking-tight">
                   {p.predicted_value.toFixed(1)}
                 </span>
                 <span className="text-xs text-slate-400">{p.unit}</span>
               </div>
-              <div className="text-[11px] text-slate-400 flex items-center justify-between mt-2 pt-1.5 border-t border-slate-800/80">
+              <div className="text-[11px] text-slate-400 flex items-center justify-between mt-2 pt-1.5 border-t border-[#1F293D] font-mono">
                 <span>Removal</span>
-                <span className="font-medium text-emerald-400">
+                <span className="font-bold text-emerald-400">
                   {p.expected_removal_efficiency_pct.toFixed(0)}%
                 </span>
               </div>
@@ -137,8 +137,8 @@ export const PredictionForecastCard: React.FC<PredictionForecastCardProps> = ({ 
       </div>
 
       {pred.summary_explanation && (
-        <div className="mt-3.5 text-xs text-slate-300 bg-slate-800/60 p-2.5 rounded-lg border border-slate-700/50">
-          <span className="font-medium text-indigo-300">Prescriptive Insight: </span>
+        <div className="mt-3.5 text-xs text-slate-300 bg-[#0B0F17] p-3 rounded-lg border border-[#1F293D] font-mono">
+          <span className="font-bold text-indigo-300">Prescriptive Insight: </span>
           {pred.summary_explanation}
         </div>
       )}

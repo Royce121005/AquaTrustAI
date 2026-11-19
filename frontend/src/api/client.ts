@@ -112,6 +112,7 @@ function notifyUnauthorized() {
 
 export interface RequestOptions extends RequestInit {
   params?: Record<string, string | number | boolean | undefined | null>;
+  timeoutMs?: number;
 }
 
 export async function apiClient<T>(endpoint: string, options: RequestOptions = {}): Promise<T> {
@@ -148,17 +149,30 @@ export async function apiClient<T>(endpoint: string, options: RequestOptions = {
     headers.set('Authorization', `Bearer ${token}`);
   }
 
+  const controller = new AbortController();
+  const timeoutMs = options.timeoutMs ?? 15000;
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
   let response: Response;
   try {
     response = await fetch(urlStr, {
       ...options,
       headers,
+      signal: options.signal || controller.signal,
     });
   } catch (netErr: any) {
+    if (controller.signal.aborted) {
+      throw new ApiClientError(0, 'Request Timeout', {
+        error_code: 'TIMEOUT',
+        message: `Request timed out after ${timeoutMs / 1000}s. Backend service is unresponsive.`,
+      });
+    }
     throw new ApiClientError(0, 'Network Error', {
       error_code: 'NETWORK_ERROR',
       message: netErr?.message || 'Unable to connect to AquaTrustAI backend service.',
     });
+  } finally {
+    clearTimeout(timeoutId);
   }
 
   const contentType = response.headers.get('content-type') || '';
