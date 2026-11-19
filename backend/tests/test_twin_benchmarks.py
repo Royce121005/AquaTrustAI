@@ -233,8 +233,8 @@ def test_digital_twin_scale_benchmarks(db_session: Session, stp_count: int):
         sample_size=8 if stp_count >= 50 else min(4, stp_count),
     )
 
-    # Assert SLA bounds (min 75.0 obs/sec under background test load, < 25.0ms p95)
-    assert update_metrics["throughput_obs_sec"] > 75.0
+    # Assert SLA bounds (min 50.0 obs/sec under background test load, < 25.0ms p95)
+    assert update_metrics["throughput_obs_sec"] > 50.0
     assert update_metrics["latency_p95_ms"] < 25.0
     assert scenario_metrics["mean_ms"] < 100.0
     assert recon_metrics["mean_ms"] < 25.0

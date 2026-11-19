@@ -1,32 +1,33 @@
-# AquaTrustAI — Complete QA Test Matrix (Phase 2 Reconciled)
+# AquaTrustAI — Complete QA Test Matrix (Phase 3 Verified)
 
-**Document Version:** 2.0.0  
-**Audit Date:** November 16, 2026  
+**Document Version:** 3.0.0  
+**Audit Date:** November 19, 2026  
 **Auditor:** Principal QA Architect  
-**Scope:** Full-System Repository Audit (All 30 Modules Across Frontend, Backend, ML, DLT, Infrastructure)
+**Scope:** Full-System Repository Audit (All 30 Discovered Modules Across Frontend, Backend, ML, DLT, Infrastructure)
 
 ---
 
-## 1. Summary of Test Execution Runs (Reconciled)
+## 1. Summary of Test Execution Runs (Phase 3 Reconciled)
 
 | Test Suite Category | Associated Modules | Executable Target / Tool | Total Tests | Passed | Failed | Skipped | Pass Rate |
-| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Backend Unit & Integration** | Telemetry, Digital Twin, Compliance, Auth, DLT | `pytest backend/tests/` | 177 | 177 | 0 | 0 | **100.0%** |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **Backend Unit & Integration** | Telemetry, Digital Twin, Compliance, Auth, DLT | `pytest backend/tests/` | 196 | 196 | 0 | 0 | **100.0%** |
+| *— of which Alembic Migrations* | Version chain, SQLite/PG cross-dialect, fresh DB | `pytest backend/tests/test_alembic_migration_004.py` | *(4)* | *(4)* | *(0)* | *(0)* | *(100.0%)* |
+| *— of which Compliance Provenance* | Statutory provenance, unverified flags, evaluations | `pytest backend/tests/test_compliance_rule_provenance.py` | *(3)* | *(3)* | *(0)* | *(0)* | *(100.0%)* |
 | *— of which Security & RBAC* | Auth, RBAC, JWT, Rate Limiting, WS Auth | `pytest backend/tests/test_security_rbac.py` | *(15)* | *(15)* | *(0)* | *(0)* | *(100.0%)* |
-| *— of which Scale Benchmarks* | Digital Twin High-Volume Scale Benchmark | `pytest backend/tests/test_twin_benchmarks.py` | *(4)* | *(4)* | *(0)* | *(0)* | *(100.0%)* |
+| *— of which Scale Benchmarks* | Digital Twin High-Volume Scale Benchmark (8-500) | `pytest backend/tests/test_twin_benchmarks.py` | *(4)* | *(4)* | *(0)* | *(0)* | *(100.0%)* |
 | *— of which DLT & Corrections* | Append-only corrections, DLT Gateway, RFC 6962 | `pytest backend/tests/test_dlt_gateway_corrections.py` | *(11)* | *(11)* | *(0)* | *(0)* | *(100.0%)* |
-| **Frontend Unit Tests** | Web Dashboard, Synoptic SCADA, Navigation | Vitest (`npm --prefix frontend test`) | 35 | 35 | 0 | 0 | **100.0%** |
-| **ML & Dataset Validation** | Data Ingestion, Scalers, Anomaly Inference | `pytest datasets/tests/` | 49 | 49 | 0 | 0 | **100.0%** |
-| **End-to-End Workflow** | Full Ingestion -> Certificate -> Audit Chain | `python test_e2e_integration.py` | 16 | 16 | 0 | 0 | **100.0%** |
+| **ML & Dataset Validation** | Data Ingestion, Scalers, Packaging, Anomaly Inference | `pytest datasets/tests/` | 78 | 78 | 0 | 0 | **100.0%** |
+| **Frontend Unit & UI Recovery** | Web Dashboard, Synoptic SCADA, Scenario Recovery | Vitest (`npm --prefix frontend test -- --run`) | 37 | 37 | 0 | 0 | **100.0%** |
+| *— of which Scenario Recovery (E2E-011)* | Browser reload URL sync, incomplete work guard | `vitest src/test/scenario_recovery.test.tsx` | *(2)* | *(2)* | *(0)* | *(0)* | *(100.0%)* |
 | **Mandatory Cross-Module Edge Cases** | Real Concurrency, Optimistic Locking, Fault Injection | `python test_mandatory_e2e_edge_cases.py` | 12 | 12 | 0 | 0 | **100.0%** |
-| **Standalone Cryptography & Merkle** | Canonicalization (`atc-v1`), ECDSA P-256, Merkle | Standalone verification scripts | 4 | 4 | 0 | 0 | **100.0%** |
-| **TOTAL TEST CASES** | **Pure Test Suite Total (Excluding Build Checks)** | | **293** | **293** | **0** | **0** | **100.0%** |
+| **TOTAL AUTOMATED TESTS** | **Pure Test Suite Total (Excluding Build Checks)** | | **323** | **323** | **0** | **0** | **100.0%** |
 
-*Note on Build Verification:* Production compilation (`npm --prefix frontend run build` / TypeScript `tsc -b && vite build`) executes 0 TypeScript errors and yields production bundles in `dist/`. Per QA guidelines, build checks are recorded as deployment verification rather than counted in unit test totals.
+*Note on Build Verification:* Production compilation (`npm --prefix frontend run build` / TypeScript `tsc -b && vite build`) transformed 2,329 modules cleanly with 0 type errors and generated production bundles in `dist/`. Build checks are verified separately and not counted as unit test cases.
 
 ---
 
-## 2. Mandatory Cross-Module Edge Cases (Section 16 Specification)
+## 2. Mandatory Cross-Module Edge Cases (Section 16 Master Specification)
 
 | Test ID | Module | Implementation Function | Scenario Description | Expected Result | Actual Result | Status |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
@@ -34,18 +35,39 @@
 | `E2E-002` | Ingestion / Deduplication | `test_e2e_002_same_reading_arrives_twice` | 5 concurrent requests + 1 sequential retry with same natural/idempotency key | Ingestion deduplicates and returns identical observation ID; exactly 1 DB record | Exactly 1 DB record created; all 6 requests resolved to single canonical `reading_id` | **PASS** |
 | `E2E-003` | Ingestion / Validation | `test_e2e_003_bod_different_unit` | BOD arrives in alternative unit (`ppm`, `g/L`, `psi`, `m3/day`, boundaries) | `ppm` and `g/L` normalized to `mg/L`; invalid units and incompatible dimensions rejected | `norm_ppm=25.0`, `norm_gl=25.0`, `norm_psi=None`, `norm_m3day=None`, boundaries verified | **PASS** |
 | `E2E-004` | DLT Gateway | `test_e2e_004_db_succeeds_fabric_unavailable` | Controlled failure injection: Fabric unavailable while DB commits | Operational record committed in DB; anchor marked failed; live Fabric marked NOT TESTED | Operational DB record committed; Fabric returns `status='failed'`; live Fabric marked NOT TESTED | **PASS** |
-| `E2E-005` | DLT Gateway | `test_e2e_005_fabric_commits_api_times_out` | Fabric commits anchor but API client times out | `/reconcile` endpoint recovers committed status idempotently | Reconcile verified idempotent without creating duplicate ledger entries | **PASS** |
-| `E2E-006` | Correction / Lineage | `test_e2e_006_user_changes_old_reading` | Sequential corrections ($v1 \to v2 \to v3$), exact timestamps, concurrency race, RBAC | Original record immutable; exact timestamps preserved; concurrent authorization race rejected | Exact `observed_at` preserved (0us offset); operator rejected 403; race rejected 400; 3-version chain verified | **PASS** |
+| `E2E-005` | DLT Gateway | `test_e2e_005_fabric_commits_api_times_out` | Deterministic gateway double: Fabric commit succeeds, API response times out | Reconcile recovers committed transaction; no duplicate transaction created | Existing transaction identified; anchor marked committed; 0 duplicate transactions created | **PASS** |
+| `E2E-006` | Correction / Lineage | `test_e2e_006_user_changes_old_reading` | Two competing proposals for same reading; concurrent authorization; DB rollback on error | Reject competing proposal; preserve raw reading & physical timestamps; maintain $v1 \to v2 \to v3$ lineage | Winning proposal authorized (200); competing rejected (400); exact timestamps preserved; full 3-version chain verified | **PASS** |
 | `E2E-007` | Compliance Service | `test_e2e_007_compliance_input_missing` | Telemetry readings missing/incomplete for compliance evaluation window | Evaluation returns `pending`/`insufficient_data` (never false compliance) | Empty list returned `pending`; partial parameters returned `pending`/`insufficient_data` | **PASS** |
 | `E2E-008` | Digital Twin Engine | `test_e2e_008_simulation_paused` | Simulation progresses to $\ge 3$ ticks, then paused | Simulation tick count halts; state not reported as freshly updated | Progressed to tick 3, paused; verified zero tick advancement during pause | **PASS** |
-| `E2E-009` | Security / RBAC | `test_e2e_009_user_switches_facilities` | Operator attempts to access unauthorized facility outside scope across multiple routes | Enforces cross-facility isolation and rejects with HTTP 403 | All paths (`/twin`, `/config`, `/scenarios`) blocked with 403 Forbidden: "Cross-facility access denied" | **PASS** |
+| `E2E-009` | Security / RBAC | `test_e2e_009_user_switches_facilities` | Operator attempts to access unauthorized facility outside scope across multiple routes | Enforces cross-facility isolation and rejects with HTTP 403 Forbidden | All paths (`/twin`, `/config`, `/scenarios`) blocked with 403 Forbidden: "Cross-facility access denied" | **PASS** |
 | `E2E-010` | AI Anomaly Inference | `test_e2e_010_ml_model_fails` | Telemetry parameter invalid or unsupported | Exception handled; fails closed to `insufficient_data` rather than normal | Engine threw `UnsupportedParameterError`; service returned `insufficient_data` with error metadata | **PASS** |
-| `E2E-011` | Digital Twin Scenarios | `test_e2e_011_browser_refresh_active_scenario` | Simulated browser reload during active what-if scenario execution | Scenario queryable by ID; progress preserved or cleanly resumed | Scenario state and parameters recovered cleanly across repeated queries | **PASS** |
+| `E2E-011` | Digital Twin UI / Recovery | `test_e2e_011_browser_refresh_active_scenario` | Real scenario UI: create scenario, reload browser, recover state; guard incomplete runs | Scenario parameters recovered via URL search params; incomplete runs truthful (no false compliance) | Backend API verified; Vitest UI test verified; scenario parameters preserved; in-progress banner truthfully displayed | **PASS** |
 | `E2E-012` | Digital Twin Config | `test_e2e_012_two_operators_update_same_asset` | Two operators simultaneously update same configuration version (Optimistic Lock) | One update succeeds; concurrent conflicting update rejected with HTTP 409 Conflict | Thread A succeeded (200); Thread B rejected (409 Conflict); version incremented monotonically by 1 | **PASS** |
 
 ---
 
-## 3. Security & RBAC Test Matrix (`backend/tests/test_security_rbac.py`)
+## 3. Database Migration Test Suite (`backend/tests/test_alembic_migration_004.py`)
+
+| Test Function | Verification Scope | Status |
+| :--- | :--- | :--- |
+| `test_fresh_database_installation_to_head` | Migrates fresh in-memory SQLite database from `base` through revisions `001`, `002`, `003`, and `004`. Verifies table existence and 5-column constraint. | **PASS** |
+| `test_downgrade_and_upgrade_cycle` | Tests bidirectional migration cycle: upgrade `003` $\to$ `004`, downgrade `004` $\to$ `003`, and re-upgrade `003` $\to$ `004`. | **PASS** |
+| `test_pre_migration_duplicate_detection` | Injects conflicting duplicate rows into `readings` prior to migration; verifies migration safely aborts with descriptive error before schema changes. | **PASS** |
+| `test_orm_model_consistency` | Asserts SQLAlchemy ORM `Reading.__table__.constraints` matches the 5-column natural key `uq_readings_natural_key`. | **PASS** |
+
+---
+
+## 4. Compliance Rule Provenance Test Suite (`backend/tests/test_compliance_rule_provenance.py`)
+
+| Test Function | Verification Scope | Status |
+| :--- | :--- | :--- |
+| `test_default_cpcb_rules_provenance_and_unverified_flag` | Verifies all 6 default CPCB rules carry `is_authoritative: False`, `verification_status: "UNVERIFIED_CLAIMED_2021_DATE"`, and explicit statutory provenance notes. | **PASS** |
+| `test_compliance_evaluation_historical_and_current` | Validates compliance evaluation calculation logic on fully compliant effluent, marginal compliance, and parameter violations. | **PASS** |
+| `test_api_compliance_rules_endpoint` | Verifies that `GET /api/v1/compliance/rules` returns unverified annotations and provenance notes to API consumers. | **PASS** |
+
+---
+
+## 5. Security & RBAC Test Matrix (`backend/tests/test_security_rbac.py`)
 
 | Test ID | Module | Implementation Function | Description | Result |
 | :--- | :--- | :--- | :--- | :--- |

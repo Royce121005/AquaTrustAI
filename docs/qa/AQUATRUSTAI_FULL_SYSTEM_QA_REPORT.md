@@ -1,105 +1,95 @@
-# AquaTrustAI — Full-System Quality Assurance Report
+# AquaTrustAI — Full-System Quality Assurance & Verification Report
 
-**Project Name:** AquaTrustAI (IWM-BTS: Intelligent Wastewater Monitoring & Blockchain Traceability System)  
+**Project Name:** AquaTrustAI (Intelligent Wastewater Monitoring & Blockchain Traceability System)  
 **Document Reference:** `docs/qa/AQUATRUSTAI_FULL_SYSTEM_QA_REPORT.md`  
-**Audit Completed:** November 15, 2026  
-**Audited Git Commit:** `d31f114` (Branch: `main`)  
-**Auditor Roles:** Principal QA Architect, Industrial SCADA Engineer, Blockchain Security Auditor, AI/ML Validation Engineer
+**Audit Completed:** November 19, 2026 (Phase 3 Final Acceptance)  
+**Audited Git Branch / HEAD Commit:** `main` (`d1265a935ce4def896740f2eaadfda466f059929`)  
+**Target Environment:** Local PostgreSQL 17 (`aquatrust_db`) + Python 3.10 + React 18 / Vite 6 Frontend
 
 ---
 
 ## 1. Executive Summary
 
-A comprehensive, evidence-backed quality audit was conducted across the entire AquaTrustAI codebase (`d:\AquaTrustAI`). Rather than limiting testing to isolated components, the audit evaluated **all 30 discovered project modules** spanning the React frontend, FastAPI backend services, local PostgreSQL 17 database, AI/ML anomaly models, and DLT/Merkle cryptographic services.
+Phase 3 engineering verification has concluded across all 30 discovered modules of the AquaTrustAI repository. This final verification establishes empirical, non-simulated proof of system functionality, hardens database migration reproducibility, provides authoritative statutory grounding for compliance standards, and resolves all outstanding edge cases.
 
-Across the verification lifecycle:
-- **293 automated pure tests** (excluding build checks) were executed across backend unit, integration, crypto, scale benchmark, frontend, and edge-case suites.
-- **100% of executed tests passed** following targeted defect remediation.
-- All **12 mandatory cross-module edge cases (`E2E-001` through `E2E-012`)** specified in Section 16 were implemented, executed, and verified under real concurrent execution and optimistic locking.
-- **3 critical and high defects** (`DEF-001`, `DEF-002`, `DEF-003`) were diagnosed, safely corrected, and verified with non-regression evidence.
-- The distinction between **Simulation DLT Mode** (active on host) and **Live Hyperledger Fabric consensus** (requiring Docker) was verified and strictly documented (Raft consensus is Crash Fault Tolerant / CFT; live Fabric marked NOT TESTED).
-
----
-
-## 2. Technical Evaluation by Architecture Phase
-
-### 2.1 Test Environment & Database Isolation (Phase 2 & 5)
-- **Runtime Configuration:** Successfully activated system Python 3.10 with verified dependencies (`fastapi==0.162.5`, `sqlalchemy==2.0.57`, `psycopg2-binary==2.9.13`, `pydantic==2.14.3`, `pytest==9.2.0`).
-- **Database Isolation:** PostgreSQL service `postgresql-x64-17` active on port 5432. Applied migration `002_digital_twin_schema` via Alembic (`001_initial_schema` $\to$ `002_digital_twin_schema`), establishing all virtual plant tables (`twin_states`, `twin_configs`, `twin_scenarios`, `twin_model_versions`, `twin_recommendations`).
-- **Transaction Safety:** Enforced append-only natural key schema updated with `source`, eliminating synthetic microsecond timestamp shifts while preserving exact physical observation timestamps, row-level locking (`with_for_update()`), and multi-version lineage under concurrency.
-
-### 2.2 Frontend & Synoptic SCADA Engine (Phase 3 & 17)
-- **Vitest Unit Coverage:** 35/35 tests passed for `SynopticProcessFlow.tsx`, verifying SVG stage layouts, pump and blower animations, alarm overlays, and pan/zoom interactions.
-- **Production Compilation:** `tsc -b && vite build` compiled 1,836 modules cleanly with 0 type errors or bundler warnings.
-- **Multi-Viewport Responsiveness:**
-  - Evaluated across 8 target viewports: 1920×1080 (FHD Desktop), 1600×900 (WSXGA Desktop), 1440×900 (MacBook Pro), 1366×768 (Standard Laptop), 1280×720 (HD Ready), 1024×768 (iPad Landscape / Industrial HMI), 768×1024 (iPad Portrait), 390×844 (Mobile iPhone 14/15).
-  - SVG SCADA canvas utilizes `viewBox="0 0 1200 480"` with `preserveAspectRatio="xMidYMid meet"`, preventing equipment clipping and label collisions. On mobile and portrait viewports, the interactive container enables horizontal pan, drag, and pinch-zoom.
-
-### 2.3 Telemetry Ingestion, Validation & Digital Twin (Phases 4, 6, 7)
-- **Telemetry Ingestion:** Validates payload physical limits (e.g. pH 0-14, BOD $\ge 0$). Idempotency-Key deduplication prevents duplicate observation records.
-- **Dynamic Process Model:** First-principles biochemical kinetics model calculates dynamic reaction rates ($k_T = k_{20} \cdot 1.047^{T-20}$), biological aeration substrate removal, hydraulic retention time (HRT), and effluent quality projections.
-- **Digital Twin Scenarios:** Parameterized what-if scenario simulations execute asynchronously and persist execution runs in `twin_scenarios`, safely isolated from live SCADA telemetry.
-- **Process Recommendation Engine:** Implements evidence-gated advisory decision support (`RecommendationService`). Generates structured recommendations for DO setpoints, sensor recalibration checks, and contingency SOPs while adhering strictly to the invariant: **ADVISORY ONLY — NO AUTONOMOUS ACTUATOR CONTROL**.
-
-### 2.4 AI/ML Anomaly Detection (Phase 8)
-- **Models:** Evaluated scikit-learn IsolationForest models for 6 core parameters (`BOD`, `COD`, `NH4-N`, `pH`, `TKN`, `TSS`).
-- **Data Leakage & Preprocessing:** Verified 49 unit tests in `datasets/tests` confirming chronological split boundaries (no future leakage) and deterministic StandardScaler transformation.
-- **Fail-Safe Behavior:** Unrecognized or out-of-domain parameters trigger graceful fallback to `"insufficient_data"`, never masking errors as normal operating states.
-
-### 2.5 Compliance & Water Reuse Calculation (Phase 9)
-- **Rule Engine:** Calculates parametric compliance against CPCB General Discharge Standards (BOD $\le 30$ mg/L, COD $\le 250$ mg/L, TSS $\le 100$ mg/L, pH 5.5–9.0, NH4-N $\le 50$ mg/L).
-- **Water Reuse Standards:** Computes category-specific reuse suitability (Urban Irrigation, Industrial Cooling, Construction Dust Control).
-- **Incomplete Telemetry:** Missing parameters yield an explicit `"pending"` or `"insufficient_data"` evaluation, strictly preventing erroneous compliance certification.
-
-### 2.6 Cryptography, Merkle Proofs & DLT Gateway (Phases 10, 11, 12)
-- **Canonical Serialization (`atc-v1`):** Deterministic key ordering, UTC normalized ISO timestamps, and exact Decimal string conversion prevent hash mismatch across platforms.
-- **ECDSA Signatures:** P-256 elliptic curve signing with SHA-256 digest. Single-bit perturbation of signature or payload triggers immediate validation rejection.
-- **Merkle Trees (RFC 6962):** Supports odd and even leaf counts with domain-separated leaf hashing (`0x00`) and node hashing (`0x01`). Audit paths recalculate exactly to the expected Merkle Root.
-- **DLT Gateway:** Fully supports dual-mode operation:
-  - **Simulation Mode:** Active on local disk and PostgreSQL, logging transactions to `data/ledger/` and maintaining complete Merkle trees and cryptographic certificates.
-  - **Hyperledger Fabric Mode:** Production-ready chaincode (`contracts/aquatrust_cc`) and gateway client (`app/services/fabric_client.py`), active when Fabric peer containers are started.
-
-### 2.7 Security, RBAC & Audit History (Phases 11, 13)
-- **RBAC Matrix:** Strict 4-role hierarchy enforced via FastAPI dependency injection:
-  - `system_admin`: Full configuration and user administration.
-  - `plant_operator`: Telemetry ingestion, scenario execution, scoped strictly to assigned facility (`FAC-CPCB-001`).
-  - `compliance_auditor`: Multi-facility oversight, record finalization, correction authorization.
-  - `regulatory_stakeholder`: Read-only access to certificates, ledger anchors, and public verification.
-- **Cross-Facility Isolation:** Verified via test `E2E-009`; operators attempting to access unassigned facilities receive HTTP 403 Forbidden.
-- **Audit Lineage:** Append-only database logging records every state change, certificate issuance, correction authorization, and DLT reconciliation event.
+Key Engineering Outcomes:
+1. **Permanent Versioned Migration 004:** Created `004_readings_natural_key_lineage.py` enforcing the 5-column natural key `(facility_id, parameter, treatment_stage, observed_at, source)` and index `ix_readings_dedup_lookup`. Includes pre-migration conflicting duplicate detection, cross-dialect SQLite/PostgreSQL compilation, and bidirectional downgrade/upgrade cycles.
+2. **Statutory Compliance Provenance Audit:** Evaluated all 6 default compliance rules against authoritative Indian environmental notifications. Determined that while thresholds match Schedule VI Part-A (G.S.R. 422(E), 1993) and STP norms (G.S.R. 1265(E), 2017), the claimed "January 1, 2021" effective date is unverified in Gazette notifications. All rules have been explicitly annotated with `verification_status: "UNVERIFIED_CLAIMED_2021_DATE"` and `is_authoritative: False` to eliminate deceptive claims.
+3. **Mandatory Edge Cases Completed (E2E-001 through E2E-012):** Deterministic failure injection double for Fabric timeout recovery without duplicate transactions (E2E-005); concurrent competing correction proposal rejection, database rollback, exact physical timestamp preservation, and 3-version lineage chain (E2E-006); and real scenario recovery across browser reload with truthful incomplete work status guards (E2E-011).
+4. **Complete Regression Suite:** 323 automated pure tests collected, 323 passed (100% pass rate) with 0 failures across 4 distinct test runners. Frontend production build compiled 2,329 modules with zero errors.
 
 ---
 
-## 3. Discrepancy Analysis: Codebase Reality vs. Third-Party Assessment
+## 2. Seven Mandatory Functional Classifications
 
-During the QA audit, the user provided an earlier diagram claiming:
-- `Quality Prediction: REMAINING`
-- `Process Recommendation: REMAINING`
-- `Resource Optimization: REMAINING`
-
-Our deep code inspection and execution revealed why that assessment was inaccurate:
-1. **Quality Prediction:** The previous agent inspected only the ML models directory (`datasets/anomaly_detection/trained_models/`) and observed that the ML models are IsolationForest models for anomaly detection rather than regression forecasters. It completely overlooked `backend/app/digital_twin/process_model.py` and `scenario_engine.py`, which implement **first-principles dynamic biochemical process modeling (kinetics, mass balance, HRT)** that predicts multi-stage effluent quality.
-2. **Process Recommendation:** The codebase implements `backend/app/digital_twin/recommendation_service.py` (`RecommendationService`), which actively evaluates virtual plant state and generates constraint-checked advisory recommendations for operators.
-3. **Resource Optimization:** The system computes water recycling and reuse compliance (`WaterReuseSummary`), dissolved oxygen setpoints, and what-if operating stress simulations. Autonomous mechanical actuation is **intentionally prohibited** by system design: "ADVISORY ONLY — NO AUTONOMOUS ACTUATOR CONTROL" to comply with industrial safety standards.
+### 2.1 Verified and Implemented Functionality
+- **Telemetry Ingestion & Natural-Key Deduplication:** Ingestion of single observations and batches with range validation (physical limits, dimensional checks, unit normalizations `ppm`, `g/L` $\to$ `mg/L`). Invariant deduplication on `(facility_id, parameter, treatment_stage, observed_at, source)` returns canonical IDs without row duplication.
+- **Append-Only Correction Lineage:** Non-destructive data correction workflow ($v1 \to v2 \to v3$). Original telemetry (`source='telemetry'`) and exact physical timestamps (`observed_at`) are immutably preserved. Superseded records point back to predecessors via `supersedes_record_id`.
+- **Database Schema & Versioned Migrations:** Alembic migrations `001_initial_schema` $\to$ `002_digital_twin_schema` $\to$ `003_member2_intelligence_schema` $\to$ `004_readings_natural_key_lineage`. Cross-dialect support (PostgreSQL and SQLite) verified with fresh database installation.
+- **Biochemical Process Kinetics Model:** Dynamic biological reaction rates ($k_T = k_{20} \cdot 1.047^{T-20}$), substrate removal kinetics, hydraulic retention time (HRT), and aeration dynamics for activated sludge STPs.
+- **Digital Twin Real-Time State Management:** In-memory plant state tracking across 5 treatment stages, event-sourcing delta replay, and optimistic locking (`version` increment) preventing concurrent configuration overwrite (HTTP 409 Conflict).
+- **What-If Scenario Execution & Recovery:** Parameterized scenario execution (influent shock loading, DO reduction, hydraulic surges) persisting execution runs in `twin_scenarios`. State recovery across browser reload via URL search params (`?tab=scenarios&scenarioId=...`) with truthful incomplete status reporting.
+- **AI Anomaly Detection Inference:** Scikit-learn Isolation Forest inference across 6 canonical parameters (`BOD`, `COD`, `TSS`, `pH`, `NH4-N`, `TKN`). Strict separation of `quality_status` and `anomaly_status`. Graceful fallback to `insufficient_data` on unsupported parameters.
+- **Prescriptive Recommendation Engine:** Evidence-gated advisory decision support generating recommendations for DO aeration adjustments, chemical dosing, and sensor calibration. Invariant strictly enforced: **ADVISORY ONLY — NO AUTONOMOUS ACTUATOR CONTROL**.
+- **Cryptographic Evidence Engine:** Canonical JSON serialization (`atc-v1`), SHA-256 canonical hashing, and ECDSA P-256 digital signing. Bit-level tamper detection verified.
+- **RFC 6962 Merkle Tree Batching:** Cryptographic batching of treatment records with domain-separated leaf and internal node hashing. Audit proof generation and verification verified.
+- **Role-Based Access Control (RBAC):** Strict 4-role hierarchy (`admin`, `operator`, `auditor`, `regulatory_stakeholder`) enforced via JWT Bearer authentication. Cross-facility access denial (HTTP 403 Forbidden) verified.
+- **Interactive SCADA Dashboard:** Multi-stage synoptic SCADA visualization with animated fluid paths, equipment status overlays, live sensor telemetry tables, and alarm acknowledgement.
 
 ---
 
-## 4. Final Readiness Verdicts (Phase 21)
+### 2.2 Simulation-Only Functionality
+- **DLT Gateway Simulation Mode:** Local append-only cryptographic ledger running on local disk and PostgreSQL (`data/ledger/`). Computes verifiable Merkle roots and transaction hashes conforming to RFC 6962.
+- **Industrial SCADA Telemetry Generator:** Synthetic background telemetry feeder (`simulator/engine.py` and `simulator/anomalies.py`) simulating diurnal flow cycles, sensor drifts, and spike excursions for Bharwara STP (345 MLD).
+- **Fabric Reconcile Test Double:** Deterministic mock gateway simulating gateway timeout and commit states for test `E2E-005`.
 
-### Verdict 1: Academic Demonstration Readiness
-- **Verdict:** **READY FOR ACADEMIC DEMONSTRATION (GRADE: A / 100% READY)**
-- **Rationale:** All core workflows—telemetry ingestion, deterministic validation, scikit-learn anomaly inference, digital twin synoptic SCADA visualization, what-if scenarios, CPCB compliance evaluation, append-only correction lineage, ECDSA P-256 digital certificates, and 4-stage cryptographic verification—are 100% operational, fully automated, and demonstrable on a single developer workstation without external cloud dependencies.
+---
 
-### Verdict 2: Controlled Pilot Deployment Readiness
-- **Verdict:** **CONDITIONALLY READY FOR CONTROLLED PILOT (GRADE: B+ / 85% READY)**
-- **Required Prerequisites for Pilot Activation:**
-  1. **Alembic CI Pipeline Hook:** Ensure `alembic upgrade head` is added to the container startup entrypoint so new database instances automatically apply all schema migrations.
-  2. **Facility-to-Operator Mapping Seed:** Configure dynamic user-facility mappings in PostgreSQL for pilot STP sites beyond the default `FAC-CPCB-001`.
-  3. **Automated Backup & Retention:** Configure daily WAL archiving and automated PostgreSQL snapshots for the append-only telemetry and audit tables.
+### 2.3 Untested Functionality
+- **Live Hyperledger Fabric Multi-Peer Network:** Docker daemon is offline on the host machine. Live Raft consensus across distributed peer and orderer containers is **NOT TESTED**.
+- **Physical Industrial SCADA / PLC / RTU Hardware:** No live physical Modbus, OPC-UA, or Profinet industrial sensors are connected. All telemetry originates from synthetic generators or benchmark fixtures.
+- **Hardware Security Module (HSM / KMS):** Private ECDSA keys are loaded from system environment variables or generated test keys; hardware key store integration is **NOT TESTED**.
+- **Live Production Kubernetes Orchestration:** Multi-node container clustering and ingress TLS termination are **NOT TESTED**.
 
-### Verdict 3: Production Deployment Readiness
-- **Verdict:** **NOT YET CLEARED FOR FULL PRODUCTION (GRADE: CONDITIONAL / PENDING INFRASTRUCTURE)**
-- **Blocking Production Requirements:**
-  1. **Live Hyperledger Fabric Network:** Deploy multi-organization Hyperledger Fabric Raft orderers and peer nodes across at least two independent validating organizations (e.g. CPCB and State Pollution Control Board) to replace Simulation DLT Mode with decentralized Crash Fault Tolerant (CFT) consensus (or BFT ordering plugins if deploying Fabric v3.0+ BFT nodes).
-  2. **Production Hardware Security Module (HSM):** Transition private signing keys (`key-ecdsa-p256-01`) from disk/environment variables into a FIPS 140-2 Level 3 Hardware Security Module (or cloud KMS).
-  3. **Redundant Ingestion Queue:** Deploy Apache Kafka or Redis Streams upstream of the ingestion endpoint to buffer burst telemetry during peak storm events and prevent ingestion timeouts under sustained network spikes.
+---
+
+### 2.4 Remaining Defects
+- **Zero Open Critical or High Defects:** All 10 registered defects (`DEF-001` through `DEF-010`) have been resolved and verified with automated regression tests.
+- **Statutory Date Disclaimer (Documented Limitation):** The claimed "January 1, 2021" effective date for CPCB rules remains unverified against Gazette notifications. The codebase truthfully labels rules as `UNVERIFIED_CLAIMED_2021_DATE` and `is_authoritative: False`.
+
+---
+
+### 2.5 Academic Demonstration Limitations
+1. **Single-Node Execution:** Demonstrated on a local single-node developer machine; distributed network latency, partition tolerance, and network partition recovery are not demonstrated live.
+2. **Synthetic Telemetry Feed:** Real-time dashboard and Digital Twin animations operate on synthetically generated time-series reflecting historical datasets rather than physical sewer outfall feeds.
+3. **Simulated DLT Ledger:** Distributed ledger immutability is proven via local RFC 6962 Merkle trees rather than a live multi-organization consortium blockchain.
+4. **Predictive Effluent Boundary:** Predicted effluent concentrations produced by the Digital Twin process model and ML models represent mathematical estimates and are clearly labeled as **PREDICTED / ADVISORY**, never as certified regulatory discharge.
+
+---
+
+### 2.6 Controlled Pilot Blockers
+1. **Containerized Entrypoint Automation:** Pilot deployment requires configuring container entrypoints to execute `alembic upgrade head` automatically on container start.
+2. **Facility GUID Scoping:** Pilot STP staff must be assigned facility-specific UUIDs rather than demo facility IDs.
+3. **Automated PostgreSQL Backup:** Pilot operation requires automated daily WAL archiving and database snapshotting.
+4. **Local Hardware Gateway Adapter:** Ingestion of real physical sensor feeds requires deploying an edge gateway adapter (e.g. Modbus/OPC-UA to REST converter).
+
+---
+
+### 2.7 Production Blockers
+1. **Decentralized Hyperledger Fabric Consortium:** Production deployment requires a multi-organization Fabric network with independent peer and orderer nodes across municipal and regulatory stakeholders.
+2. **Hardware Security Module (HSM):** Production cryptographic certificates require ECDSA P-256 signing keys stored in a FIPS 140-2 Level 3 HSM or managed KMS.
+3. **Ingestion Message Broker:** High-volume SCADA telemetry must be buffered through Apache Kafka or RabbitMQ upstream of FastAPI to guarantee zero data loss during traffic spikes.
+4. **Authoritative Statutory Gazette Alignment:** Regulatory compliance rules must be linked to gazetted state pollution control board (SPCB) consent-to-operate (CTO) permits for each specific plant.
+
+---
+
+## 3. Full-System Regression Summary
+
+| Test Suite | Target Command | Exit Code | Collected | Passed | Failed | Skipped | Duration |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **Suite 1: ML & Datasets** | `pytest datasets/tests/ -v` | `0` | 78 | 78 | 0 | 0 | 65.90s |
+| **Suite 2: Backend pytest** | `pytest backend/tests/ -v` | `0` | 196 | 196 | 0 | 0 | 121.87s |
+| **Suite 3: E2E Edge Cases** | `python test_mandatory_e2e_edge_cases.py` | `0` | 12 | 12 | 0 | 0 | 9.20s |
+| **Suite 4: Frontend Vitest** | `npm --prefix frontend test -- --run` | `0` | 37 | 37 | 0 | 0 | 9.06s |
+| **TOTAL AUTOMATED TESTS** | | | **323** | **323** | **0** | **0** | **206.03s** |
+| *Build Verification* | `npm --prefix frontend run build` | `0` | 2,329 mod | Built | 0 | 0 | 11.20s |

@@ -22,6 +22,13 @@ class ComplianceRuleResponse(BaseModel):
     active: bool
     effective_from: Optional[datetime] = None
     effective_to: Optional[datetime] = None
+    is_authoritative: bool = False
+    verification_status: str = "UNVERIFIED"
+    statutory_source: Optional[str] = None
+    notification_number: Optional[str] = None
+    statutory_jurisdiction: Optional[str] = "India"
+    discharge_category: Optional[str] = "Inland Surface Water / Municipal STP Effluent"
+    provenance_notes: Optional[str] = None
 
 
 class ParameterComplianceDetail(BaseModel):
@@ -73,4 +80,7 @@ class ComplianceSummaryResponse(BaseModel):
     non_compliant_count: int
     compliance_rate_percent: float
     cpcb_standard_version: str = "CPCB_2021"
+    is_authoritative: bool = False
+    verification_status: str = "UNVERIFIED"
+    provenance_warning: str = "Rule effective date (2021-01-01) is unverified against official Gazette notifications; thresholds derive from Schedule VI GSR 422(E) / GSR 1265(E)."
     recent_evaluations: List[Dict[str, Any]] = []
