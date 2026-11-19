@@ -864,7 +864,7 @@ export const DashboardPage: React.FC = () => {
             <div className="text-base font-bold text-emerald-400">BOD &lt; 10 mg/L</div>
             <div className="text-[11px] text-slate-400 mt-1">TSS: 12 mg/L • pH: 7.4</div>
             <div className="mt-2 text-[10px] text-emerald-400 bg-emerald-950/50 px-2 py-0.5 rounded inline-block">
-              &bull; CPCB Sched VI Pass &check;
+              &bull; CPCB Sched VI Pass ✓
             </div>
           </div>
 

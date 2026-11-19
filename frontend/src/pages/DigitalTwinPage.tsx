@@ -228,7 +228,12 @@ export const DigitalTwinPage: React.FC = () => {
 
   // Engine Lifecycle Mutations
   const startEngineMutation = useMutation({
-    mutationFn: () => startTwinEngineApi(selectedFacilityId, { interval_seconds: 1.0, operating_mode: 'simulation' }),
+    mutationFn: () => {
+      if (!selectedFacilityId) {
+        throw new Error('Please select or register a facility before starting the twin engine.');
+      }
+      return startTwinEngineApi(selectedFacilityId, { interval_seconds: 1.0, operating_mode: 'simulation' });
+    },
     onSuccess: (data) => {
       setActionError(null);
       if (data?.worker) {
@@ -493,10 +498,12 @@ export const DigitalTwinPage: React.FC = () => {
                     startEngineMutation.mutate();
                   }
                 }}
-                disabled={!canControlEngine || startEngineMutation.isPending || resumeEngineMutation.isPending}
+                disabled={!canControlEngine || !selectedFacilityId || startEngineMutation.isPending || resumeEngineMutation.isPending}
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 disabled:cursor-not-allowed text-white font-mono text-xs font-semibold shadow-sm transition-colors"
                 title={
-                  !canControlEngine
+                  !selectedFacilityId
+                    ? 'Select or register a facility before starting the twin engine'
+                    : !canControlEngine
                     ? `Engine control requires Operator or Admin role (Logged in as ${user?.role || 'Guest'})`
                     : currentLifecycle === 'paused'
                     ? 'Resume Twin Engine (1Hz execution)'

@@ -17,9 +17,18 @@ export const ValidationPage: React.FC = () => {
     staleTime: 60000,
   });
 
+  const matchedFacility = facilities?.find(
+    (f) => f.facility_id === selectedFacilityId || (selectedFacilityId && f.facility_name?.includes(selectedFacilityId))
+  );
+  const effectiveFacilityId = matchedFacility
+    ? matchedFacility.facility_id
+    : selectedFacilityId && /^[0-9a-fA-F-]{36}$/.test(selectedFacilityId)
+    ? selectedFacilityId
+    : undefined;
+
   const statsQuery = useQuery({
-    queryKey: ['validation-stats', selectedFacilityId],
-    queryFn: () => getValidationStatsApi(selectedFacilityId || undefined),
+    queryKey: ['validation-stats', effectiveFacilityId],
+    queryFn: () => getValidationStatsApi(effectiveFacilityId),
     refetchInterval: 20000,
   });
 
