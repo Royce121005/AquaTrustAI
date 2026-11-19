@@ -153,7 +153,7 @@ class SustainabilityService:
             except Exception:
                 continue
 
-        circularity = (total_reused / total_treated * 100.0) if total_treated > 0 else 65.0
+        circularity = (total_reused / total_treated * 100.0) if total_treated > 0 else 0.0
         esg_claim = (
             f"AquaTrust Network Verified Claim: Diverting {total_reused:,.0f} kL/day of treated water to non-potable reuse, "
             f"offsetting {total_freshwater:,.0f} kL/day of municipal potable demand, "

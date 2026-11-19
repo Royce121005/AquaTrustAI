@@ -5,6 +5,7 @@ import { listAuditEventsApi } from '../api/audit';
 import { useAuth } from '../context/AuthContext';
 import { LoadingState, ErrorState, EmptyState } from '../components/common/States';
 import { RoleBadge, StatusBadge } from '../components/common/Badges';
+import { AuditTimelineView } from '../components/audit/AuditTimelineView';
 import {
   FileSpreadsheet,
   Filter,
@@ -14,6 +15,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Database,
+  List,
 } from 'lucide-react';
 
 const PAGE_SIZE = 25;
@@ -21,6 +23,7 @@ const PAGE_SIZE = 25;
 export const AuditPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const { user } = useAuth();
+  const [viewMode, setViewMode] = useState<'timeline' | 'table'>('timeline');
 
   const actionFilter = searchParams.get('action') || '';
   const resourceTypeFilter = searchParams.get('resource_type') || '';
@@ -83,6 +86,28 @@ export const AuditPage: React.FC = () => {
           </p>
         </div>
         <div className="flex items-center gap-2">
+          <div className="flex items-center bg-slate-100 p-0.5 rounded-lg border border-slate-200 text-xs">
+            <button
+              onClick={() => setViewMode('timeline')}
+              className={`px-2.5 py-1 rounded-md font-medium transition ${
+                viewMode === 'timeline'
+                  ? 'bg-white text-slate-900 shadow-sm'
+                  : 'text-slate-500 hover:text-slate-900'
+              }`}
+            >
+              Timeline View
+            </button>
+            <button
+              onClick={() => setViewMode('table')}
+              className={`px-2.5 py-1 rounded-md font-medium transition ${
+                viewMode === 'table'
+                  ? 'bg-white text-slate-900 shadow-sm'
+                  : 'text-slate-500 hover:text-slate-900'
+              }`}
+            >
+              Event Table
+            </button>
+          </div>
           <button
             onClick={() => auditQuery.refetch()}
             disabled={auditQuery.isFetching}
@@ -94,7 +119,11 @@ export const AuditPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Filter Bar */}
+      {viewMode === 'timeline' ? (
+        <AuditTimelineView facilityId={searchParams.get('facility_id') || undefined} />
+      ) : (
+        <>
+          {/* Filter Bar */}
       <div className="bg-white border border-slate-200 rounded-lg p-3.5 shadow-sm flex flex-wrap items-center gap-4 text-xs">
         <div className="flex items-center gap-1.5 text-slate-500 font-medium">
           <Filter className="w-3.5 h-3.5" />
@@ -220,6 +249,8 @@ export const AuditPage: React.FC = () => {
           </div>
         </div>
       </div>
+      </>
+      )}
     </div>
   );
 };
