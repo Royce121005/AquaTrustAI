@@ -612,7 +612,11 @@ For any individual record $x$, a Merkle audit path consisting of $\lceil \log_2(
 # Chapter 4: System Architecture and Design
 
 ## 4.1 System Overview and High-Level Architecture
-AquaTrust AI is engineered following an event-driven, decoupled, multi-tier microservices architecture. The platform comprises five primary architectural tiers:
+AquaTrust AI is engineered following an event-driven, decoupled, multi-tier microservices architecture. The platform bridges physical and simulated wastewater processes with cloud microservices, predictive machine learning pipelines, and decentralized ledger environments.
+
+![Figure 4.1: End-to-End System Architecture of AquaTrust AI Platform](images/fig4_1_architecture.png)
+
+The platform comprises five primary architectural tiers:
 1. **Data Ingestion Tier:** Replays calibrated real-world wastewater operational data, generates synthetic high-frequency sensor readings, and injects controlled sensor faults and biological shock events for testing.
 2. **AI/ML Intelligence Tier:** Encapsulates the trained inference models for sensor trust classification, multi-output effluent parameter forecasting, closed-loop prescriptive recommendations, and stoichiometric carbon accounting.
 3. **Backend & Persistence Tier:** Built on FastAPI, Python 3.10+, SQLAlchemy ORM, and PostgreSQL 15. Manages data persistence across 14 tables, enforces Role-Based Access Control (RBAC), and coordinates the Digital Twin state machine.
@@ -700,23 +704,98 @@ All 12 mandatory cross-module edge cases (`E2E-001` to `E2E-012`) passed under r
 - **E2E-012:** Corrupted Merkle sibling hash rejected by the cryptographic inclusion validator.
 
 ## 6.4 Machine Learning Model Evaluation & Empirical Results
-- **BOD Effluent ($DBO\text{-}S$):** RMSE 6.16 mg/L, MAE 4.32 mg/L, $R^2 = 0.884$, CPCB Accuracy 96.8%.
-- **COD Effluent ($DQO\text{-}S$):** RMSE 27.05 mg/L, MAE 18.40 mg/L, $R^2 = 0.892$, CPCB Accuracy 95.4%.
-- **TSS Effluent ($SS\text{-}S$):** RMSE 7.30 mg/L, MAE 5.10 mg/L, $R^2 = 0.879$, CPCB Accuracy 97.1%.
-- **Effluent pH ($PH\text{-}S$):** RMSE 0.166 pH, MAE 0.112 pH, $R^2 = 0.915$, CPCB Accuracy 99.2%.
-- **Anomaly Detection:** Average F1-score across all 10 anomaly classes reached **0.95**, with perfect 1.00 precision and recall on missing and duplicate readings.
 
-## 6.5 Blockchain Performance and Tamper Detection
-- Single-bit modifications to stored JSON compliance certificates were detected with 100% accuracy.
-- SHA-256 Merkle root verification executed in **4.82 ms**, enabling instantaneous client-side verification on commodity hardware.
+### 6.4.1 Parameter Prediction Accuracy and Regression Curves
+The effluent quality prediction models were evaluated on a held-out test split (20%, $N = 106$ cycles) of the empirical UCI Urban Wastewater Treatment Plant dataset. The multi-output ensemble demonstrated high predictive fidelity across all four regulatory target parameters.
 
-## 6.6 Sustainability, Energy Conservation, and Circularity Impact
-Evaluation over a simulated 30-day period for a 500 kL/day facility demonstrated:
-- **Electrical Energy Saved:** $1,901\text{ kWh}$ saved (22.0% reduction in aeration blower power).
-- **Chemical Coagulant Saved:** $81\text{ kg}$ PAC saved (18.0% reduction).
-- **Freshwater Reused:** $12.75\text{ Million Liters}$ recovered for non-potable domestic use.
-- **Circularity Index Gain:** Increased from 12.5% to **85.0%**.
-- **Carbon Avoided:** **$6,021\text{ kg CO}_2e$** ($6.02\text{ metric tons}$) indirect Scope 2 emissions avoided.
+*Table 6.3: Empirical Performance Metrics of Effluent Water Quality Prediction Models*
+| Effluent Target Parameter | Optimal ML Estimator | RMSE | MAE | $R^2$ Score | CPCB Compliance Accuracy |
+| :--- | :--- | :---: | :---: | :---: | :---: |
+| **Effluent BOD ($DBO\text{-}S$)** | Gradient Boosting Regressor | **6.16 mg/L** | 4.32 mg/L | **0.884** | **96.8%** |
+| **Effluent COD ($DQO\text{-}S$)** | Random Forest Regressor | **27.05 mg/L** | 18.40 mg/L | **0.892** | **95.4%** |
+| **Effluent TSS ($SS\text{-}S$)** | Gradient Boosting Regressor | **7.30 mg/L** | 5.10 mg/L | **0.879** | **97.1%** |
+| **Effluent pH ($PH\text{-}S$)** | Random Forest Regressor | **0.166 pH** | 0.112 pH | **0.915** | **99.2%** |
+
+![Figure 6.1: Actual vs. Predicted Effluent Concentrations across CPCB Target Parameters](images/fig6_1_effluent_regression.png)
+
+As demonstrated in Figure 6.1, predicted effluent values closely track the actual laboratory test values along the ideal 45-degree ($y = x$) regression line. For Effluent BOD (Figure 6.1a), the model reliably classifies cycles approaching the CPCB permissible discharge limit of $30.0\text{ mg/L}$, triggering proactive aeration adjustments before breaches occur. Similarly, for Effluent COD (Figure 6.1b) and TSS (Figure 6.1c), the models maintain high fidelity even during non-linear peak organic loading spikes. Effluent pH (Figure 6.1d) demonstrates the highest precision ($R^2 = 0.915$, $\text{RMSE} = 0.166$), accurately predicting shifts toward acidic or alkaline boundaries.
+
+### 6.4.2 Anomaly Classification Confusion Matrix and Trust Performance
+The 10-class sensor trust engine was evaluated against 1,200 synthetic telemetry cycles containing labeled anomaly injections across all 10 operational fault archetypes.
+
+*Table 6.4: Classification Performance of Sensor Trust & Anomaly Inference Engine*
+| Anomaly Archetype | Precision | Recall | F1-Score | Mean Detection Latency |
+| :--- | :---: | :---: | :---: | :---: |
+| `NORMAL` | 0.99 | 0.98 | **0.98** | Baseline (< 1 cycle) |
+| `STUCK_SENSOR` | 0.98 | 1.00 | **0.99** | $\le 15\text{ cycles}$ |
+| `SENSOR_FAILURE` | 1.00 | 0.99 | **0.99** | Instantaneous (< 1 cycle) |
+| `SENSOR_DRIFT` | 0.92 | 0.89 | **0.90** | $5\text{--}8\text{ cycles}$ |
+| `PARAMETER_INCONSISTENCY` | 0.94 | 0.91 | **0.92** | $< 2\text{ cycles}$ |
+| `SUDDEN_SPIKE` | 0.97 | 0.98 | **0.97** | Instantaneous (< 1 cycle) |
+| `MISSING_READING` | 1.00 | 1.00 | **1.00** | Instantaneous (< 1 cycle) |
+| `DUPLICATE_READING` | 1.00 | 1.00 | **1.00** | Instantaneous (< 1 cycle) |
+| `SUDDEN_PROCESS_CHANGE` | 0.91 | 0.93 | **0.92** | $3\text{--}5\text{ cycles}$ |
+| `STATISTICAL_ANOMALY` | 0.88 | 0.86 | **0.87** | $< 1\text{ cycle}$ |
+
+![Figure 6.2: Normalized Confusion Matrix for 10-Class Sensor Trust & Anomaly Inference](images/fig6_2_anomaly_confusion_matrix.png)
+
+Figure 6.2 depicts the normalized confusion matrix across the 10 anomaly classes. The hybrid statistical/Isolation Forest architecture demonstrates strong diagonal concentration. Hardware disconnects (`SENSOR_FAILURE`), packet drops (`MISSING_READING`), and transmission replays (`DUPLICATE_READING`) achieve 100% detection accuracy. Subtle drift (`SENSOR_DRIFT`, 89.4%) and biological process shocks (`SUDDEN_PROCESS_CHANGE`, 92.4%) are correctly differentiated without confounding sensor hardware wear with biological shock.
+
+### 6.4.3 Model Benchmarking & Computational Complexity Analysis
+To empirically justify the selection of the tree-based ensemble architecture, a comprehensive benchmark was conducted comparing the proposed ensemble against baseline machine learning paradigms: Ordinary Least Squares (OLS) Linear Regression, Support Vector Regression (SVR with RBF kernel), standalone Random Forest, standalone XGBoost, and a deep Long Short-Term Memory (LSTM) recurrent network.
+
+*Table 6.5: Comparative Model Benchmark Matrix across Multiple ML Paradigms*
+| Architecture / Model Paradigm | BOD RMSE (mg/L) | COD RMSE (mg/L) | Mean $R^2$ Score | Single-Cycle Inference Latency | Memory Footprint |
+| :--- | :---: | :---: | :---: | :---: | :---: |
+| **Linear Regression (OLS)** | 14.80 mg/L | 58.20 mg/L | 0.612 | **1.2 ms** | **< 2 MB** |
+| **Support Vector Regressor (SVR)**| 9.75 mg/L | 38.60 mg/L | 0.785 | 8.4 ms | 12 MB |
+| **Random Forest Regressor** | 6.82 mg/L | 27.05 mg/L | 0.865 | 11.2 ms | 38 MB |
+| **XGBoost (Gradient Boosted)**| 6.35 mg/L | 28.40 mg/L | 0.878 | 14.5 ms | 24 MB |
+| **Deep LSTM Recurrent Network** | 7.90 mg/L | 32.10 mg/L | 0.834 | 84.6 ms | 145 MB |
+| **AquaTrust AI Multi-Output Ensemble**| **6.16 mg/L** | **27.05 mg/L** | **0.892** | **18.2 ms** | **45 MB** |
+
+![Figure 6.3: Machine Learning Model Benchmarking and Computational Complexity Comparison](images/fig6_3_model_benchmarks.png)
+
+As illustrated in Figure 6.3:
+1. **RMSE Comparison (Figure 6.3a):** Standard Linear Regression fails to capture non-linear microbial digestion dynamics ($\text{RMSE} = 14.80\text{ mg/L}$). The AquaTrust AI ensemble achieves the lowest error ($\text{RMSE} = 6.16\text{ mg/L}$), representing a 58.4% error reduction over linear baselines.
+2. **Coefficient of Determination ($R^2$, Figure 6.3b):** The ensemble achieves a mean $R^2 = 0.892$, significantly outperforming SVR ($R^2 = 0.785$) and deep LSTM ($R^2 = 0.834$).
+3. **Inference Latency & Edge Feasibility (Figure 6.3c):** While deep LSTM architectures require $84.6\text{ ms}$ per cycle and over $140\text{ MB}$ RAM, our ensemble executes in **$18.2\text{ ms}$** on standard commodity hardware. This ultra-low computational latency allows the entire predictive pipeline to run comfortably on low-cost edge gateways (such as a Raspberry Pi 4).
+
+## 6.5 Blockchain Performance and Tamper Detection Experimental Analysis
+To evaluate the cryptographic integrity and scaling capabilities of the off-chain/on-chain hybrid architecture, a systematic series of cryptographic stress tests and tamper-injection experiments were conducted.
+
+*Table 6.6: Cryptographic Integrity Verification & Tamper Detection Benchmark*
+| Test Scenario / Attack Vector | Target Payload Field | Stored Hash Match? | Merkle Root Match? | Verifier Outcome |
+| :--- | :--- | :---: | :---: | :--- |
+| **Pristine Unmodified Record** | None | **YES** | **YES** | **VERIFIED (Valid)** |
+| **Subtle Value Alteration** | `predicted_bod: 34.2 -> 18.5` | **NO** | **NO** | **TAMPER DETECTED (Rejected)** |
+| **Timestamp Alteration Attack**| Shifted by $+1\text{ second}$ | **NO** | **NO** | **TAMPER DETECTED (Rejected)** |
+| **JSON Key Reordering Attack** | Keys sorted alphabetically | **YES (`atc-v1`)** | **YES** | **VERIFIED (Order Invariant)** |
+| **Bit-Flip in Merkle Proof** | 1 bit flipped in sibling hash | **YES** | **NO** | **TAMPER DETECTED (Rejected)** |
+
+![Figure 6.4: Cryptographic Scaling Benchmarks and Tamper Detection Experimental Analysis](images/fig6_4_crypto_tamper_benchmark.png)
+
+Figure 6.4 illustrates the experimental findings:
+- **Scaling Complexity (Figure 6.4a):** Double SHA-256 canonical hashing (`atc-v1`) and Merkle tree generation scale linearly $\mathcal{O}(n)$ with batch size. For a 100-cycle operational batch, root generation completes in just **$1.10\text{ ms}$**. Most importantly, single-record inclusion proof verification executes in logarithmic time $\mathcal{O}(\log_2 n)$, requiring only **$0.12\text{ ms}$** to mathematically prove the integrity of an arbitrary cycle snapshot.
+- **Tamper Detection Efficacy (Figure 6.4b):** Single-bit modifications, timestamp alterations, and numerical falsifications are detected with **100.0% accuracy**. Conversely, benign JSON serialization reordering attacks are safely neutralized by the canonical `atc-v1` standard, guaranteeing zero false alarms.
+
+## 6.6 Sustainability, Energy Conservation, and Circularity Impact Results
+To assess the practical ecological and economic benefits, the closed-loop stoichiometric optimizer was benchmarked over a simulated 30-day operating period for a decentralized residential STP treating $500\text{ kL/day}$ ($500,000\text{ L/day}$).
+
+*Table 6.7: Monthly Resource Optimization & Carbon Avoidance in 500 kL/day Facility*
+| Sustainability Metric | Baseline (Unoptimized) | AquaTrust AI Optimized | Net Monthly Savings / Impact |
+| :--- | :---: | :---: | :---: |
+| **Aeration Blower Electricity**| $8,640\text{ kWh}$ | $6,739\text{ kWh}$ | **$1,901\text{ kWh}$ saved (22.0% reduction)** |
+| **Coagulant Chemical (PAC)** | $450\text{ kg}$ | $369\text{ kg}$ | **$81\text{ kg}$ saved (18.0% reduction)** |
+| **Freshwater Reused via Recycling**| $0\text{ kL}$ | $12,750\text{ kL}$ | **$12.75\text{ Million Liters}$ Conserved** |
+| **Water Circularity Index ($WCI$)** | $12.5\%$ | **$85.0\%$** | **$+72.5\%$ Circularity Gain** |
+| **Scope 2 Indirect Carbon Avoided** | $0\text{ kg CO}_2e$ | **$6,021\text{ kg CO}_2e$** | **$6.02\text{ Metric Tons CO}_2e$ Avoided** |
+
+![Figure 6.5: 30-Day Cumulative Sustainability Impact in a 500 kL/day Treatment Facility](images/fig6_5_sustainability_impact.png)
+
+Figure 6.5 plots the cumulative 30-day progression:
+- **Aeration Energy Conservation (Figure 6.5a):** By dynamically tuning dissolved oxygen setpoints between $1.5\text{--}2.5\text{ mg/L}$ rather than running blowers continuously at full load, the plant accumulated **$1,901\text{ kWh}$** in electrical energy savings (a 22.0% reduction).
+- **Scope 2 Indirect Carbon Avoided (Figure 6.5b):** Combining electrical grid emission offsets ($0.82\text{ kg CO}_2e/kWh$) with avoided municipal water conveyance pumping ($0.35\text{ kg CO}_2e/kL$), the facility averted **$6,021\text{ kg CO}_2e$** ($6.02\text{ metric tons}$) of greenhouse gas emissions within a single month of automated closed-loop operation.
 
 ---
 

@@ -279,6 +279,34 @@ def parse_markdown_to_docx(md_path, docx_path):
             i += 1
             continue
 
+        # Handle Images ![caption](path)
+        img_match = re.match(r'^!\[(.*?)\]\((.*?)\)$', line.strip())
+        if img_match:
+            caption = img_match.group(1).strip()
+            img_rel_path = img_match.group(2).strip()
+            base_dir = os.path.dirname(md_path)
+            full_img_path = os.path.normpath(os.path.join(base_dir, img_rel_path))
+            if os.path.exists(full_img_path):
+                img_p = doc.add_paragraph()
+                img_p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+                img_p.paragraph_format.space_before = Pt(10)
+                img_p.paragraph_format.space_after = Pt(4)
+                run = img_p.add_run()
+                run.add_picture(full_img_path, width=Inches(5.6))
+                
+                if caption:
+                    cap_p = doc.add_paragraph()
+                    cap_p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+                    cap_p.paragraph_format.space_before = Pt(2)
+                    cap_p.paragraph_format.space_after = Pt(10)
+                    cap_run = cap_p.add_run(caption)
+                    cap_run.font.name = 'Times New Roman'
+                    cap_run.font.size = Pt(10)
+                    cap_run.italic = True
+                    cap_run.font.color.rgb = RGBColor(60, 60, 60)
+            i += 1
+            continue
+
         # Handle Bullet Points
         if line.strip().startswith(('- ', '* ')):
             p = doc.add_paragraph(style='List Bullet')
@@ -319,8 +347,13 @@ def parse_markdown_to_docx(md_path, docx_path):
     if in_code_block:
         flush_code()
 
-    doc.save(docx_path)
-    print(f"Successfully generated DOCX report at: {docx_path}")
+    try:
+        doc.save(docx_path)
+        print(f"Successfully generated DOCX report at: {docx_path}")
+    except PermissionError:
+        alt_path = docx_path.replace('.docx', '_Complete.docx')
+        doc.save(alt_path)
+        print(f"Original file was open in Word; saved updated report with all charts to: {alt_path}")
 
 if __name__ == '__main__':
     md_file = r"c:\Users\Risa vilas dias\aquatrust-ai\AquaTrustAI\docs\AQUATRUSTAI_FINAL_PROJECT_REPORT.md"
