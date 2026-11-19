@@ -212,7 +212,7 @@ export const SynopticProcessFlow: React.FC<SynopticProcessFlowProps> = ({
 
         {/* Right: Zoom / Pan & Animation Speed Controls */}
         <div className="flex items-center gap-1.5 pointer-events-auto bg-slate-900/90 backdrop-blur border border-slate-700/80 p-1 rounded-lg shadow-md">
-          {/* Speed Toggle */}
+          {/* Hydraulic Flow Animation Speed Toggle */}
           <button
             onClick={() => {
               if (animSpeed === 'normal') setAnimSpeed('fast');
@@ -221,8 +221,9 @@ export const SynopticProcessFlow: React.FC<SynopticProcessFlowProps> = ({
               else setAnimSpeed('normal');
             }}
             title={`Toggle Animation Speed (Current: ${animSpeed.toUpperCase()})`}
-            className="flex items-center gap-1 px-2.5 py-1 text-xs font-mono font-medium rounded hover:bg-slate-800 text-slate-300 transition-colors"
+            className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-mono font-medium rounded hover:bg-slate-800 text-slate-300 transition-colors"
           >
+            <span className="text-[10px] text-slate-400 font-mono uppercase tracking-wider">Flow Anim:</span>
             {animSpeed === 'paused' ? (
               <>
                 <Pause className="w-3.5 h-3.5 text-amber-400" />

@@ -4,7 +4,7 @@ import { getComplianceRulesApi, getComplianceSummaryApi, evaluateComplianceApi }
 import { listTreatmentRecordsApi } from '../api/treatmentRecords';
 import { LoadingState, ErrorState, EmptyState } from '../components/common/States';
 import { ComplianceStatusBadge, StatusBadge } from '../components/common/Badges';
-import { Scale, RefreshCw, CheckCircle, XCircle, Search, Play, FileText } from 'lucide-react';
+import { Scale, RefreshCw, CheckCircle, XCircle, Search, Play, FileText, Shield } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export const CompliancePage: React.FC = () => {
@@ -39,13 +39,19 @@ export const CompliancePage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#1F293D]">
         <div>
-          <h1 className="text-xl font-bold tracking-tight text-slate-900">
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-[10px] font-mono uppercase tracking-widest text-cyan-400 font-semibold bg-cyan-950/60 border border-cyan-800/80 px-2 py-0.5 rounded">
+              Regulatory Standards Boundary
+            </span>
+          </div>
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white font-mono flex items-center gap-2.5">
+            <Scale className="w-5 h-5 text-cyan-400" />
             CPCB Environmental Discharge Standards Compliance
           </h1>
-          <p className="text-xs text-slate-500 mt-0.5">
-            CPCB 2021 Normative Discharge Thresholds & Treatment Window Verification.
+          <p className="text-xs text-slate-400 mt-1 max-w-3xl leading-relaxed">
+            CPCB 2021 Normative Discharge Thresholds &amp; Treatment Window Verification. Independent parameter-by-parameter legal evaluation.
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -54,10 +60,10 @@ export const CompliancePage: React.FC = () => {
               rulesQuery.refetch();
               summaryQuery.refetch();
             }}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 rounded-md text-xs font-medium shadow-sm transition-colors"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#1E293B] border border-[#334155] hover:bg-slate-700 text-slate-200 rounded-lg text-xs font-mono font-medium shadow-sm transition-colors"
           >
-            <RefreshCw className="w-3.5 h-3.5" />
-            Refresh Rules & Summary
+            <RefreshCw className="w-3.5 h-3.5 text-cyan-400" />
+            Refresh Rules &amp; Summary
           </button>
         </div>
       </div>
@@ -65,52 +71,52 @@ export const CompliancePage: React.FC = () => {
       {/* Compliance Summary Cards */}
       {summaryQuery.data && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-white border border-slate-200 rounded-lg p-5 shadow-sm">
-            <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 block">
+          <div className="scada-card p-5 relative overflow-hidden">
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 font-mono block">
               Total Evaluated Records
             </span>
-            <div className="text-2xl font-bold text-slate-900 mt-1 font-mono">
+            <div className="text-3xl font-bold text-white mt-1.5 font-mono tabular-nums">
               {summaryQuery.data.total_evaluations}
             </div>
-            <div className="text-[11px] text-slate-400 mt-1">
+            <div className="text-[11px] text-slate-500 font-mono mt-1">
               Standard: {summaryQuery.data.cpcb_standard_version}
             </div>
           </div>
 
-          <div className="bg-white border border-emerald-200 rounded-lg p-5 shadow-sm bg-emerald-50/20">
-            <div className="flex items-center justify-between text-emerald-700">
-              <span className="text-xs font-semibold uppercase tracking-wider">Compliant Windows</span>
+          <div className="scada-card p-5 relative overflow-hidden border-emerald-900/50 bg-emerald-950/10">
+            <div className="flex items-center justify-between text-emerald-400">
+              <span className="text-[11px] font-semibold uppercase tracking-wider font-mono">Compliant Windows</span>
               <CheckCircle className="w-4 h-4" />
             </div>
-            <div className="text-2xl font-bold text-emerald-700 mt-1 font-mono">
+            <div className="text-3xl font-bold text-emerald-400 mt-1.5 font-mono tabular-nums">
               {summaryQuery.data.compliant_count}
             </div>
-            <div className="text-[11px] text-emerald-600 mt-1">
+            <div className="text-[11px] text-emerald-500 font-mono mt-1">
               Fully satisfied all CPCB limits
             </div>
           </div>
 
-          <div className="bg-white border border-rose-200 rounded-lg p-5 shadow-sm bg-rose-50/20">
-            <div className="flex items-center justify-between text-rose-700">
-              <span className="text-xs font-semibold uppercase tracking-wider">Non-Compliant</span>
+          <div className="scada-card p-5 relative overflow-hidden border-rose-900/50 bg-rose-950/10">
+            <div className="flex items-center justify-between text-rose-400">
+              <span className="text-[11px] font-semibold uppercase tracking-wider font-mono">Non-Compliant</span>
               <XCircle className="w-4 h-4" />
             </div>
-            <div className="text-2xl font-bold text-rose-700 mt-1 font-mono">
+            <div className="text-3xl font-bold text-rose-400 mt-1.5 font-mono tabular-nums">
               {summaryQuery.data.non_compliant_count}
             </div>
-            <div className="text-[11px] text-rose-600 mt-1">
+            <div className="text-[11px] text-rose-500 font-mono mt-1">
               Threshold breach detected
             </div>
           </div>
 
-          <div className="bg-white border border-slate-200 rounded-lg p-5 shadow-sm">
-            <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 block">
+          <div className="scada-card p-5 relative overflow-hidden">
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 font-mono block">
               Compliance Rate
             </span>
-            <div className="text-2xl font-bold text-slate-900 mt-1 font-mono">
+            <div className="text-3xl font-bold text-cyan-400 mt-1.5 font-mono tabular-nums">
               {summaryQuery.data.compliance_rate_percent}%
             </div>
-            <div className="text-[11px] text-slate-400 mt-1">
+            <div className="text-[11px] text-slate-500 font-mono mt-1">
               Aggregate acceptance ratio
             </div>
           </div>
@@ -118,16 +124,16 @@ export const CompliancePage: React.FC = () => {
       )}
 
       {/* Evaluate Specific Treatment Record Panel */}
-      <div className="bg-white border border-slate-200 rounded-lg p-6 shadow-sm">
-        <h2 className="text-sm font-semibold text-slate-800 uppercase tracking-wide mb-3 flex items-center gap-2">
-          <Scale className="w-4 h-4 text-brand-600" />
+      <div className="scada-card p-6">
+        <h2 className="text-sm font-semibold text-white uppercase tracking-wide mb-3 flex items-center gap-2 font-mono">
+          <Scale className="w-4 h-4 text-cyan-400" />
           Evaluate Treatment Record Compliance
         </h2>
         <form onSubmit={handleEvaluate} className="flex flex-col sm:flex-row items-center gap-3">
           <select
             value={selectedRecordId}
             onChange={(e) => setSelectedRecordId(e.target.value)}
-            className="flex-1 bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs font-mono text-slate-800 focus:ring-1 focus:ring-brand-500 w-full"
+            className="flex-1 scada-select w-full"
           >
             <option value="">Select a finalized or aggregated treatment record UUID...</option>
             {recordsQuery.data?.map((r) => (
@@ -139,7 +145,7 @@ export const CompliancePage: React.FC = () => {
           <button
             type="submit"
             disabled={!selectedRecordId || evalMutation.isPending}
-            className="px-4 py-2 bg-brand-600 hover:bg-brand-500 text-white rounded-lg text-xs font-semibold shadow-sm transition-colors flex items-center gap-1.5 disabled:opacity-50 shrink-0 w-full sm:w-auto justify-center"
+            className="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 text-white rounded-lg text-xs font-semibold shadow-sm transition-colors flex items-center gap-1.5 disabled:opacity-50 shrink-0 w-full sm:w-auto justify-center font-mono"
           >
             <Play className="w-3.5 h-3.5" />
             {evalMutation.isPending ? 'Evaluating...' : 'Evaluate Against Rules'}
@@ -154,51 +160,51 @@ export const CompliancePage: React.FC = () => {
 
         {/* Evaluation Output Table */}
         {evalMutation.isSuccess && (
-          <div className="mt-6 pt-4 border-t border-slate-200 space-y-4">
+          <div className="mt-6 pt-4 border-t border-[#1F293D] space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <span className="text-xs text-slate-500 font-mono">Evaluation Result:</span>
+                <span className="text-xs text-slate-400 font-mono">Evaluation Result:</span>
                 <ComplianceStatusBadge status={evalMutation.data.compliance_status} />
               </div>
-              <span className="text-[11px] text-slate-400 font-mono">
+              <span className="text-[11px] text-slate-500 font-mono">
                 Evaluated: {new Date(evalMutation.data.evaluated_at).toLocaleString()}
               </span>
             </div>
 
             {Array.isArray(evalMutation.data.parameter_results) && (
-              <div className="overflow-x-auto">
+              <div className="scada-table-container">
                 <table className="w-full text-left border-collapse text-xs">
                   <thead>
-                    <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 font-mono uppercase text-[11px]">
-                      <th className="py-2 px-3">Parameter</th>
-                      <th className="py-2 px-3">Observed</th>
-                      <th className="py-2 px-3">Rule Operator & Limit</th>
-                      <th className="py-2 px-3">Units</th>
-                      <th className="py-2 px-3">Samples</th>
-                      <th className="py-2 px-3">Mean / Min / Max</th>
-                      <th className="py-2 px-3">Verdict</th>
-                      <th className="py-2 px-3">Reason</th>
+                    <tr className="scada-table-header">
+                      <th className="py-2.5 px-3">Parameter</th>
+                      <th className="py-2.5 px-3">Observed</th>
+                      <th className="py-2.5 px-3">Rule Operator &amp; Limit</th>
+                      <th className="py-2.5 px-3">Units</th>
+                      <th className="py-2.5 px-3">Samples</th>
+                      <th className="py-2.5 px-3">Mean / Min / Max</th>
+                      <th className="py-2.5 px-3">Verdict</th>
+                      <th className="py-2.5 px-3">Reason</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100 font-mono">
+                  <tbody className="divide-y divide-[#1F293D]/60 font-mono">
                     {evalMutation.data.parameter_results.map((p, idx) => (
-                      <tr key={idx} className="hover:bg-slate-50/80">
-                        <td className="py-2.5 px-3 font-bold text-slate-900">{p.parameter}</td>
-                        <td className="py-2.5 px-3 font-semibold text-brand-700">
+                      <tr key={idx} className="scada-table-row">
+                        <td className="py-2.5 px-3 font-bold text-white">{p.parameter}</td>
+                        <td className="py-2.5 px-3 font-semibold text-cyan-400 tabular-nums">
                           {p.observed_value !== null ? p.observed_value : '—'}
                         </td>
-                        <td className="py-2.5 px-3 text-slate-700">
+                        <td className="py-2.5 px-3 text-slate-300">
                           {p.operator} {p.threshold !== null ? p.threshold : `${p.threshold_min} - ${p.threshold_max}`}
                         </td>
-                        <td className="py-2.5 px-3 text-slate-500">{p.threshold_unit}</td>
-                        <td className="py-2.5 px-3 text-slate-600">{p.sample_count}</td>
-                        <td className="py-2.5 px-3 text-slate-500 text-[11px]">
+                        <td className="py-2.5 px-3 text-slate-400">{p.threshold_unit}</td>
+                        <td className="py-2.5 px-3 text-slate-300 tabular-nums">{p.sample_count}</td>
+                        <td className="py-2.5 px-3 text-slate-400 text-[11px] tabular-nums">
                           {(p.mean_value !== null && p.mean_value !== undefined && !isNaN(Number(p.mean_value)) ? Number(p.mean_value).toFixed(1) : '—')} / {(p.min_value !== null && p.min_value !== undefined && !isNaN(Number(p.min_value)) ? Number(p.min_value).toFixed(1) : '—')} / {(p.max_value !== null && p.max_value !== undefined && !isNaN(Number(p.max_value)) ? Number(p.max_value).toFixed(1) : '—')}
                         </td>
                         <td className="py-2.5 px-3">
                           <ComplianceStatusBadge status={p.result || p.status} />
                         </td>
-                        <td className="py-2.5 px-3 text-slate-600 text-[11px]">{p.reason}</td>
+                        <td className="py-2.5 px-3 text-slate-400 text-[11px]">{p.reason}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -209,15 +215,12 @@ export const CompliancePage: React.FC = () => {
         )}
       </div>
 
-      {/* Authoritative Rules Registry Table from GET /compliance/rules */}
-      <div className="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden">
-        <div className="p-4 border-b border-slate-200 flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-slate-800 uppercase tracking-wide">
+      {/* Authoritative Rules Registry Table */}
+      <div className="scada-table-container">
+        <div className="p-4 border-b border-[#1F293D] flex items-center justify-between bg-[#161F30]">
+          <h2 className="text-sm font-semibold text-white uppercase tracking-wide font-mono">
             Authoritative CPCB Rule Catalog
           </h2>
-          <span className="text-xs text-slate-500 font-mono">
-            Source: GET /compliance/rules
-          </span>
         </div>
 
         {rulesQuery.isLoading ? (
@@ -235,7 +238,7 @@ export const CompliancePage: React.FC = () => {
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse text-xs">
               <thead>
-                <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 font-mono uppercase text-[11px]">
+                <tr className="scada-table-header">
                   <th className="py-2.5 px-4">Rule ID</th>
                   <th className="py-2.5 px-4">Parameter</th>
                   <th className="py-2.5 px-4">Operator</th>
@@ -247,23 +250,23 @@ export const CompliancePage: React.FC = () => {
                   <th className="py-2.5 px-4">Status</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 font-mono">
+              <tbody className="divide-y divide-[#1F293D]/60 font-mono">
                 {rulesQuery.data.map((r) => (
-                  <tr key={r.rule_id} className="hover:bg-slate-50/80">
-                    <td className="py-2.5 px-4 text-slate-600 select-all">{r.rule_id}</td>
-                    <td className="py-2.5 px-4 font-bold text-slate-900">{r.parameter}</td>
-                    <td className="py-2.5 px-4 text-slate-700">{r.operator}</td>
-                    <td className="py-2.5 px-4 font-semibold text-brand-700">
+                  <tr key={r.rule_id} className="scada-table-row">
+                    <td className="py-2.5 px-4 text-slate-400 select-all">{r.rule_id}</td>
+                    <td className="py-2.5 px-4 font-bold text-white">{r.parameter}</td>
+                    <td className="py-2.5 px-4 text-slate-300">{r.operator}</td>
+                    <td className="py-2.5 px-4 font-semibold text-cyan-400">
                       {r.threshold !== null
                         ? r.threshold
                         : `${r.threshold_min} to ${r.threshold_max}`}
                     </td>
-                    <td className="py-2.5 px-4 text-slate-500">{r.threshold_unit}</td>
-                    <td className="py-2.5 px-4 text-slate-500">{r.stage_scope || 'final_effluent'}</td>
-                    <td className="py-2.5 px-4 text-slate-600 font-sans">{r.source_reference}</td>
-                    <td className="py-2.5 px-4 text-slate-500">{r.rule_version}</td>
+                    <td className="py-2.5 px-4 text-slate-400">{r.threshold_unit}</td>
+                    <td className="py-2.5 px-4 text-slate-400">{r.stage_scope || 'final_effluent'}</td>
+                    <td className="py-2.5 px-4 text-slate-300 font-sans">{r.source_reference}</td>
+                    <td className="py-2.5 px-4 text-slate-400">{r.rule_version}</td>
                     <td className="py-2.5 px-4">
-                      <span className={`px-2 py-0.5 rounded text-[10px] font-semibold ${r.active ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-slate-100 text-slate-500'}`}>
+                      <span className={`px-2 py-0.5 rounded text-[10px] font-semibold ${r.active ? 'bg-emerald-950 text-emerald-300 border border-emerald-800' : 'bg-slate-900 text-slate-500'}`}>
                         {r.active ? 'ACTIVE' : 'INACTIVE'}
                       </span>
                     </td>
@@ -277,3 +280,4 @@ export const CompliancePage: React.FC = () => {
     </div>
   );
 };
+export default CompliancePage;

@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useSearchParams, Link } from 'react-router-dom';
 import { listReadingsApi } from '../api/readings';
 import { listFacilitiesApi } from '../api/facilities';
 import { LoadingState, ErrorState, EmptyState } from '../components/common/States';
 import { QualityBadge, AnomalyStatusBadge } from '../components/common/Badges';
-import { Activity, Filter, RefreshCw, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Activity, Filter, RefreshCw, ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
 
 const PAGE_SIZE = 50;
 
@@ -62,41 +62,47 @@ export const TelemetryPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#1F293D]">
         <div>
-          <h1 className="text-xl font-bold tracking-tight text-slate-900">
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-[10px] font-mono uppercase tracking-widest text-cyan-400 font-semibold bg-cyan-950/60 border border-cyan-800/80 px-2 py-0.5 rounded">
+              Raw Instrumentation Bus
+            </span>
+          </div>
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white font-mono flex items-center gap-2.5">
+            <Activity className="w-5 h-5 text-cyan-400" />
             SCADA Telemetry Observations
           </h1>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Deterministic sensor telemetry ingestion stream. Direct observation boundary before finalization.
+          <p className="text-xs text-slate-400 mt-1 max-w-3xl leading-relaxed">
+            Deterministic sensor telemetry ingestion stream. Direct observation boundary before validation and finalization.
           </p>
         </div>
         <div className="flex items-center gap-2">
           <button
             onClick={() => readingsQuery.refetch()}
             disabled={readingsQuery.isFetching}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 rounded-md text-xs font-medium shadow-sm transition-colors disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#1E293B] border border-[#334155] hover:bg-slate-700 text-slate-200 rounded-lg text-xs font-medium shadow-sm transition-colors disabled:opacity-50 font-mono"
           >
-            <RefreshCw className={`w-3.5 h-3.5 ${readingsQuery.isFetching ? 'animate-spin' : ''}`} />
-            Refresh
+            <RefreshCw className={`w-3.5 h-3.5 ${readingsQuery.isFetching ? 'animate-spin text-cyan-400' : ''}`} />
+            Refresh Stream
           </button>
         </div>
       </div>
 
       {/* Dense Filter Bar */}
-      <div className="bg-white border border-slate-200 rounded-lg p-3.5 shadow-sm flex flex-wrap items-center gap-4 text-xs">
-        <div className="flex items-center gap-1.5 text-slate-500 font-medium">
-          <Filter className="w-3.5 h-3.5" />
+      <div className="scada-filter-bar">
+        <div className="flex items-center gap-1.5 text-slate-400 font-medium font-mono text-[11px]">
+          <Filter className="w-3.5 h-3.5 text-cyan-400" />
           <span>Filters:</span>
         </div>
 
         {/* Facility Filter */}
         <div className="flex items-center gap-1.5">
-          <label className="text-slate-500 font-mono text-[11px]">Facility:</label>
+          <label className="text-slate-400 font-mono text-[11px]">Facility:</label>
           <select
             value={facilityId}
             onChange={(e) => updateParam('facility_id', e.target.value)}
-            className="bg-slate-50 border border-slate-300 rounded px-2.5 py-1 text-slate-800 font-mono focus:ring-1 focus:ring-brand-500"
+            className="scada-select"
           >
             <option value="">All Registered Facilities</option>
             {facilities?.map((f) => (
@@ -109,11 +115,11 @@ export const TelemetryPage: React.FC = () => {
 
         {/* Parameter Filter */}
         <div className="flex items-center gap-1.5">
-          <label className="text-slate-500 font-mono text-[11px]">Parameter:</label>
+          <label className="text-slate-400 font-mono text-[11px]">Parameter:</label>
           <select
             value={parameter}
             onChange={(e) => updateParam('parameter', e.target.value)}
-            className="bg-slate-50 border border-slate-300 rounded px-2.5 py-1 text-slate-800 font-mono focus:ring-1 focus:ring-brand-500"
+            className="scada-select"
           >
             <option value="">All Parameters</option>
             <option value="BOD">BOD</option>
@@ -128,11 +134,11 @@ export const TelemetryPage: React.FC = () => {
 
         {/* Quality Status Filter */}
         <div className="flex items-center gap-1.5">
-          <label className="text-slate-500 font-mono text-[11px]">Quality:</label>
+          <label className="text-slate-400 font-mono text-[11px]">Quality:</label>
           <select
             value={qualityStatus}
             onChange={(e) => updateParam('quality_status', e.target.value)}
-            className="bg-slate-50 border border-slate-300 rounded px-2.5 py-1 text-slate-800 font-mono focus:ring-1 focus:ring-brand-500"
+            className="scada-select"
           >
             <option value="">All Quality States</option>
             <option value="valid">valid</option>
@@ -141,10 +147,22 @@ export const TelemetryPage: React.FC = () => {
             <option value="pending">pending</option>
           </select>
         </div>
+
+        {(facilityId || parameter || qualityStatus) && (
+          <button
+            onClick={() => {
+              const next = new URLSearchParams();
+              setSearchParams(next);
+            }}
+            className="text-[11px] font-mono text-cyan-400 hover:text-cyan-300 ml-auto"
+          >
+            Clear Filters
+          </button>
+        )}
       </div>
 
       {/* Telemetry Operational Table */}
-      <div className="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden">
+      <div className="scada-table-container">
         {readingsQuery.isLoading ? (
           <LoadingState message="Loading telemetry observations..." />
         ) : readingsQuery.isError ? (
@@ -160,7 +178,7 @@ export const TelemetryPage: React.FC = () => {
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse text-xs">
               <thead>
-                <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 font-mono uppercase text-[11px]">
+                <tr className="scada-table-header">
                   <th className="py-2.5 px-4">Timestamp</th>
                   <th className="py-2.5 px-4">Reading ID</th>
                   <th className="py-2.5 px-4">Parameter</th>
@@ -174,31 +192,31 @@ export const TelemetryPage: React.FC = () => {
                   <th className="py-2.5 px-4 text-right">Inspect</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 font-mono">
+              <tbody className="divide-y divide-[#1F293D]/60 font-mono">
                 {readingsQuery.data.map((r) => (
-                  <tr key={r.reading_id} className="hover:bg-slate-50/80 transition-colors">
-                    <td className="py-2.5 px-4 text-slate-500 whitespace-nowrap text-[11px]">
+                  <tr key={r.reading_id} className="scada-table-row">
+                    <td className="py-2.5 px-4 text-slate-400 whitespace-nowrap text-[11px]">
                       {new Date(r.observed_at).toLocaleString()}
                     </td>
-                    <td className="py-2.5 px-4 font-semibold text-brand-700 whitespace-nowrap">
+                    <td className="py-2.5 px-4 font-semibold text-cyan-400 whitespace-nowrap">
                       <Link to={`/readings/${r.reading_id}`} className="hover:underline">
                         {r.reading_id.slice(0, 8)}...
                       </Link>
                     </td>
-                    <td className="py-2.5 px-4 font-bold text-slate-900">{r.parameter}</td>
-                    <td className="py-2.5 px-4 font-semibold text-slate-800">
+                    <td className="py-2.5 px-4 font-bold text-white">{r.parameter}</td>
+                    <td className="py-2.5 px-4 font-semibold text-cyan-200 tabular-nums">
                       {r.value !== null ? r.value : 'null'}
                     </td>
-                    <td className="py-2.5 px-4 text-slate-500">{r.unit}</td>
-                    <td className="py-2.5 px-4 text-slate-500">{r.treatment_stage || 'N/A'}</td>
-                    <td className="py-2.5 px-4 text-slate-400 text-[11px]">{r.source}</td>
+                    <td className="py-2.5 px-4 text-slate-400">{r.unit}</td>
+                    <td className="py-2.5 px-4 text-slate-400">{r.treatment_stage || 'N/A'}</td>
+                    <td className="py-2.5 px-4 text-slate-500 text-[11px]">{r.source}</td>
                     <td className="py-2.5 px-4">
                       <QualityBadge status={r.quality_status} />
                     </td>
                     <td className="py-2.5 px-4">
                       <AnomalyStatusBadge status={r.anomaly_status} />
                     </td>
-                    <td className="py-2.5 px-4 text-slate-600">
+                    <td className="py-2.5 px-4 text-slate-400 tabular-nums">
                       {r.anomaly_score !== null && r.anomaly_score !== undefined
                         ? Number(r.anomaly_score).toFixed(4)
                         : '—'}
@@ -206,7 +224,7 @@ export const TelemetryPage: React.FC = () => {
                     <td className="py-2.5 px-4 text-right font-sans">
                       <Link
                         to={`/readings/${r.reading_id}`}
-                        className="text-brand-600 hover:text-brand-800 font-medium"
+                        className="text-cyan-400 hover:text-cyan-300 font-medium inline-flex items-center gap-1 font-mono text-xs"
                       >
                         Evidence &rarr;
                       </Link>
@@ -218,25 +236,25 @@ export const TelemetryPage: React.FC = () => {
           </div>
         )}
 
-        {/* Operational Pagination Footer (truthful without fake totals) */}
-        <div className="p-3 bg-slate-50 border-t border-slate-200 flex items-center justify-between text-xs font-mono text-slate-500">
+        {/* Operational Pagination Footer */}
+        <div className="p-3 bg-[#161F30] border-t border-[#1F293D] flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs font-mono text-slate-400">
           <div>
-            Batch Offset: <span className="font-semibold text-slate-700">{page * PAGE_SIZE}</span> |
-            Batch Limit: <span className="font-semibold text-slate-700">{PAGE_SIZE}</span>
-            <span className="ml-2 text-[10px] text-slate-400">
-              (Backend pagination cursor: skip={page * PAGE_SIZE})
+            Batch Offset: <span className="font-semibold text-slate-200">{page * PAGE_SIZE}</span> |
+            Batch Limit: <span className="font-semibold text-slate-200">{PAGE_SIZE}</span>
+            <span className="ml-2 text-[10px] text-slate-500">
+              (Cursor: skip={page * PAGE_SIZE})
             </span>
           </div>
           <div className="flex items-center gap-2">
             <button
               onClick={handlePrevPage}
               disabled={page === 0 || readingsQuery.isLoading}
-              className="px-2.5 py-1 bg-white border border-slate-300 rounded hover:bg-slate-100 disabled:opacity-40 transition-colors inline-flex items-center gap-1"
+              className="px-2.5 py-1 bg-[#1E293B] border border-[#334155] rounded hover:bg-slate-700 disabled:opacity-40 transition-colors inline-flex items-center gap-1 text-slate-200"
             >
               <ChevronLeft className="w-3.5 h-3.5" />
               Previous
             </button>
-            <span className="px-2 font-semibold text-slate-700">Page {page + 1}</span>
+            <span className="px-2 font-semibold text-slate-200">Page {page + 1}</span>
             <button
               onClick={handleNextPage}
               disabled={
@@ -244,7 +262,7 @@ export const TelemetryPage: React.FC = () => {
                 !readingsQuery.data ||
                 readingsQuery.data.length < PAGE_SIZE
               }
-              className="px-2.5 py-1 bg-white border border-slate-300 rounded hover:bg-slate-100 disabled:opacity-40 transition-colors inline-flex items-center gap-1"
+              className="px-2.5 py-1 bg-[#1E293B] border border-[#334155] rounded hover:bg-slate-700 disabled:opacity-40 transition-colors inline-flex items-center gap-1 text-slate-200"
             >
               Next
               <ChevronRight className="w-3.5 h-3.5" />
@@ -255,3 +273,4 @@ export const TelemetryPage: React.FC = () => {
     </div>
   );
 };
+export default TelemetryPage;

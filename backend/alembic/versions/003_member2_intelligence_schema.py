@@ -74,27 +74,8 @@ def upgrade() -> None:
     )
     op.create_index('ix_recommendations_facility_status', 'recommendations', ['facility_id', 'status'])
 
-    # 4. Ensure uq_readings_natural_key includes source column for append-only correction lineage
-    try:
-        op.drop_constraint('uq_readings_natural_key', 'readings', type_='unique')
-    except Exception:
-        pass
-    try:
-        op.create_unique_constraint(
-            'uq_readings_natural_key',
-            'readings',
-            ['facility_id', 'parameter', 'treatment_stage', 'observed_at', 'source']
-        )
-    except Exception:
-        pass
-
 
 def downgrade() -> None:
-    try:
-        op.drop_constraint('uq_readings_natural_key', 'readings', type_='unique')
-    except Exception:
-        pass
-
     op.drop_index('ix_recommendations_facility_status', table_name='recommendations')
     op.drop_table('recommendations')
 

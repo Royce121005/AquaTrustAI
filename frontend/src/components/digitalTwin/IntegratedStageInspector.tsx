@@ -593,14 +593,10 @@ export const IntegratedStageInspector: React.FC<IntegratedStageInspectorProps> =
       </div>
 
       {/* Provenance & Metadata Footer */}
-      <div className={`border-t border-slate-800 pt-3 text-[10px] font-mono text-slate-400 ${isBelow ? 'mt-4 grid grid-cols-2 md:grid-cols-5 gap-2' : 'space-y-1.5'}`}>
+      <div className={`border-t border-slate-800 pt-3 text-[10px] font-mono text-slate-400 ${isBelow ? 'mt-4 grid grid-cols-2 md:grid-cols-4 gap-2' : 'space-y-1.5'}`}>
         <div className="flex items-center justify-between">
           <span>Last Update:</span>
           <span className="text-slate-200">{timeStr} (1s ago)</span>
-        </div>
-        <div className="flex items-center justify-between">
-          <span>Data Source:</span>
-          <span className="text-slate-200">SCADA Simulator (1 Hz)</span>
         </div>
         <div className="flex items-center justify-between">
           <span>Quality:</span>

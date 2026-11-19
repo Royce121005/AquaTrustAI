@@ -34,22 +34,38 @@ router = APIRouter(tags=["Environmental Compliance"])
 def get_compliance_rules(db: Session = Depends(get_db)):
     """List active CPCB / EPA discharge standard rules."""
     rules = ComplianceService.ensure_default_rules(db)
-    return [
-        ComplianceRuleResponse(
-            rule_id=r.rule_id,
-            parameter=r.parameter,
-            operator=r.operator,
-            threshold=r.threshold,
-            threshold_min=r.threshold_min,
-            threshold_max=r.threshold_max,
-            threshold_unit=r.threshold_unit,
-            stage_scope=r.stage_scope,
-            rule_version=r.rule_version,
-            source_reference=r.source_reference,
-            active=r.active,
+    rule_meta_map = {r["parameter"]: r for r in ComplianceService.DEFAULT_CPCB_RULES if hasattr(ComplianceService, "DEFAULT_CPCB_RULES")} if hasattr(ComplianceService, "DEFAULT_CPCB_RULES") else {}
+    from app.services.compliance_service import DEFAULT_CPCB_RULES
+    rule_meta_map = {r["parameter"]: r for r in DEFAULT_CPCB_RULES}
+
+    response_items = []
+    for r in rules:
+        meta = rule_meta_map.get(r.parameter, {})
+        response_items.append(
+            ComplianceRuleResponse(
+                rule_id=r.rule_id,
+                parameter=r.parameter,
+                operator=r.operator,
+                threshold=r.threshold,
+                threshold_min=r.threshold_min,
+                threshold_max=r.threshold_max,
+                threshold_unit=r.threshold_unit,
+                stage_scope=r.stage_scope,
+                rule_version=r.rule_version,
+                source_reference=r.source_reference,
+                active=r.active,
+                effective_from=r.effective_from,
+                effective_to=r.effective_to,
+                is_authoritative=meta.get("is_authoritative", False),
+                verification_status=meta.get("verification_status", "UNVERIFIED"),
+                statutory_source=meta.get("statutory_source"),
+                notification_number=meta.get("notification_number"),
+                statutory_jurisdiction=meta.get("statutory_jurisdiction", "India (CPCB/MoEFCC)"),
+                discharge_category=meta.get("discharge_category", "Inland Surface Water Effluent"),
+                provenance_notes=meta.get("provenance_notes"),
+            )
         )
-        for r in rules
-    ]
+    return response_items
 
 
 @router.post(
