@@ -55,6 +55,10 @@ import { LiveEventsConsole } from '../components/digitalTwin/LiveEventsConsole';
 import { SimulatorCanvas } from '../components/simulator/SimulatorCanvas';
 import { LoadingState } from '../components/common/States';
 import { ScenarioCreateRequest, ScenarioResponse } from '../types/digitalTwin';
+import { applyRecommendationApi } from '../api/recommendations';
+import { PredictionForecastCard } from '../components/predictions/PredictionForecastCard';
+import { SustainabilityKpiCard } from '../components/sustainability/SustainabilityKpiCard';
+import { SensorHealthTable } from '../components/sensors/SensorHealthTable';
 
 type TabType =
   | 'process_flow'
@@ -62,6 +66,7 @@ type TabType =
   | 'scenarios'
   | 'predictions'
   | 'sustainability'
+  | 'sensors'
   | 'analytics';
 
 export const DigitalTwinPage: React.FC = () => {
@@ -214,6 +219,17 @@ export const DigitalTwinPage: React.FC = () => {
     },
   });
 
+  // Prescriptive Recommendation Application Mutation (Member 2 Phase 4)
+  const applyRecMutation = useMutation({
+    mutationFn: (recId: string) =>
+      applyRecommendationApi(recId, { operator_notes: 'Applied setpoint from Digital Twin SCADA console' }),
+    onSuccess: (_, recId) => {
+      setAcknowledgedRecs((prev) => ({ ...prev, [recId]: true }));
+      queryClient.invalidateQueries({ queryKey: ['twin-recommendations', selectedFacilityId] });
+      queryClient.invalidateQueries({ queryKey: ['audit-timeline'] });
+    },
+  });
+
   const handleFacilityChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newId = e.target.value;
     setSelectedFacilityId(newId);
@@ -290,6 +306,7 @@ export const DigitalTwinPage: React.FC = () => {
     { id: 'scenarios', label: 'What-If Scenario', icon: Sliders },
     { id: 'predictions', label: 'Predictive Horizon', icon: TrendingUp },
     { id: 'sustainability', label: 'Water Recycling & Reuse', icon: Droplets },
+    { id: 'sensors', label: 'Sensor Trust & Health', icon: Cpu },
     { id: 'analytics', label: 'Analytics & Reports', icon: Activity },
   ];
 
@@ -804,6 +821,8 @@ export const DigitalTwinPage: React.FC = () => {
       {/* ========================================================= */}
       {activeTab === 'predictions' && (
         <div className="space-y-6">
+          <PredictionForecastCard facilityId={selectedFacilityId} />
+
           <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-sm space-y-4">
             <div className="flex items-center justify-between">
               <div>
@@ -857,6 +876,8 @@ export const DigitalTwinPage: React.FC = () => {
       {/* ========================================================= */}
       {activeTab === 'sustainability' && (
         <div className="space-y-6">
+          <SustainabilityKpiCard facilityId={selectedFacilityId} />
+
           {sustainabilityQuery.isLoading ? (
             <LoadingState message="Calculating water reuse metrics..." />
           ) : sustainabilityQuery.data ? (
@@ -936,7 +957,8 @@ export const DigitalTwinPage: React.FC = () => {
             ) : recommendationsQuery.data && recommendationsQuery.data.length > 0 ? (
               <div className="space-y-3">
                 {recommendationsQuery.data.map((rec) => {
-                  const isAcknowledged = acknowledgedRecs[rec.recommendation_id];
+                  const isAcknowledged = acknowledgedRecs[rec.recommendation_id] || rec.status === 'acknowledged';
+                  const isCurrentApplying = applyRecMutation.isPending && applyRecMutation.variables === rec.recommendation_id;
                   return (
                     <div
                       key={rec.recommendation_id}
@@ -972,16 +994,15 @@ export const DigitalTwinPage: React.FC = () => {
                         <div>
                           {isAcknowledged ? (
                             <span className="inline-flex items-center gap-1 text-xs text-emerald-400 font-semibold">
-                              <Check className="h-4 w-4" /> Confirmed
+                              <Check className="h-4 w-4" /> Applied
                             </span>
                           ) : (
                             <button
-                              onClick={() =>
-                                setAcknowledgedRecs((prev) => ({ ...prev, [rec.recommendation_id]: true }))
-                              }
-                              className="px-3 py-1.5 text-xs font-medium text-white bg-sky-600 hover:bg-sky-500 rounded-lg shadow-sm transition"
+                              onClick={() => applyRecMutation.mutate(rec.recommendation_id)}
+                              disabled={applyRecMutation.isPending}
+                              className="px-3 py-1.5 text-xs font-medium text-white bg-sky-600 hover:bg-sky-500 rounded-lg shadow-sm transition disabled:opacity-50"
                             >
-                              Acknowledge
+                              {isCurrentApplying ? 'Applying...' : 'Apply Setpoint'}
                             </button>
                           )}
                         </div>
@@ -996,6 +1017,15 @@ export const DigitalTwinPage: React.FC = () => {
               </p>
             )}
           </div>
+        </div>
+      )}
+
+      {/* ========================================================= */}
+      {/* 9. TAB 7: SENSOR TRUST & CALIBRATION HEALTH               */}
+      {/* ========================================================= */}
+      {activeTab === 'sensors' && (
+        <div className="space-y-6">
+          <SensorHealthTable facilityId={selectedFacilityId} />
         </div>
       )}
     </div>

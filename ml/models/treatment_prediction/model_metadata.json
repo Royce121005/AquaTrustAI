@@ -3,8 +3,8 @@
   "algorithm": "Ensemble Supervised Regressors (RandomForest / GradientBoosting)",
   "training_dataset": "DATASET_01_UCI_WATER_TREATMENT",
   "dataset_sha256": "0253bb4186cf97cd9acd90b68403d4fc394822670e3d6c136e0107793f9133d3",
-  "model_bundle_sha256": "a4c88a75c90684c72aabc6ac2bbbc7a35a5d87021d9c955f81d6b2c726e45eac",
-  "scaler_sha256": "29cbc135fc9fc2f721503c27b75c27ae86dcfe5b697339c0bc9cf480ca9c4fb2",
+  "model_bundle_sha256": "a0653c942413b08dc67b0f1ee4ba33d637e809db7418110df825048866e5126d",
+  "scaler_sha256": "fc0ed13e1ba59fa3d0eae8c024e6b76a0acc3a59d66f2c731836ff98486d26c1",
   "feature_columns": [
     "Q-E",
     "PH-E",
@@ -20,7 +20,7 @@
     "tss",
     "ph"
   ],
-  "trained_at_utc": "2026-11-16T09:58:27.615325+00:00",
+  "trained_at_utc": "2026-11-19T16:43:39.603477+00:00",
   "performance_summary": {
     "bod": {
       "target_column": "DBO-S",
@@ -64,7 +64,7 @@
       "train_samples": 367,
       "test_samples": 80,
       "train_r2": 0.6748,
-      "test_r2": -0.6777,
+      "test_r2": -0.6774,
       "test_rmse": 0.1663,
       "test_mae": 0.1309,
       "residual_std": 0.1149,

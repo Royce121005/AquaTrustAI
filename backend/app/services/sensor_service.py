@@ -4,7 +4,7 @@ from datetime import datetime, timezone, timedelta
 from typing import List, Optional, Dict, Any
 from uuid import UUID
 from sqlalchemy.orm import Session
-from sqlalchemy import select, desc
+from sqlalchemy import select, desc, func
 
 from app.db.base import utc_now
 from app.models.sensor import Sensor
@@ -35,6 +35,28 @@ class SensorService:
         stmt = select(Sensor).where(Sensor.facility_id == facility_id)
         sensors = list(self.db.scalars(stmt).all())
 
+        # Batch fetch up to 10 most recent readings per sensor to eliminate N+1 queries
+        sensor_ids = [s.sensor_id for s in sensors]
+        readings_by_sensor: Dict[Any, List[Reading]] = {s.sensor_id: [] for s in sensors}
+        if sensor_ids:
+            rn_col = func.row_number().over(
+                partition_by=Reading.sensor_id,
+                order_by=desc(Reading.observed_at)
+            ).label("rn")
+            subq = (
+                select(Reading.reading_id, rn_col)
+                .where(Reading.sensor_id.in_(sensor_ids))
+                .subquery()
+            )
+            batch_stmt = (
+                select(Reading)
+                .join(subq, Reading.reading_id == subq.c.reading_id)
+                .where(subq.c.rn <= 10)
+                .order_by(Reading.sensor_id, desc(Reading.observed_at))
+            )
+            for r in self.db.scalars(batch_stmt).all():
+                readings_by_sensor.setdefault(r.sensor_id, []).append(r)
+
         items: List[SensorHealthItem] = []
         healthy_count = 0
         drift_count = 0
@@ -64,13 +86,7 @@ class SensorService:
                 days_since = 45
 
             # 2. Dynamic Telemetry Health Check via Member 1 SensorTrustClassifier
-            r_stmt = (
-                select(Reading)
-                .where(Reading.sensor_id == sensor.sensor_id)
-                .order_by(desc(Reading.observed_at))
-                .limit(10)
-            )
-            recent_readings = list(self.db.scalars(r_stmt).all())
+            recent_readings = readings_by_sensor.get(sensor.sensor_id, [])
 
             drift_detected = False
             stuck_detected = False
