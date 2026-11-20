@@ -47,18 +47,10 @@ export const ValidationPage: React.FC = () => {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#1F293D]">
         <div>
-          <div className="flex items-center gap-2 mb-1">
-            <span className="text-[10px] font-mono uppercase tracking-widest text-emerald-400 font-semibold bg-emerald-950/60 border border-emerald-800/80 px-2 py-0.5 rounded">
-              Layer 2 Quality Filter
-            </span>
-          </div>
           <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white font-mono flex items-center gap-2.5">
             <ShieldCheck className="w-5 h-5 text-emerald-400" />
             Deterministic Pre-AI Data Quality Validation
           </h1>
-          <p className="text-xs text-slate-400 mt-1 max-w-3xl leading-relaxed">
-            Physical limits, freeze detection, rate-of-change, and instrumentation validity checks executed before AI inference.
-          </p>
         </div>
         <div className="flex items-center gap-2">
           <button
@@ -113,7 +105,6 @@ export const ValidationPage: React.FC = () => {
               <div className="text-3xl font-bold text-white mt-1.5 font-mono tabular-nums">
                 {stats.total_readings}
               </div>
-              <div className="text-[11px] text-slate-500 font-mono mt-1">Aggregated observations</div>
             </div>
 
             <div className="scada-card p-5 relative overflow-hidden border-emerald-900/50 bg-emerald-950/10">
@@ -123,9 +114,6 @@ export const ValidationPage: React.FC = () => {
               </div>
               <div className="text-3xl font-bold text-emerald-400 mt-1.5 font-mono tabular-nums">
                 {stats.valid_count}
-              </div>
-              <div className="text-[11px] text-emerald-500 font-mono mt-1">
-                Passes all deterministic checks
               </div>
             </div>
 
@@ -169,7 +157,6 @@ export const ValidationPage: React.FC = () => {
               <div className="text-3xl font-bold text-cyan-400 mt-1.5 font-mono tabular-nums">
                 {stats.valid_rate_percent}%
               </div>
-              <div className="text-[11px] text-slate-500 font-mono mt-1">Quality acceptance quotient</div>
             </div>
           </div>
 
@@ -195,23 +182,6 @@ export const ValidationPage: React.FC = () => {
                 </BarChart>
               </ResponsiveContainer>
             </div>
-          </div>
-
-          {/* Normative Validation Architecture Rules */}
-          <div className="scada-card p-6 text-xs space-y-3 font-mono">
-            <h3 className="text-sm font-semibold text-white uppercase tracking-wide font-mono flex items-center gap-2">
-              <CheckCircle className="w-4 h-4 text-emerald-400" />
-              Deterministic Rule Invariants (Pre-AI Stage)
-            </h3>
-            <p className="text-slate-400 leading-relaxed font-sans text-xs">
-              The backend validation layer enforces physical and instrumentation boundaries before feeding observations to the Isolation Forest anomaly detector:
-            </p>
-            <ul className="list-disc pl-5 space-y-2 text-slate-300">
-              <li><strong className="text-white">Physical Bounds Check:</strong> Parameter values cannot be strictly negative (except biological pH which must remain in 0.0 - 14.0 range).</li>
-              <li><strong className="text-white">Zero-Clamping / Stuck Sensor:</strong> Repeated flatline sensor readings trigger the <code className="text-amber-400 bg-[#0B0F17] px-1 py-0.5 rounded border border-[#1F293D]">SUSPECT_SENSOR_FREEZE</code> flag.</li>
-              <li><strong className="text-white">Rate-of-Change Max Spike:</strong> Unphysical jumps between consecutive readings in adjacent timestamps trigger <code className="text-amber-400 bg-[#0B0F17] px-1 py-0.5 rounded border border-[#1F293D]">SUSPECT_RATE_OF_CHANGE</code>.</li>
-              <li><strong className="text-white">Chronological Monotonicity:</strong> Observations must possess RFC 3339 UTC timestamps matching operational sequence.</li>
-            </ul>
           </div>
         </>
       ) : null}

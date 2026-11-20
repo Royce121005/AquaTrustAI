@@ -192,9 +192,6 @@ export const SimulatorPage: React.FC = () => {
               {sim?.is_running ? 'STREAMING ACTIVE' : 'STOPPED'}
             </span>
           </div>
-          <p className="text-xs text-slate-400 mt-1 max-w-3xl leading-relaxed">
-            Real-time synthetic wastewater treatment basin telemetry generation, live SCADA packet transmission, and physical anomaly injection.
-          </p>
         </div>
 
         <div className="flex items-center gap-3">
@@ -240,16 +237,13 @@ export const SimulatorPage: React.FC = () => {
                 1Hz ENGINE SYNC
               </span>
             </div>
-            <p className="text-xs text-slate-400 mt-0.5">
-              Simulated telemetry is automatically mapped to virtual treatment basins in the 5-stage animated SCADA control room.
-            </p>
           </div>
         </div>
         <Link
           to={activeFacilityId ? `/facilities/${activeFacilityId}/twin` : '/facilities'}
           className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-semibold shadow-sm transition-colors whitespace-nowrap self-start sm:self-auto font-mono"
         >
-          <span>Open Full Digital Twin Control Room</span>
+          <span>Open Digital Twin Control Room</span>
           <ArrowRight className="w-3.5 h-3.5" />
         </Link>
       </div>
@@ -280,9 +274,6 @@ export const SimulatorPage: React.FC = () => {
             <span>STP 5-Stage Synoptic Process Flow</span>
           </button>
         </div>
-        <span className="text-[11px] font-mono text-slate-500">
-          Mode: {viewMode === 'pipeline' ? 'Sensor Node Bus View' : 'Treatment Process View'}
-        </span>
       </div>
 
       {/* PRIMARY REAL-TIME SCADA VISUALIZATION CANVAS */}
@@ -442,13 +433,7 @@ export const SimulatorPage: React.FC = () => {
             <AlertTriangle className="w-4 h-4 text-rose-400" />
             Disturbance Scenario Studio &amp; Anomaly Injection
           </h2>
-          <span className="text-[11px] font-mono text-slate-500">
-            Physical / Sensor / Attack Vectors
-          </span>
         </div>
-        <p className="text-xs text-slate-400 leading-relaxed">
-          Injects deterministic disturbance scenarios to verify pre-AI quality filters, Isolation Forest anomaly alerts, Monod kinetic reactions, and CPCB non-compliance triggers in real time.
-        </p>
 
         {/* Quick Scenario Selector Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 pt-2">
@@ -468,7 +453,6 @@ export const SimulatorPage: React.FC = () => {
                 {scenarioId === sc.id && <span className="w-2 h-2 rounded-full bg-rose-500"></span>}
               </div>
               <span className="text-[10px] font-mono text-rose-400 block mt-1">{sc.target}</span>
-              <p className="text-[11px] text-slate-400 mt-1 line-clamp-2 leading-relaxed">{sc.desc}</p>
             </button>
           ))}
         </div>

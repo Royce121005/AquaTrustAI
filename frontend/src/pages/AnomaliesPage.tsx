@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { getAnomalyMetricsApi } from '../api/anomalies';
 import { LoadingState, ErrorState, EmptyState } from '../components/common/States';
 import { AnomalyStatusBadge } from '../components/common/Badges';
-import { AlertTriangle, Cpu, RefreshCw, Layers, ArrowRight } from 'lucide-react';
+import { AlertTriangle, RefreshCw, Layers, ArrowRight } from 'lucide-react';
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, ReferenceLine } from 'recharts';
 
 export const AnomaliesPage: React.FC = () => {
@@ -32,18 +32,10 @@ export const AnomaliesPage: React.FC = () => {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#1F293D]">
         <div>
-          <div className="flex items-center gap-2 mb-1">
-            <span className="text-[10px] font-mono uppercase tracking-widest text-purple-400 font-semibold bg-purple-950/60 border border-purple-800/80 px-2 py-0.5 rounded">
-              Machine Learning Inference
-            </span>
-          </div>
           <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white font-mono flex items-center gap-2.5">
             <AlertTriangle className="w-5 h-5 text-rose-400" />
             AI Anomaly Detection Engine (Isolation Forest)
           </h1>
-          <p className="text-xs text-slate-400 mt-1 max-w-3xl leading-relaxed">
-            Real-time multi-dimensional outlier isolation on wastewater physicochemical parameters. Evaluates unconstrained multivariate vectors.
-          </p>
         </div>
         <div className="flex items-center gap-2">
           <button
@@ -85,9 +77,6 @@ export const AnomaliesPage: React.FC = () => {
               <div className="text-3xl font-bold text-rose-400 mt-1.5 font-mono tabular-nums">
                 {metrics.anomalies_detected}
               </div>
-              <div className="text-[11px] text-rose-500 font-mono mt-1">
-                Decision function &lt; 0.0
-              </div>
             </div>
 
             <div className="scada-card p-5 relative overflow-hidden">
@@ -96,9 +85,6 @@ export const AnomaliesPage: React.FC = () => {
               </span>
               <div className="text-3xl font-bold text-cyan-400 mt-1.5 font-mono tabular-nums">
                 {metrics.anomaly_rate_percent}%
-              </div>
-              <div className="text-[11px] text-slate-500 font-mono mt-1">
-                Proportion of outlier observations
               </div>
             </div>
 
@@ -112,21 +98,6 @@ export const AnomaliesPage: React.FC = () => {
               <div className="text-[11px] text-purple-400/80 font-mono mt-1">
                 Version: {metrics.model_version}
               </div>
-            </div>
-          </div>
-
-          {/* Model Specification & Boundary Notice */}
-          <div className="scada-card p-4 text-xs text-slate-300 flex items-start gap-3 bg-[#111827]">
-            <Cpu className="w-5 h-5 text-purple-400 shrink-0 mt-0.5" />
-            <div>
-              <span className="font-semibold text-white uppercase tracking-wide block font-mono text-xs">
-                Isolation Forest Decision Function Specification
-              </span>
-              <p className="mt-1 leading-relaxed text-slate-400 font-sans text-xs">
-                The algorithm partitions data points using random orthogonal cuts. The returned value is the raw decision score.
-                An anomaly is mathematically defined when <code className="text-purple-300 bg-[#0B0F17] px-1 py-0.5 rounded border border-[#1F293D] font-mono">raw_score &lt; 0.0</code>.
-                Scores are not probability estimates, confidence percentages, or heuristic risk scores.
-              </p>
             </div>
           </div>
 

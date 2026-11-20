@@ -758,18 +758,6 @@ export const DigitalTwinPage: React.FC = () => {
       {/* ========================================================= */}
       {activeTab === 'scenarios' && (
         <div className="space-y-6">
-          <div className="bg-amber-950/40 border-l-4 border-amber-500 p-4 rounded-r-lg">
-            <div className="flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-amber-400" />
-              <h4 className="text-sm font-bold text-amber-200">Isolated What-If Simulation Sandbox</h4>
-            </div>
-            <p className="text-xs text-amber-300/80 mt-1">
-              Scenarios run in total isolation on virtual state copies. They explore hypothetical plant behavior and
-              <strong> do not</strong> overwrite observed measurements, modify accepted state, or generate regulatory
-              compliance certificates.
-            </p>
-          </div>
-
           {/* Scenario Configuration Controls */}
           <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-sm space-y-4">
             <h3 className="text-base font-bold text-slate-100">Define Scenario Parameters</h3>
@@ -872,9 +860,6 @@ export const DigitalTwinPage: React.FC = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="text-base font-bold text-slate-100">Effluent BOD Trajectory Comparison</h3>
-                  <p className="text-xs text-slate-400">
-                    Baseline accepted state vs. Simulated what-if perturbation across forward timeline.
-                  </p>
                 </div>
                 {scenarioResult.status !== 'completed' ? (
                   <span className="px-3 py-1 text-xs font-bold rounded-full bg-amber-950 text-amber-300 border border-amber-800 animate-pulse">
@@ -954,13 +939,7 @@ export const DigitalTwinPage: React.FC = () => {
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="text-base font-bold text-slate-100">Steady-State Effluent Projection</h3>
-                <p className="text-xs text-slate-400">
-                  Evidence-gated effluent estimates calculated via first-principles CSTR kinetics with empirical holdout uncertainty bounds (±1.96 RMSE).
-                </p>
               </div>
-              <span className="text-xs bg-purple-950 text-purple-300 border border-purple-800 px-2.5 py-1 rounded font-semibold">
-                [KINETIC PROJECTION]
-              </span>
             </div>
 
             {predictionsQuery.isLoading ? (
@@ -1015,7 +994,6 @@ export const DigitalTwinPage: React.FC = () => {
                   {sustainabilityQuery.data.reuse_volume_m3_day != null ? sustainabilityQuery.data.reuse_volume_m3_day.toLocaleString() : '—'}{' '}
                   <span className="text-sm font-normal text-slate-500 font-sans">m³/day</span>
                 </div>
-                <p className="text-xs text-slate-400">Based on 75% reuse allocation from operational STP throughput.</p>
               </div>
 
               <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-sm space-y-2">
@@ -1024,7 +1002,6 @@ export const DigitalTwinPage: React.FC = () => {
                   {sustainabilityQuery.data.annual_freshwater_saved_m3 != null ? sustainabilityQuery.data.annual_freshwater_saved_m3.toLocaleString() : '—'}{' '}
                   <span className="text-sm font-normal text-slate-500 font-sans">m³/year</span>
                 </div>
-                <p className="text-xs text-slate-400">Displaces municipal freshwater extraction for non-potable needs.</p>
               </div>
 
               <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-sm space-y-2">
@@ -1041,7 +1018,6 @@ export const DigitalTwinPage: React.FC = () => {
                     {sustainabilityQuery.data.safe_reuse_gate ?? 'HELD'}
                   </span>
                 </div>
-                <p className="text-xs text-slate-400">CPCB non-potable reuse standard verification.</p>
               </div>
 
               <div className="md:col-span-3 bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-sm space-y-3">
@@ -1074,9 +1050,6 @@ export const DigitalTwinPage: React.FC = () => {
                   Active Operational Recommendations
                 </h3>
               </div>
-              <span className="text-xs bg-sky-950 text-sky-300 border border-sky-800 px-2.5 py-1 rounded font-medium">
-                Advisory Only — Requires Human Approval
-              </span>
             </div>
 
             {recommendationsQuery.isLoading ? (

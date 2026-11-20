@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { getHealthApi } from '../api/health';
 import { getDLTStatusApi } from '../api/dlt';
 import { getAnomalyMetricsApi } from '../api/anomalies';
-import { LoadingState, ErrorState, BackendSupportRequiredState } from '../components/common/States';
+import { LoadingState, ErrorState } from '../components/common/States';
 import { BackendHealthBadge, DltModeBadge } from '../components/common/Badges';
 import { Server, Activity, Database, Cpu, RefreshCw } from 'lucide-react';
 
@@ -42,12 +42,9 @@ export const SystemStatusPage: React.FC = () => {
               <Server className="w-4 h-4" />
             </div>
             <h1 className="text-xl font-bold tracking-tight text-white flex items-center gap-2">
-              Infrastructure & System Status
+              Infrastructure &amp; System Status
             </h1>
           </div>
-          <p className="text-xs text-slate-400 mt-1">
-            Operational service telemetry, database readiness boundaries, and ledger gateway transport connectivity.
-          </p>
         </div>
         <button
           onClick={handleRefresh}
@@ -201,22 +198,6 @@ export const SystemStatusPage: React.FC = () => {
             <span className="text-emerald-400 font-medium">atc-if-v1</span>
           </div>
         </div>
-
-        <div className="pt-2 text-[11px] text-slate-500 font-mono">
-          Notice: The backend does not expose a discrete &quot;ML health&quot; probe endpoint. Model metadata is retrieved authentically from anomaly inference responses.
-        </div>
-      </div>
-
-      {/* Unsupported Backend Features Indicators */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <BackendSupportRequiredState
-          feature="User Directory / Suspension API"
-          description="Backend does not currently expose user directory or user status modification endpoints."
-        />
-        <BackendSupportRequiredState
-          feature="Signing Key Rotation"
-          description="Backend relies on predefined authority keys (key-ecdsa-p256-01). Dynamic key generation endpoint is not exposed."
-        />
       </div>
     </div>
   );
