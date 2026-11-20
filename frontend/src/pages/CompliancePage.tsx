@@ -41,18 +41,10 @@ export const CompliancePage: React.FC = () => {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#1F293D]">
         <div>
-          <div className="flex items-center gap-2 mb-1">
-            <span className="text-[10px] font-mono uppercase tracking-widest text-cyan-400 font-semibold bg-cyan-950/60 border border-cyan-800/80 px-2 py-0.5 rounded">
-              Regulatory Standards Boundary
-            </span>
-          </div>
           <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white font-mono flex items-center gap-2.5">
             <Scale className="w-5 h-5 text-cyan-400" />
             CPCB Environmental Discharge Standards Compliance
           </h1>
-          <p className="text-xs text-slate-400 mt-1 max-w-3xl leading-relaxed">
-            CPCB 2021 Normative Discharge Thresholds &amp; Treatment Window Verification. Independent parameter-by-parameter legal evaluation.
-          </p>
         </div>
         <div className="flex items-center gap-2">
           <button
@@ -91,9 +83,6 @@ export const CompliancePage: React.FC = () => {
             <div className="text-3xl font-bold text-emerald-400 mt-1.5 font-mono tabular-nums">
               {summaryQuery.data.compliant_count}
             </div>
-            <div className="text-[11px] text-emerald-500 font-mono mt-1">
-              Fully satisfied all CPCB limits
-            </div>
           </div>
 
           <div className="scada-card p-5 relative overflow-hidden border-rose-900/50 bg-rose-950/10">
@@ -104,9 +93,6 @@ export const CompliancePage: React.FC = () => {
             <div className="text-3xl font-bold text-rose-400 mt-1.5 font-mono tabular-nums">
               {summaryQuery.data.non_compliant_count}
             </div>
-            <div className="text-[11px] text-rose-500 font-mono mt-1">
-              Threshold breach detected
-            </div>
           </div>
 
           <div className="scada-card p-5 relative overflow-hidden">
@@ -115,9 +101,6 @@ export const CompliancePage: React.FC = () => {
             </span>
             <div className="text-3xl font-bold text-cyan-400 mt-1.5 font-mono tabular-nums">
               {summaryQuery.data.compliance_rate_percent}%
-            </div>
-            <div className="text-[11px] text-slate-500 font-mono mt-1">
-              Aggregate acceptance ratio
             </div>
           </div>
         </div>
