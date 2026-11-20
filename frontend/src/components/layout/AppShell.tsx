@@ -12,7 +12,7 @@ export const AppShell: React.FC = () => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   return (
-    <div className="flex flex-col h-screen w-screen overflow-hidden bg-[#0B0F17] text-slate-100 font-sans selection:bg-cyan-500/30 selection:text-cyan-200">
+    <div className="flex flex-col h-screen w-screen overflow-hidden bg-slate-100 dark:bg-[#0B0F17] text-slate-900 dark:text-slate-100 font-sans selection:bg-cyan-500/30 selection:text-cyan-800 dark:selection:text-cyan-200">
       <TopBar />
       <div className="flex flex-1 overflow-hidden min-w-0">
         <Sidebar
@@ -22,8 +22,8 @@ export const AppShell: React.FC = () => {
         <main
           className={
             isFullBleed
-              ? 'flex-1 overflow-x-hidden overflow-y-auto bg-[#070B12] p-2 sm:p-3 min-w-0 transition-colors duration-200'
-              : 'flex-1 overflow-y-auto bg-[#0B0F17] p-4 sm:p-6 lg:p-8 min-w-0 text-slate-100 transition-colors duration-200'
+              ? 'flex-1 overflow-x-hidden overflow-y-auto bg-slate-50 dark:bg-[#070B12] p-2 sm:p-3 min-w-0 transition-colors duration-200'
+              : 'flex-1 overflow-y-auto bg-slate-100 dark:bg-[#0B0F17] p-4 sm:p-6 lg:p-8 min-w-0 text-slate-900 dark:text-slate-100 transition-colors duration-200'
           }
         >
           <div

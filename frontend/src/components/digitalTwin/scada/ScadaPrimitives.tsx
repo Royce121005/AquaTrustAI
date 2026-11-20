@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTheme } from '../../../context/ThemeContext';
 
 /* ========================================================================= */
 /* 1. SCADA CONNECTED PIPE COMPONENT WITH 3D CASING & FLOW PARTICLES         */
@@ -39,6 +40,8 @@ export const ScadaPipe: React.FC<ScadaPipeProps> = ({
   labelY,
   arrowMarkerId,
 }) => {
+  const { isDark } = useTheme();
+
   // Preset dimensions based on process stream variant
   const defaultStrokeWidth = variant === 'was' ? 5 : variant === 'air' ? 4 : 7;
   const actualStrokeWidth = strokeWidth !== undefined ? strokeWidth : defaultStrokeWidth;
@@ -47,30 +50,30 @@ export const ScadaPipe: React.FC<ScadaPipeProps> = ({
   const actualStrokeColor =
     strokeColor ||
     (variant === 'ras'
-      ? '#78350f'
+      ? (isDark ? '#78350f' : '#b45309')
       : variant === 'uv'
-      ? '#4c1d95'
+      ? (isDark ? '#4c1d95' : '#7c3aed')
       : variant === 'sludge'
-      ? '#451a03'
+      ? (isDark ? '#451a03' : '#78350f')
       : variant === 'was'
-      ? '#78350f'
+      ? (isDark ? '#78350f' : '#b45309')
       : variant === 'air'
-      ? '#334155'
-      : '#034a70');
+      ? (isDark ? '#334155' : '#64748b')
+      : (isDark ? '#034a70' : '#0284c7'));
 
   const actualFlowColor =
     flowColor ||
     (variant === 'ras'
-      ? '#f59e0b'
+      ? (isDark ? '#f59e0b' : '#d97706')
       : variant === 'uv'
-      ? '#c084fc'
+      ? (isDark ? '#c084fc' : '#9333ea')
       : variant === 'sludge'
-      ? '#b45309'
+      ? (isDark ? '#b45309' : '#92400e')
       : variant === 'was'
-      ? '#d97706'
+      ? (isDark ? '#d97706' : '#b45309')
       : variant === 'air'
-      ? '#94a3b8'
-      : '#38bdf8');
+      ? (isDark ? '#94a3b8' : '#64748b')
+      : (isDark ? '#38bdf8' : '#0284c7'));
 
   const flowClass =
     isReverse
@@ -101,11 +104,11 @@ export const ScadaPipe: React.FC<ScadaPipeProps> = ({
       <path
         d={path}
         fill="none"
-        stroke="#020617"
+        stroke={isDark ? '#020617' : '#cbd5e1'}
         strokeWidth={actualStrokeWidth + 4}
         strokeLinecap="round"
         strokeLinejoin="round"
-        opacity={0.65}
+        opacity={isDark ? 0.65 : 0.4}
       />
 
       {/* Outer Structural Steel Pipe Wall / Pressure Casing */}
@@ -123,7 +126,7 @@ export const ScadaPipe: React.FC<ScadaPipeProps> = ({
       <path
         d={path}
         fill="none"
-        stroke="rgba(255,255,255,0.25)"
+        stroke={isDark ? 'rgba(255,255,255,0.25)' : 'rgba(255,255,255,0.7)'}
         strokeWidth={Math.max(1, actualStrokeWidth * 0.25)}
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -167,7 +170,7 @@ export const ScadaPipe: React.FC<ScadaPipeProps> = ({
           );
         })}
 
-      {/* Optional In-line Process Pipe Tag / Label */}
+      {/* Optional In-line Process Pipe Tag / Label with Solid Backing Pill */}
       {label && labelX !== undefined && labelY !== undefined && (
         <g transform={`translate(${labelX}, ${labelY})`}>
           <rect
@@ -176,16 +179,17 @@ export const ScadaPipe: React.FC<ScadaPipeProps> = ({
             width="130"
             height="18"
             rx="4"
-            fill="#090d16"
-            fillOpacity="0.9"
-            stroke={actualStrokeColor}
+            fill={isDark ? '#090d16' : '#ffffff'}
+            fillOpacity={isDark ? 0.9 : 0.96}
+            stroke={isDark ? actualStrokeColor : '#cbd5e1'}
             strokeWidth="1"
+            filter={isDark ? undefined : 'drop-shadow(0 1px 2px rgba(0,0,0,0.08))'}
           />
           <text
             x="0"
             y="2.5"
             textAnchor="middle"
-            fill={actualFlowColor}
+            fill={isDark ? actualFlowColor : (variant === 'air' ? '#475569' : actualStrokeColor)}
             fontSize="8"
             fontFamily="sans-serif"
             fontWeight="bold"
@@ -226,7 +230,8 @@ export const ScadaPump: React.FC<ScadaPumpProps> = ({
   color = '#f59e0b',
   onClick,
 }) => {
-  const statusColor = isFaulted ? '#ef4444' : isRunning ? color : '#64748b';
+  const { isDark } = useTheme();
+  const statusColor = isFaulted ? '#ef4444' : isRunning ? (isDark ? color : (color === '#f59e0b' ? '#d97706' : color)) : (isDark ? '#64748b' : '#94a3b8');
 
   return (
     <g
@@ -236,22 +241,56 @@ export const ScadaPump: React.FC<ScadaPumpProps> = ({
       onClick={onClick}
     >
       {/* Ground Contact Shadow */}
-      <ellipse cx="20" cy="38" rx="26" ry="6" fill="#020617" opacity="0.85" />
+      <ellipse cx="20" cy="38" rx="26" ry="6" fill={isDark ? '#020617' : '#94a3b8'} opacity={isDark ? 0.85 : 0.35} />
 
       {/* Concrete Equipment Plinth / Mounting Pad */}
-      <rect x="-8" y="30" width="56" height="7" rx="2" fill="#1e293b" stroke="#334155" strokeWidth="1" />
-      <line x1="-8" y1="30" x2="48" y2="30" stroke="#64748b" strokeWidth="0.9" />
+      <rect
+        x="-8"
+        y="30"
+        width="56"
+        height="7"
+        rx="2"
+        fill={isDark ? '#1e293b' : '#e2e8f0'}
+        stroke={isDark ? '#334155' : '#94a3b8'}
+        strokeWidth="1"
+      />
+      <line
+        x1="-8"
+        y1="30"
+        x2="48"
+        y2="30"
+        stroke={isDark ? '#64748b' : '#94a3b8'}
+        strokeWidth="0.9"
+      />
 
       {/* Electric Drive Motor Housing (Behind Volute Casing) */}
       <g id="pump-motor" transform="translate(18, 4)">
         {/* Motor Cylinder Shell */}
-        <rect x="0" y="2" width="22" height="22" rx="2" fill="#0f172a" stroke="#334155" strokeWidth="1.2" />
+        <rect
+          x="0"
+          y="2"
+          width="22"
+          height="22"
+          rx="2"
+          fill={isDark ? '#0f172a' : '#f1f5f9'}
+          stroke={isDark ? '#334155' : '#94a3b8'}
+          strokeWidth="1.2"
+        />
         {/* Motor Horizontal Cooling Fins */}
-        <line x1="2" y1="7" x2="20" y2="7" stroke="#475569" strokeWidth="1" />
-        <line x1="2" y1="12" x2="20" y2="12" stroke="#475569" strokeWidth="1" />
-        <line x1="2" y1="17" x2="20" y2="17" stroke="#475569" strokeWidth="1" />
+        <line x1="2" y1="7" x2="20" y2="7" stroke={isDark ? '#475569' : '#cbd5e1'} strokeWidth="1" />
+        <line x1="2" y1="12" x2="20" y2="12" stroke={isDark ? '#475569' : '#cbd5e1'} strokeWidth="1" />
+        <line x1="2" y1="17" x2="20" y2="17" stroke={isDark ? '#475569' : '#cbd5e1'} strokeWidth="1" />
         {/* Terminal Junction Box */}
-        <rect x="6" y="-3" width="10" height="5" rx="1" fill="#1e293b" stroke="#475569" strokeWidth="0.8" />
+        <rect
+          x="6"
+          y="-3"
+          width="10"
+          height="5"
+          rx="1"
+          fill={isDark ? '#1e293b' : '#e2e8f0'}
+          stroke={isDark ? '#475569' : '#94a3b8'}
+          strokeWidth="0.8"
+        />
       </g>
 
       {/* 3D Volute Spiral Casing (Industrial Body with Metallic Lighting) */}
@@ -259,25 +298,50 @@ export const ScadaPump: React.FC<ScadaPumpProps> = ({
         cx="14"
         cy="15"
         r="17"
-        fill="#071b30"
+        fill={isDark ? '#071b30' : '#e0f2fe'}
         stroke="#0284c7"
         strokeWidth="2.4"
-        filter="drop-shadow(0 4px 8px rgba(0,0,0,0.65))"
-        className="group-hover:stroke-sky-300 transition-colors"
+        filter={isDark ? 'drop-shadow(0 4px 8px rgba(0,0,0,0.65))' : 'drop-shadow(0 2px 6px rgba(0,0,0,0.12))'}
+        className="group-hover:stroke-sky-400 transition-colors"
       />
-      <circle cx="14" cy="15" r="14" fill="#0c233c" stroke="#0369a1" strokeWidth="1" />
+      <circle
+        cx="14"
+        cy="15"
+        r="14"
+        fill={isDark ? '#0c233c' : '#bae6fd'}
+        stroke="#0369a1"
+        strokeWidth="1"
+      />
 
       {/* Top Highlight Bevel on Volute Casing */}
       <ellipse cx="14" cy="7" rx="10" ry="3.2" fill="none" stroke="#38bdf8" strokeWidth="0.8" opacity="0.8" />
 
       {/* Flanged Suction Inlet & Discharge Ports */}
       {/* Top Discharge Flange */}
-      <rect x="10" y="-2" width="8" height="4" rx="1" fill="#1e293b" stroke="#38bdf8" strokeWidth="1" />
-      <line x1="8" y1="-2" x2="20" y2="-2" stroke="#f59e0b" strokeWidth="2.2" />
+      <rect
+        x="10"
+        y="-2"
+        width="8"
+        height="4"
+        rx="1"
+        fill={isDark ? '#1e293b' : '#e2e8f0'}
+        stroke="#38bdf8"
+        strokeWidth="1"
+      />
+      <line x1="8" y1="-2" x2="20" y2="-2" stroke={isDark ? '#f59e0b' : '#d97706'} strokeWidth="2.2" />
 
       {/* Left Suction Flange */}
-      <rect x="-4" y="11" width="4" height="8" rx="1" fill="#1e293b" stroke="#38bdf8" strokeWidth="1" />
-      <line x1="-4" y1="9" x2="-4" y2="21" stroke="#f59e0b" strokeWidth="2.2" />
+      <rect
+        x="-4"
+        y="11"
+        width="4"
+        height="8"
+        rx="1"
+        fill={isDark ? '#1e293b' : '#e2e8f0'}
+        stroke="#38bdf8"
+        strokeWidth="1"
+      />
+      <line x1="-4" y1="9" x2="-4" y2="21" stroke={isDark ? '#f59e0b' : '#d97706'} strokeWidth="2.2" />
 
       {/* Rotating Impeller Assembly (Spins strictly in-place around 0,0) */}
       <g transform="translate(14, 15)">
@@ -296,12 +360,23 @@ export const ScadaPump: React.FC<ScadaPumpProps> = ({
           <path d="M 0 0 C -4 3, -9 3, -9 8" fill="none" stroke={statusColor} strokeWidth="2.2" strokeLinecap="round" />
           <path d="M 0 0 C 3 4, 3 9, 8 9" fill="none" stroke={statusColor} strokeWidth="2.2" strokeLinecap="round" />
           <path d="M 0 0 C -3 -4, -3 -9, -8 -9" fill="none" stroke={statusColor} strokeWidth="2.2" strokeLinecap="round" />
-          <circle cx="0" cy="0" r="4" fill="#0f172a" stroke={statusColor} strokeWidth="1.5" />
+          <circle cx="0" cy="0" r="4" fill={isDark ? '#0f172a' : '#ffffff'} stroke={statusColor} strokeWidth="1.5" />
           <circle cx="0" cy="0" r="1.8" fill={statusColor} />
         </g>
       </g>
 
-      {/* Equipment Tag Labels (Offset clearly below plinth) */}
+      {/* Equipment Tag Labels with solid backing pill for readability */}
+      <rect
+        x="-14"
+        y="40"
+        width="68"
+        height="22"
+        rx="4"
+        fill={isDark ? '#090d16' : '#ffffff'}
+        fillOpacity={isDark ? 0.85 : 0.95}
+        stroke={isDark ? '#1e293b' : '#e2e8f0'}
+        strokeWidth="0.8"
+      />
       <text
         x="20"
         y="49"
@@ -317,7 +392,7 @@ export const ScadaPump: React.FC<ScadaPumpProps> = ({
         x="20"
         y="58"
         textAnchor="middle"
-        fill="#94a3b8"
+        fill={isDark ? '#94a3b8' : '#475569'}
         fontSize="7"
         fontFamily="sans-serif"
         fontWeight="600"
@@ -327,8 +402,6 @@ export const ScadaPump: React.FC<ScadaPumpProps> = ({
     </g>
   );
 };
-
-
 
 /* ========================================================================= */
 /* 3. SCADA BLOWER (ROTARY LOBE BLOWER WITH AERATION TURBINE RUNNER)         */
@@ -357,7 +430,8 @@ export const ScadaBlower: React.FC<ScadaBlowerProps> = ({
   color = '#38bdf8',
   onClick,
 }) => {
-  const statusColor = isFaulted ? '#ef4444' : isRunning ? color : '#64748b';
+  const { isDark } = useTheme();
+  const statusColor = isFaulted ? '#ef4444' : isRunning ? (isDark ? color : '#0284c7') : (isDark ? '#64748b' : '#94a3b8');
 
   return (
     <g
@@ -367,29 +441,74 @@ export const ScadaBlower: React.FC<ScadaBlowerProps> = ({
       onClick={onClick}
     >
       {/* Ground Contact Shadow */}
-      <ellipse cx="24" cy="38" rx="28" ry="6" fill="#020617" opacity="0.85" />
+      <ellipse cx="24" cy="38" rx="28" ry="6" fill={isDark ? '#020617' : '#94a3b8'} opacity={isDark ? 0.85 : 0.35} />
 
       {/* Concrete Equipment Plinth / Mounting Pad */}
-      <rect x="-6" y="30" width="60" height="7" rx="2" fill="#1e293b" stroke="#334155" strokeWidth="1" />
-      <line x1="-6" y1="30" x2="54" y2="30" stroke="#64748b" strokeWidth="0.9" />
+      <rect
+        x="-6"
+        y="30"
+        width="60"
+        height="7"
+        rx="2"
+        fill={isDark ? '#1e293b' : '#e2e8f0'}
+        stroke={isDark ? '#334155' : '#94a3b8'}
+        strokeWidth="1"
+      />
+      <line x1="-6" y1="30" x2="54" y2="30" stroke={isDark ? '#64748b' : '#94a3b8'} strokeWidth="0.9" />
 
       {/* Electric Drive Motor Body (Horizontal Casing with Cooling Ribs) */}
       <g id={`blower-motor-${id}`} transform="translate(20, 6)">
-        <rect x="0" y="0" width="24" height="19" rx="2" fill="#0f172a" stroke="#475569" strokeWidth="1.2" />
-        <line x1="2" y1="5" x2="22" y2="5" stroke="#334155" strokeWidth="0.9" />
-        <line x1="2" y1="10" x2="22" y2="10" stroke="#334155" strokeWidth="0.9" />
-        <line x1="2" y1="14" x2="22" y2="14" stroke="#334155" strokeWidth="0.9" />
-        <rect x="22" y="2" width="4" height="15" rx="1" fill="#1e293b" stroke="#475569" strokeWidth="0.8" />
-        <rect x="6" y="-4" width="10" height="4" rx="1" fill="#1e293b" stroke="#64748b" strokeWidth="0.8" />
+        <rect
+          x="0"
+          y="0"
+          width="24"
+          height="19"
+          rx="2"
+          fill={isDark ? '#0f172a' : '#f1f5f9'}
+          stroke={isDark ? '#475569' : '#94a3b8'}
+          strokeWidth="1.2"
+        />
+        <line x1="2" y1="5" x2="22" y2="5" stroke={isDark ? '#334155' : '#cbd5e1'} strokeWidth="0.9" />
+        <line x1="2" y1="10" x2="22" y2="10" stroke={isDark ? '#334155' : '#cbd5e1'} strokeWidth="0.9" />
+        <line x1="2" y1="14" x2="22" y2="14" stroke={isDark ? '#334155' : '#cbd5e1'} strokeWidth="0.9" />
+        <rect
+          x="22"
+          y="2"
+          width="4"
+          height="15"
+          rx="1"
+          fill={isDark ? '#1e293b' : '#e2e8f0'}
+          stroke={isDark ? '#475569' : '#94a3b8'}
+          strokeWidth="0.8"
+        />
+        <rect
+          x="6"
+          y="-4"
+          width="10"
+          height="4"
+          rx="1"
+          fill={isDark ? '#1e293b' : '#e2e8f0'}
+          stroke={isDark ? '#64748b' : '#94a3b8'}
+          strokeWidth="0.8"
+        />
       </g>
 
       {/* Air Inlet Intake Filter / Silencer Hood */}
       <g id={`blower-intake-${id}`} transform="translate(6, -6)">
-        <rect x="0" y="0" width="16" height="10" rx="2" fill="#0f172a" stroke="#64748b" strokeWidth="1.1" />
-        <line x1="2" y1="3" x2="14" y2="3" stroke="#94a3b8" strokeWidth="0.8" />
-        <line x1="2" y1="5.5" x2="14" y2="5.5" stroke="#94a3b8" strokeWidth="0.8" />
-        <line x1="2" y1="8" x2="14" y2="8" stroke="#94a3b8" strokeWidth="0.8" />
-        <line x1="-1" y1="10" x2="17" y2="10" stroke="#475569" strokeWidth="1.5" />
+        <rect
+          x="0"
+          y="0"
+          width="16"
+          height="10"
+          rx="2"
+          fill={isDark ? '#0f172a' : '#f1f5f9'}
+          stroke={isDark ? '#64748b' : '#94a3b8'}
+          strokeWidth="1.1"
+        />
+        <line x1="2" y1="3" x2="14" y2="3" stroke={isDark ? '#94a3b8' : '#cbd5e1'} strokeWidth="0.8" />
+        <line x1="2" y1="5.5" x2="14" y2="5.5" stroke={isDark ? '#94a3b8' : '#cbd5e1'} strokeWidth="0.8" />
+        <line x1="2" y1="8" x2="14" y2="8" stroke={isDark ? '#94a3b8' : '#cbd5e1'} strokeWidth="0.8" />
+        <line x1="-1" y1="10" x2="17" y2="10" stroke={isDark ? '#475569' : '#94a3b8'} strokeWidth="1.5" />
       </g>
 
       {/* Cylindrical Rotary Lobe Blower Housing */}
@@ -397,16 +516,32 @@ export const ScadaBlower: React.FC<ScadaBlowerProps> = ({
         cx="14"
         cy="16"
         r="16"
-        fill="#071b30"
+        fill={isDark ? '#071b30' : '#e0f2fe'}
         stroke={statusColor}
         strokeWidth="2.4"
-        filter="drop-shadow(0 4px 8px rgba(0,0,0,0.65))"
+        filter={isDark ? 'drop-shadow(0 4px 8px rgba(0,0,0,0.65))' : 'drop-shadow(0 2px 6px rgba(0,0,0,0.12))'}
       />
-      <circle cx="14" cy="16" r="13" fill="#0c233c" stroke="#0369a1" strokeWidth="1" />
+      <circle
+        cx="14"
+        cy="16"
+        r="13"
+        fill={isDark ? '#0c233c' : '#bae6fd'}
+        stroke={isDark ? '#0369a1' : '#0284c7'}
+        strokeWidth="1"
+      />
       <ellipse cx="14" cy="9" rx="9" ry="3" fill="none" stroke="#38bdf8" strokeWidth="0.8" opacity="0.7" />
 
       {/* Discharge Outlet Flange (Compressed Air Header Port) */}
-      <rect x="10" y="27" width="8" height="4" rx="1" fill="#1e293b" stroke="#64748b" strokeWidth="1" />
+      <rect
+        x="10"
+        y="27"
+        width="8"
+        height="4"
+        rx="1"
+        fill={isDark ? '#1e293b' : '#e2e8f0'}
+        stroke={isDark ? '#64748b' : '#94a3b8'}
+        strokeWidth="1"
+      />
       <line x1="7" y1="31" x2="21" y2="31" stroke={statusColor} strokeWidth="2.2" />
 
       {/* Spinning Aeration Turbine Runner (dur="0.8s" strictly in-place rotation) */}
@@ -433,12 +568,23 @@ export const ScadaBlower: React.FC<ScadaBlowerProps> = ({
           <path d="M 0 0 C 1 5, 1 8, 2 8" fill="none" stroke={statusColor} strokeWidth="1.2" strokeLinecap="round" opacity={0.7} />
           <path d="M 0 0 C -1 -5, -1 -8, -2 -8" fill="none" stroke={statusColor} strokeWidth="1.2" strokeLinecap="round" opacity={0.7} />
           {/* Central Rotor Hub */}
-          <circle cx="0" cy="0" r="3.5" fill="#0f172a" stroke={statusColor} strokeWidth="1.4" />
+          <circle cx="0" cy="0" r="3.5" fill={isDark ? '#0f172a' : '#ffffff'} stroke={statusColor} strokeWidth="1.4" />
           <circle cx="0" cy="0" r="1.5" fill={statusColor} />
         </g>
       </g>
 
-      {/* Equipment Tag Labels */}
+      {/* Equipment Tag Labels with solid backing pill for readability */}
+      <rect
+        x="-10"
+        y="40"
+        width="68"
+        height="22"
+        rx="4"
+        fill={isDark ? '#090d16' : '#ffffff'}
+        fillOpacity={isDark ? 0.85 : 0.95}
+        stroke={isDark ? '#1e293b' : '#e2e8f0'}
+        strokeWidth="0.8"
+      />
       <text
         x="24"
         y="49"
@@ -454,7 +600,7 @@ export const ScadaBlower: React.FC<ScadaBlowerProps> = ({
         x="24"
         y="58"
         textAnchor="middle"
-        fill="#94a3b8"
+        fill={isDark ? '#94a3b8' : '#475569'}
         fontSize="7"
         fontFamily="sans-serif"
         fontWeight="600"
@@ -466,7 +612,7 @@ export const ScadaBlower: React.FC<ScadaBlowerProps> = ({
 };
 
 /* ========================================================================= */
-/* 3. SCADA SENSOR CALLOUT PIN (CONCENTRIC RETICLE TARGET)                    */
+/* 4. SCADA SENSOR CALLOUT PIN (CONCENTRIC RETICLE TARGET)                    */
 /* ========================================================================= */
 
 export interface ScadaSensorCalloutPinProps {
@@ -494,14 +640,15 @@ export const ScadaSensorCalloutPin: React.FC<ScadaSensorCalloutPinProps> = ({
   textSide = 'right',
   color = '#38bdf8',
 }) => {
+  const { isDark } = useTheme();
   const pinColor =
     status === 'alarm'
       ? '#ef4444'
       : status === 'warning'
-      ? '#f59e0b'
+      ? (isDark ? '#f59e0b' : '#d97706')
       : status === 'stale'
-      ? '#94a3b8'
-      : color;
+      ? (isDark ? '#94a3b8' : '#64748b')
+      : (isDark ? color : '#0284c7');
 
   const displayVal =
     typeof value === 'number'
@@ -525,7 +672,7 @@ export const ScadaSensorCalloutPin: React.FC<ScadaSensorCalloutPinProps> = ({
         stroke={pinColor}
         strokeWidth="1.4"
         strokeDasharray="2.5 2"
-        opacity="0.85"
+        opacity={isDark ? 0.85 : 0.9}
       />
       {/* Target Insertion Point Circle */}
       <circle cx="0" cy={pinHeight} r="2.8" fill={pinColor} />
@@ -537,7 +684,7 @@ export const ScadaSensorCalloutPin: React.FC<ScadaSensorCalloutPinProps> = ({
       </circle>
 
       {/* Target Reticle Circular Base */}
-      <circle cx="0" cy="0" r="6.5" fill="#090d16" stroke={pinColor} strokeWidth="1.6" />
+      <circle cx="0" cy="0" r="6.5" fill={isDark ? '#090d16' : '#ffffff'} stroke={pinColor} strokeWidth="1.6" />
       <circle cx="0" cy="0" r="2.2" fill={pinColor} />
 
       {/* Callout Info Badge (Name, Value, Tag) */}
@@ -547,7 +694,7 @@ export const ScadaSensorCalloutPin: React.FC<ScadaSensorCalloutPinProps> = ({
           x="0"
           y="0"
           textAnchor={textAnchor}
-          fill="#94a3b8"
+          fill={isDark ? '#94a3b8' : '#475569'}
           fontSize="9.5"
           fontFamily="sans-serif"
           fontWeight="500"
@@ -560,14 +707,14 @@ export const ScadaSensorCalloutPin: React.FC<ScadaSensorCalloutPinProps> = ({
           x="0"
           y="11.5"
           textAnchor={textAnchor}
-          fill="#f8fafc"
+          fill={isDark ? '#f8fafc' : '#0f172a'}
           fontSize="11.5"
           fontFamily="monospace"
           fontWeight="bold"
         >
           {displayVal}
           {unit && (
-            <tspan fill="#94a3b8" fontSize="8.5" fontWeight="normal" dx="3">
+            <tspan fill={isDark ? '#94a3b8' : '#64748b'} fontSize="8.5" fontWeight="normal" dx="3">
               {unit}
             </tspan>
           )}
@@ -591,7 +738,7 @@ export const ScadaSensorCalloutPin: React.FC<ScadaSensorCalloutPinProps> = ({
 };
 
 /* ========================================================================= */
-/* 4. SCADA FLOATING TELEMETRY CARD (ENHANCED DIMENSIONS: NO OVERLAP)         */
+/* 5. SCADA FLOATING TELEMETRY CARD (ENHANCED DIMENSIONS: NO OVERLAP)         */
 /* ========================================================================= */
 
 export interface TelemetryMetricItem {
@@ -624,54 +771,64 @@ export const ScadaFloatingCard: React.FC<ScadaFloatingCardProps> = ({
   isSelected = false,
   metrics,
 }) => {
+  const { isDark } = useTheme();
+
   const badgeColor =
     status === 'alarm'
-      ? '#ef4444'
+      ? (isDark ? '#ef4444' : '#dc2626')
       : status === 'warning'
-      ? '#f59e0b'
+      ? (isDark ? '#f59e0b' : '#b45309')
       : status === 'stale'
-      ? '#94a3b8'
-      : '#10b981';
+      ? (isDark ? '#94a3b8' : '#64748b')
+      : (isDark ? '#10b981' : '#059669');
 
   const badgeBg =
-    status === 'alarm'
-      ? 'rgba(239, 68, 68, 0.22)'
-      : status === 'warning'
-      ? 'rgba(245, 158, 11, 0.22)'
-      : status === 'stale'
-      ? 'rgba(148, 163, 184, 0.18)'
-      : 'rgba(16, 185, 129, 0.18)';
+    isDark
+      ? (status === 'alarm'
+        ? 'rgba(239, 68, 68, 0.22)'
+        : status === 'warning'
+        ? 'rgba(245, 158, 11, 0.22)'
+        : status === 'stale'
+        ? 'rgba(148, 163, 184, 0.18)'
+        : 'rgba(16, 185, 129, 0.18)')
+      : (status === 'alarm'
+        ? '#fef2f2'
+        : status === 'warning'
+        ? '#fffbeb'
+        : status === 'stale'
+        ? '#f1f5f9'
+        : '#ecfdf5');
 
   const cardStroke = isSelected
-    ? '#f59e0b'
+    ? (isDark ? '#f59e0b' : '#d97706')
     : status === 'alarm'
     ? '#ef4444'
     : status === 'warning'
-    ? '#f59e0b'
-    : '#1e293b';
+    ? (isDark ? '#f59e0b' : '#d97706')
+    : (isDark ? '#1e293b' : '#e2e8f0');
 
   return (
     <g
       transform={`translate(${x}, ${y})`}
       className={`scada-floating-card select-none ${isSelected ? 'selection-amber-glow' : ''}`}
     >
-      {/* Background Container matching dark glassmorphism */}
+      {/* Background Container matching dark glassmorphism or crisp light card */}
       <rect
         width={width}
         height={height}
         rx="8"
-        fill="#070e1b"
-        fillOpacity="0.96"
+        fill={isDark ? '#070e1b' : '#ffffff'}
+        fillOpacity={isDark ? 0.96 : 0.98}
         stroke={cardStroke}
         strokeWidth={isSelected ? 2.2 : 1.2}
-        filter="drop-shadow(0 4px 14px rgba(0,0,0,0.65))"
+        filter={isDark ? 'drop-shadow(0 4px 14px rgba(0,0,0,0.65))' : 'drop-shadow(0 4px 12px rgba(0,0,0,0.08))'}
       />
 
       {/* Top Header Row: Stage Title (Crisp, ample clearance from status pill) */}
       <text
         x="10"
         y="19"
-        fill={isSelected ? '#fbbf24' : '#f1f5f9'}
+        fill={isSelected ? (isDark ? '#fbbf24' : '#b45309') : (isDark ? '#f1f5f9' : '#0f172a')}
         fontSize="8.8"
         fontFamily="sans-serif"
         fontWeight="bold"
@@ -705,7 +862,7 @@ export const ScadaFloatingCard: React.FC<ScadaFloatingCardProps> = ({
       </g>
 
       {/* Separator Line */}
-      <line x1="10" y1="28" x2={width - 10} y2="28" stroke="#1e293b" strokeWidth="0.8" opacity="0.8" />
+      <line x1="10" y1="28" x2={width - 10} y2="28" stroke={isDark ? '#1e293b' : '#e2e8f0'} strokeWidth="0.8" opacity="0.8" />
 
       {/* Metric Rows */}
       {metrics.map((m, idx) => {
@@ -715,10 +872,10 @@ export const ScadaFloatingCard: React.FC<ScadaFloatingCardProps> = ({
           (m.status === 'alarm'
             ? '#ef4444'
             : m.status === 'warning'
-            ? '#f59e0b'
+            ? (isDark ? '#f59e0b' : '#d97706')
             : m.status === 'stale'
-            ? '#94a3b8'
-            : '#10b981');
+            ? (isDark ? '#94a3b8' : '#64748b')
+            : (isDark ? '#10b981' : '#059669'));
 
         const formattedVal =
           typeof m.value === 'number'
@@ -736,7 +893,7 @@ export const ScadaFloatingCard: React.FC<ScadaFloatingCardProps> = ({
             <text
               x="12"
               y="0"
-              fill="#94a3b8"
+              fill={isDark ? '#94a3b8' : '#475569'}
               fontSize="9"
               fontFamily="sans-serif"
               fontWeight="500"
@@ -749,14 +906,14 @@ export const ScadaFloatingCard: React.FC<ScadaFloatingCardProps> = ({
               x={width - 24}
               y="0"
               textAnchor="end"
-              fill="#f8fafc"
+              fill={isDark ? '#f8fafc' : '#0f172a'}
               fontSize="10"
               fontFamily="monospace"
               fontWeight="bold"
             >
               {formattedVal}
               {m.unit && (
-                <tspan fill="#94a3b8" fontSize="8" fontWeight="normal" dx="3">
+                <tspan fill={isDark ? '#94a3b8' : '#64748b'} fontSize="8" fontWeight="normal" dx="3">
                   {m.unit}
                 </tspan>
               )}
@@ -769,8 +926,7 @@ export const ScadaFloatingCard: React.FC<ScadaFloatingCardProps> = ({
 };
 
 /* ========================================================================= */
-/* ========================================================================= */
-/* 5. SCADA LEGEND COMPONENT (EXPANDED TO 490PX FOR ALL 5 PROCESS STREAMS)   */
+/* 6. SCADA LEGEND COMPONENT (EXPANDED TO 490PX FOR ALL 5 PROCESS STREAMS)   */
 /* ========================================================================= */
 
 export interface ScadaLegendProps {
@@ -779,6 +935,8 @@ export interface ScadaLegendProps {
 }
 
 export const ScadaLegend: React.FC<ScadaLegendProps> = ({ x, y }) => {
+  const { isDark } = useTheme();
+
   return (
     <g transform={`translate(${x}, ${y})`} className="scada-legend select-none">
       {/* Legend Container */}
@@ -788,48 +946,49 @@ export const ScadaLegend: React.FC<ScadaLegendProps> = ({ x, y }) => {
         width="490"
         height="22"
         rx="4"
-        fill="#090d16"
-        fillOpacity="0.88"
-        stroke="#1e293b"
+        fill={isDark ? '#090d16' : '#ffffff'}
+        fillOpacity={isDark ? 0.88 : 0.95}
+        stroke={isDark ? '#1e293b' : '#cbd5e1'}
         strokeWidth="1"
+        filter={isDark ? undefined : 'drop-shadow(0 1px 3px rgba(0,0,0,0.06))'}
       />
 
       {/* 1. Main Process Flow (Cyan) */}
       <g transform="translate(10, 11)">
-        <line x1="0" y1="0" x2="16" y2="0" stroke="#38bdf8" strokeWidth="3" />
-        <text x="22" y="3" fill="#cbd5e1" fontSize="7.5" fontFamily="sans-serif" fontWeight="500">
+        <line x1="0" y1="0" x2="16" y2="0" stroke={isDark ? '#38bdf8' : '#0284c7'} strokeWidth="3" />
+        <text x="22" y="3" fill={isDark ? '#cbd5e1' : '#334155'} fontSize="7.5" fontFamily="sans-serif" fontWeight="500">
           Main Process Flow
         </text>
       </g>
 
       {/* 2. RAS Recycle (Amber) */}
       <g transform="translate(122, 11)">
-        <line x1="0" y1="0" x2="16" y2="0" stroke="#f59e0b" strokeWidth="3" />
-        <text x="22" y="3" fill="#cbd5e1" fontSize="7.5" fontFamily="sans-serif" fontWeight="500">
+        <line x1="0" y1="0" x2="16" y2="0" stroke={isDark ? '#f59e0b' : '#d97706'} strokeWidth="3" />
+        <text x="22" y="3" fill={isDark ? '#cbd5e1' : '#334155'} fontSize="7.5" fontFamily="sans-serif" fontWeight="500">
           RAS Recycle
         </text>
       </g>
 
       {/* 3. WAS Purge (Brown) */}
       <g transform="translate(202, 11)">
-        <line x1="0" y1="0" x2="16" y2="0" stroke="#d97706" strokeWidth="3" />
-        <text x="22" y="3" fill="#cbd5e1" fontSize="7.5" fontFamily="sans-serif" fontWeight="500">
+        <line x1="0" y1="0" x2="16" y2="0" stroke={isDark ? '#d97706' : '#b45309'} strokeWidth="3" />
+        <text x="22" y="3" fill={isDark ? '#cbd5e1' : '#334155'} fontSize="7.5" fontFamily="sans-serif" fontWeight="500">
           WAS Purge
         </text>
       </g>
 
       {/* 4. UV Disinfection (Purple) */}
       <g transform="translate(282, 11)">
-        <line x1="0" y1="0" x2="16" y2="0" stroke="#c084fc" strokeWidth="3" />
-        <text x="22" y="3" fill="#cbd5e1" fontSize="7.5" fontFamily="sans-serif" fontWeight="500">
+        <line x1="0" y1="0" x2="16" y2="0" stroke={isDark ? '#c084fc' : '#9333ea'} strokeWidth="3" />
+        <text x="22" y="3" fill={isDark ? '#cbd5e1' : '#334155'} fontSize="7.5" fontFamily="sans-serif" fontWeight="500">
           UV Disinfection
         </text>
       </g>
 
-      {/* 5. Air Header (Light Grey) */}
+      {/* 5. Air Header (Grey) */}
       <g transform="translate(382, 11)">
-        <line x1="0" y1="0" x2="16" y2="0" stroke="#94a3b8" strokeWidth="2.5" strokeDasharray="3 2" />
-        <text x="22" y="3" fill="#cbd5e1" fontSize="7.5" fontFamily="sans-serif" fontWeight="500">
+        <line x1="0" y1="0" x2="16" y2="0" stroke={isDark ? '#94a3b8' : '#64748b'} strokeWidth="2.5" strokeDasharray="3 2" />
+        <text x="22" y="3" fill={isDark ? '#cbd5e1' : '#334155'} fontSize="7.5" fontFamily="sans-serif" fontWeight="500">
           Air Header
         </text>
       </g>
@@ -838,7 +997,7 @@ export const ScadaLegend: React.FC<ScadaLegendProps> = ({ x, y }) => {
 };
 
 /* ========================================================================= */
-/* 6. SCADA TERMINAL STATION (DEWATERING, INLET, OUTFALL TERMINALS)          */
+/* 7. SCADA TERMINAL STATION (DEWATERING, INLET, OUTFALL TERMINALS)          */
 /* ========================================================================= */
 
 export interface ScadaTerminalStationProps {
@@ -874,16 +1033,17 @@ export const ScadaTerminalStation: React.FC<ScadaTerminalStationProps> = ({
   isAnimated = true,
   onClick,
 }) => {
+  const { isDark } = useTheme();
   const stationTitle = title || name || tag;
   const stationSubtitle = subtitle || subtext || '';
   const actualVariant = variant === 'sludge' ? 'solids' : variant;
 
   const variantStroke =
     actualVariant === 'solids'
-      ? '#b45309'
+      ? (isDark ? '#b45309' : '#92400e')
       : actualVariant === 'outfall'
-      ? '#06b6d4'
-      : '#0284c7';
+      ? (isDark ? '#06b6d4' : '#0891b2')
+      : (isDark ? '#0284c7' : '#0284c7');
 
   const isAlarm = status === 'alarm';
   const isWarning = status === 'warning';
@@ -897,27 +1057,35 @@ export const ScadaTerminalStation: React.FC<ScadaTerminalStationProps> = ({
     : 'ONLINE';
 
   const badgeColor = isAlarm
-    ? '#ef4444'
+    ? (isDark ? '#ef4444' : '#dc2626')
     : isWarning
-    ? '#f59e0b'
+    ? (isDark ? '#f59e0b' : '#b45309')
     : actualVariant === 'outfall'
-    ? '#06b6d4'
-    : '#10b981';
+    ? (isDark ? '#06b6d4' : '#0891b2')
+    : (isDark ? '#10b981' : '#059669');
 
-  const badgeBg = isAlarm
-    ? 'rgba(239, 68, 68, 0.22)'
-    : isWarning
-    ? 'rgba(245, 158, 11, 0.22)'
-    : actualVariant === 'outfall'
-    ? 'rgba(6, 182, 212, 0.18)'
-    : 'rgba(16, 185, 129, 0.18)';
+  const badgeBg =
+    isDark
+      ? (isAlarm
+        ? 'rgba(239, 68, 68, 0.22)'
+        : isWarning
+        ? 'rgba(245, 158, 11, 0.22)'
+        : actualVariant === 'outfall'
+        ? 'rgba(6, 182, 212, 0.18)'
+        : 'rgba(16, 185, 129, 0.18)')
+      : (isAlarm
+        ? '#fef2f2'
+        : isWarning
+        ? '#fffbeb'
+        : actualVariant === 'outfall'
+        ? '#ecfeff'
+        : '#ecfdf5');
 
   const pillWidth = badgeText.length > 7 ? 50 : badgeText.length > 5 ? 44 : 36;
   const bevel = 5;
   const beveledPath = `M 0 ${bevel} L ${bevel} 0 L ${width - bevel} 0 L ${width} ${bevel} L ${width} ${height - bevel} L ${width - bevel} ${height} L ${bevel} ${height} L 0 ${height - bevel} Z`;
 
   // Terminal connection flange / pipe port location
-  // Inlet: discharged to right; Outfall: received from left; Solids: received from right
   const isRightPort = actualVariant === 'inlet' || actualVariant === 'solids';
   const portX = isRightPort ? width : 0;
   const portY = height / 2;
@@ -933,16 +1101,16 @@ export const ScadaTerminalStation: React.FC<ScadaTerminalStationProps> = ({
       onClick={onClick}
     >
       {/* Ground Contact Shadow */}
-      <ellipse cx={width / 2} cy={height + 2} rx={width / 2 - 6} ry={3} fill="#020617" opacity="0.6" />
+      <ellipse cx={width / 2} cy={height + 2} rx={width / 2 - 6} ry={3} fill={isDark ? '#020617' : '#94a3b8'} opacity={isDark ? 0.6 : 0.25} />
 
-      {/* Dark Technical Beveled Enclosure */}
+      {/* Technical Beveled Enclosure */}
       <path
         d={beveledPath}
-        fill="#070e1b"
-        fillOpacity={0.96}
+        fill={isDark ? '#070e1b' : '#ffffff'}
+        fillOpacity={isDark ? 0.96 : 0.98}
         stroke={variantStroke}
         strokeWidth={1.5}
-        filter="drop-shadow(0 4px 10px rgba(0,0,0,0.65))"
+        filter={isDark ? 'drop-shadow(0 4px 10px rgba(0,0,0,0.65))' : 'drop-shadow(0 2px 8px rgba(0,0,0,0.08))'}
       />
 
       {/* Top Bevel Highlight Line */}
@@ -953,7 +1121,7 @@ export const ScadaTerminalStation: React.FC<ScadaTerminalStationProps> = ({
         y2={2}
         stroke={variantStroke}
         strokeWidth={0.8}
-        opacity={0.4}
+        opacity={isDark ? 0.4 : 0.6}
       />
 
       {/* Engineering Tag (Bold Monospace) */}
@@ -993,13 +1161,13 @@ export const ScadaTerminalStation: React.FC<ScadaTerminalStationProps> = ({
       </g>
 
       {/* Horizontal Divider Line */}
-      <line x1={6} y1={19} x2={width - 6} y2={19} stroke="#1e293b" strokeWidth={0.8} opacity={0.8} />
+      <line x1={6} y1={19} x2={width - 6} y2={19} stroke={isDark ? '#1e293b' : '#e2e8f0'} strokeWidth={0.8} opacity="0.8" />
 
       {/* Title (Clean typography with zero clipping) */}
       <text
         x="8"
         y="31"
-        fill="#f8fafc"
+        fill={isDark ? '#f8fafc' : '#0f172a'}
         fontSize={titleFontSize}
         fontFamily="sans-serif"
         fontWeight="bold"
@@ -1012,7 +1180,7 @@ export const ScadaTerminalStation: React.FC<ScadaTerminalStationProps> = ({
       <text
         x="8"
         y="42.5"
-        fill="#94a3b8"
+        fill={isDark ? '#94a3b8' : '#64748b'}
         fontSize="7"
         fontFamily="sans-serif"
         fontWeight="500"
@@ -1028,7 +1196,7 @@ export const ScadaTerminalStation: React.FC<ScadaTerminalStationProps> = ({
           width={6}
           height={12}
           rx={1}
-          fill="#1e293b"
+          fill={isDark ? '#1e293b' : '#e2e8f0'}
           stroke={variantStroke}
           strokeWidth={1}
         />
@@ -1053,7 +1221,7 @@ export const ScadaTerminalStation: React.FC<ScadaTerminalStationProps> = ({
 };
 
 /* ========================================================================= */
-/* 6. BACKWARD COMPATIBLE EXPORTS                                            */
+/* 8. BACKWARD COMPATIBLE EXPORTS                                            */
 /* ========================================================================= */
 
 export interface ScadaInstrumentCardProps {
@@ -1081,21 +1249,28 @@ export const ScadaInstrumentCard: React.FC<ScadaInstrumentCardProps> = ({
   status = 'nominal',
   sparklinePoints = [30, 32, 28, 35, 33, 38, 34, 37],
 }) => {
+  const { isDark } = useTheme();
   const statusColor =
     status === 'alarm'
-      ? '#ef4444'
+      ? (isDark ? '#ef4444' : '#dc2626')
       : status === 'warning'
-      ? '#f59e0b'
+      ? (isDark ? '#f59e0b' : '#b45309')
       : status === 'stale'
-      ? '#94a3b8'
-      : '#34d399';
+      ? (isDark ? '#94a3b8' : '#64748b')
+      : (isDark ? '#34d399' : '#059669');
 
   const statusBg =
-    status === 'alarm'
-      ? 'rgba(239, 68, 68, 0.15)'
-      : status === 'warning'
-      ? 'rgba(245, 158, 11, 0.15)'
-      : 'rgba(52, 211, 153, 0.12)';
+    isDark
+      ? (status === 'alarm'
+        ? 'rgba(239, 68, 68, 0.15)'
+        : status === 'warning'
+        ? 'rgba(245, 158, 11, 0.15)'
+        : 'rgba(52, 211, 153, 0.12)')
+      : (status === 'alarm'
+        ? '#fef2f2'
+        : status === 'warning'
+        ? '#fffbeb'
+        : '#ecfdf5');
 
   const sparkHeight = 12;
   const sparkWidth = 40;
@@ -1116,13 +1291,14 @@ export const ScadaInstrumentCard: React.FC<ScadaInstrumentCardProps> = ({
         width={width}
         height="56"
         rx="5"
-        fill="#020617"
-        fillOpacity="0.88"
-        stroke="#1e293b"
+        fill={isDark ? '#020617' : '#ffffff'}
+        fillOpacity={isDark ? 0.88 : 0.98}
+        stroke={isDark ? '#1e293b' : '#e2e8f0'}
         strokeWidth="1.2"
+        filter={isDark ? undefined : 'drop-shadow(0 2px 6px rgba(0,0,0,0.06))'}
       />
-      <line x1="0" y1="18" x2={width} y2="18" stroke="#1e293b" strokeWidth="1" />
-      <text x="8" y="13" fill="#94a3b8" fontSize="8" fontFamily="monospace" fontWeight="bold">
+      <line x1="0" y1="18" x2={width} y2="18" stroke={isDark ? '#1e293b' : '#e2e8f0'} strokeWidth="1" />
+      <text x="8" y="13" fill={isDark ? '#94a3b8' : '#64748b'} fontSize="8" fontFamily="monospace" fontWeight="bold">
         {tag}
       </text>
       <rect x={width - 48} y="4" width="40" height="11" rx="2" fill={statusBg} stroke={statusColor} strokeWidth="0.6" />
@@ -1137,12 +1313,12 @@ export const ScadaInstrumentCard: React.FC<ScadaInstrumentCardProps> = ({
       >
         {status.toUpperCase()}
       </text>
-      <text x="8" y="32" fill="#cbd5e1" fontSize="8" fontFamily="sans-serif">
+      <text x="8" y="32" fill={isDark ? '#cbd5e1' : '#475569'} fontSize="8" fontFamily="sans-serif">
         {label}
       </text>
-      <text x="8" y="47" fill="#f8fafc" fontSize="13" fontFamily="monospace" fontWeight="bold">
+      <text x="8" y="47" fill={isDark ? '#f8fafc' : '#0f172a'} fontSize="13" fontFamily="monospace" fontWeight="bold">
         {typeof value === 'number' ? value.toFixed(1) : value}
-        <tspan fill="#94a3b8" fontSize="8.5" fontWeight="normal" dx="3">
+        <tspan fill={isDark ? '#94a3b8' : '#64748b'} fontSize="8.5" fontWeight="normal" dx="3">
           {unit}
         </tspan>
       </text>
@@ -1168,17 +1344,20 @@ export const ScadaSensorTap: React.FC<ScadaSensorTapProps> = ({
   isActive = true,
   color = '#38bdf8',
 }) => {
+  const { isDark } = useTheme();
+  const actualColor = isDark ? color : (color === '#38bdf8' ? '#0284c7' : color);
+
   return (
     <g transform={`translate(${x}, ${y})`}>
       {isActive && (
-        <circle cx="0" cy="0" r="9" fill="none" stroke={color} strokeWidth="1" opacity="0.6">
+        <circle cx="0" cy="0" r="9" fill="none" stroke={actualColor} strokeWidth="1" opacity="0.6">
           <animate attributeName="r" values="4;12" dur="2s" repeatCount="indefinite" />
           <animate attributeName="opacity" values="0.8;0" dur="2s" repeatCount="indefinite" />
         </circle>
       )}
-      <circle cx="0" cy="0" r="4.5" fill="#0f172a" stroke={color} strokeWidth="1.5" />
-      <circle cx="0" cy="0" r="2" fill={color} />
-      <text x="0" y="12" textAnchor="middle" fill={color} fontSize="6.5" fontFamily="monospace" fontWeight="bold">
+      <circle cx="0" cy="0" r="4.5" fill={isDark ? '#0f172a' : '#ffffff'} stroke={actualColor} strokeWidth="1.5" />
+      <circle cx="0" cy="0" r="2" fill={actualColor} />
+      <text x="0" y="12" textAnchor="middle" fill={actualColor} fontSize="6.5" fontFamily="monospace" fontWeight="bold">
         {tag}
       </text>
     </g>

@@ -143,12 +143,12 @@ export const LiveEventsConsole: React.FC<LiveEventsConsoleProps> = ({
   const equipmentCount = events.filter((e) => e.category === 'equipment').length;
 
   return (
-    <div className="bg-[#0b1329] border border-slate-800/80 rounded-xl p-4 shadow-xl select-none flex flex-col justify-between">
+    <div className="bg-white dark:bg-[#0b1329] border border-slate-200 dark:border-slate-800/80 rounded-xl p-4 shadow-sm dark:shadow-xl select-none flex flex-col justify-between">
       {/* Header with Filter Pills */}
-      <div className="flex flex-wrap items-center justify-between gap-2 mb-3 pb-2 border-b border-slate-800/70">
+      <div className="flex flex-wrap items-center justify-between gap-2 mb-3 pb-2 border-b border-slate-200 dark:border-slate-800/70">
         <div className="flex items-center gap-2">
-          <Bell className="w-4 h-4 text-sky-400" />
-          <h3 className="text-xs font-bold text-slate-200 uppercase tracking-wider">
+          <Bell className="w-4 h-4 text-sky-500 dark:text-sky-400" />
+          <h3 className="text-xs font-bold text-slate-900 dark:text-slate-200 uppercase tracking-wider">
             Live Events & Alarms
           </h3>
         </div>
@@ -159,7 +159,7 @@ export const LiveEventsConsole: React.FC<LiveEventsConsoleProps> = ({
             className={`px-2 py-0.5 rounded transition-colors ${
               filter === 'all'
                 ? 'bg-sky-600 text-white font-bold'
-                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
             }`}
           >
             All ({allCount})
@@ -169,7 +169,7 @@ export const LiveEventsConsole: React.FC<LiveEventsConsoleProps> = ({
             className={`px-2 py-0.5 rounded transition-colors ${
               filter === 'telemetry'
                 ? 'bg-sky-600 text-white font-bold'
-                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
             }`}
           >
             Telemetry ({telemetryCount})
@@ -179,7 +179,7 @@ export const LiveEventsConsole: React.FC<LiveEventsConsoleProps> = ({
             className={`px-2 py-0.5 rounded transition-colors ${
               filter === 'model'
                 ? 'bg-sky-600 text-white font-bold'
-                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
             }`}
           >
             Model ({modelCount})
@@ -189,7 +189,7 @@ export const LiveEventsConsole: React.FC<LiveEventsConsoleProps> = ({
             className={`px-2 py-0.5 rounded transition-colors ${
               filter === 'equipment'
                 ? 'bg-sky-600 text-white font-bold'
-                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
             }`}
           >
             Equipment ({equipmentCount})
@@ -201,7 +201,7 @@ export const LiveEventsConsole: React.FC<LiveEventsConsoleProps> = ({
       <div className="overflow-x-auto">
         <table className="w-full text-left text-xs font-mono">
           <thead>
-            <tr className="text-[10px] text-slate-500 uppercase border-b border-slate-800/60 pb-1">
+            <tr className="text-[10px] text-slate-500 uppercase border-b border-slate-200 dark:border-slate-800/60 pb-1">
               <th className="pb-1.5 font-medium">Time</th>
               <th className="pb-1.5 font-medium">Event</th>
               <th className="pb-1.5 font-medium">Source</th>
@@ -209,7 +209,7 @@ export const LiveEventsConsole: React.FC<LiveEventsConsoleProps> = ({
               <th className="pb-1.5 font-medium text-right">Status</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-800/40 text-[11px]">
+          <tbody className="divide-y divide-slate-200 dark:divide-slate-800/40 text-[11px]">
             {filteredEvents.length === 0 ? (
               <tr>
                 <td colSpan={5} className="py-4 text-center text-slate-500 font-sans text-xs">
@@ -218,33 +218,33 @@ export const LiveEventsConsole: React.FC<LiveEventsConsoleProps> = ({
               </tr>
             ) : (
               filteredEvents.slice(0, 5).map((item) => (
-                <tr key={item.id} className="hover:bg-slate-900/40 transition-colors">
-                  <td className="py-1.5 text-slate-400">{item.time}</td>
-                  <td className="py-1.5 text-slate-200 font-sans font-medium">{item.event}</td>
-                  <td className="py-1.5 text-sky-400 font-bold">{item.source}</td>
-                  <td className="py-1.5 text-slate-300">{item.value}</td>
+                <tr key={item.id} className="hover:bg-slate-50 dark:hover:bg-slate-900/40 transition-colors">
+                  <td className="py-1.5 text-slate-500 dark:text-slate-400">{item.time}</td>
+                  <td className="py-1.5 text-slate-800 dark:text-slate-200 font-sans font-medium">{item.event}</td>
+                  <td className="py-1.5 text-sky-600 dark:text-sky-400 font-bold">{item.source}</td>
+                  <td className="py-1.5 text-slate-600 dark:text-slate-300">{item.value}</td>
                   <td className="py-1.5 text-right">
                     <span className="inline-flex items-center gap-1">
                       <span
                         className={`w-1.5 h-1.5 rounded-full ${
                           item.status === 'Accepted'
-                            ? 'bg-emerald-400'
+                            ? 'bg-emerald-500'
                             : item.status === 'Critical'
                             ? 'bg-rose-500 animate-pulse'
                             : item.status === 'Warning'
-                            ? 'bg-amber-400'
-                            : 'bg-sky-400'
+                            ? 'bg-amber-500'
+                            : 'bg-sky-500'
                         }`}
                       />
                       <span
                         className={
                           item.status === 'Accepted'
-                            ? 'text-emerald-400'
+                            ? 'text-emerald-600 dark:text-emerald-400'
                             : item.status === 'Critical'
-                            ? 'text-rose-400 font-bold'
+                            ? 'text-rose-600 dark:text-rose-400 font-bold'
                             : item.status === 'Warning'
-                            ? 'text-amber-400'
-                            : 'text-sky-400'
+                            ? 'text-amber-600 dark:text-amber-400'
+                            : 'text-sky-600 dark:text-sky-400'
                         }
                       >
                         {item.status}

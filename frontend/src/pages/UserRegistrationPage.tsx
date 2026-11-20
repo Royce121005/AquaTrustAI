@@ -36,29 +36,29 @@ export const UserRegistrationPage: React.FC = () => {
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
-      <div className="pb-4 border-b border-[#1F293D] flex items-center justify-between">
+      <div className="pb-4 border-b border-slate-200 dark:border-[#1F293D] flex items-center justify-between">
         <div>
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-[#0EA5E9]/10 border border-[#0EA5E9]/30 flex items-center justify-center text-[#0EA5E9]">
               <UserPlus className="w-4 h-4" />
             </div>
-            <h1 className="text-xl font-bold tracking-tight text-white flex items-center gap-2">
+            <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
               Register Authoritative System User
             </h1>
           </div>
-          <p className="text-xs text-slate-400 mt-1">
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
             Admin boundary: creates cryptographically hashed user credentials under predefined RBAC roles.
           </p>
         </div>
-        <span className="px-3 py-1 rounded-full bg-[#111827] border border-[#1F293D] text-[10px] font-mono uppercase tracking-widest text-[#0EA5E9]">
+        <span className="px-3 py-1 rounded-full bg-slate-100 dark:bg-[#111827] border border-slate-200 dark:border-[#1F293D] text-[10px] font-mono uppercase tracking-widest text-sky-600 dark:text-[#0EA5E9]">
           RBAC ADMIN
         </span>
       </div>
 
-      <div className="bg-[#111827] border border-[#1F293D] rounded-xl p-6 shadow-xl space-y-4">
+      <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-[#1F293D] rounded-xl p-6 shadow-sm dark:shadow-xl space-y-4">
         <form onSubmit={handleSubmit} className="space-y-4 text-xs">
           <div>
-            <label className="block text-slate-300 font-semibold mb-1">
+            <label className="block text-slate-700 dark:text-slate-300 font-semibold mb-1">
               Username (Unique identifier)
             </label>
             <input
@@ -67,12 +67,12 @@ export const UserRegistrationPage: React.FC = () => {
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               placeholder="e.g. operator_lucknow"
-              className="w-full bg-[#0B0F17] border border-[#1F293D] rounded-lg px-3.5 py-2.5 font-mono text-white placeholder-slate-500 focus:outline-none focus:border-[#0EA5E9]"
+              className="w-full bg-slate-50 dark:bg-[#0B0F17] border border-slate-200 dark:border-[#1F293D] rounded-lg px-3.5 py-2.5 font-mono text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-[#0EA5E9]"
             />
           </div>
 
           <div>
-            <label className="block text-slate-300 font-semibold mb-1">
+            <label className="block text-slate-700 dark:text-slate-300 font-semibold mb-1">
               Corporate / Regulatory Email Address
             </label>
             <input
@@ -81,12 +81,12 @@ export const UserRegistrationPage: React.FC = () => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="e.g. operator@aquatrust.internal"
-              className="w-full bg-[#0B0F17] border border-[#1F293D] rounded-lg px-3.5 py-2.5 font-mono text-white placeholder-slate-500 focus:outline-none focus:border-[#0EA5E9]"
+              className="w-full bg-slate-50 dark:bg-[#0B0F17] border border-slate-200 dark:border-[#1F293D] rounded-lg px-3.5 py-2.5 font-mono text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-[#0EA5E9]"
             />
           </div>
 
           <div>
-            <label className="block text-slate-300 font-semibold mb-1">
+            <label className="block text-slate-700 dark:text-slate-300 font-semibold mb-1">
               Initial Password
             </label>
             <input
@@ -95,12 +95,12 @@ export const UserRegistrationPage: React.FC = () => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••••••"
-              className="w-full bg-[#0B0F17] border border-[#1F293D] rounded-lg px-3.5 py-2.5 font-mono text-white placeholder-slate-500 focus:outline-none focus:border-[#0EA5E9]"
+              className="w-full bg-slate-50 dark:bg-[#0B0F17] border border-slate-200 dark:border-[#1F293D] rounded-lg px-3.5 py-2.5 font-mono text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-[#0EA5E9]"
             />
           </div>
 
           <div>
-            <label className="block text-slate-300 font-semibold mb-1">
+            <label className="block text-slate-700 dark:text-slate-300 font-semibold mb-1">
               Display Name (Optional)
             </label>
             <input
@@ -108,18 +108,18 @@ export const UserRegistrationPage: React.FC = () => {
               value={displayName}
               onChange={(e) => setDisplayName(e.target.value)}
               placeholder="e.g. Plant Lead Operator"
-              className="w-full bg-[#0B0F17] border border-[#1F293D] rounded-lg px-3.5 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:border-[#0EA5E9]"
+              className="w-full bg-slate-50 dark:bg-[#0B0F17] border border-slate-200 dark:border-[#1F293D] rounded-lg px-3.5 py-2.5 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-[#0EA5E9]"
             />
           </div>
 
           <div>
-            <label className="block text-slate-300 font-semibold mb-1">
+            <label className="block text-slate-700 dark:text-slate-300 font-semibold mb-1">
               RBAC Role Assignment
             </label>
             <select
               value={role}
               onChange={(e) => setRole(e.target.value as UserRole)}
-              className="w-full bg-[#0B0F17] border border-[#1F293D] rounded-lg px-3.5 py-2.5 font-mono text-white focus:outline-none focus:border-[#0EA5E9]"
+              className="w-full bg-slate-50 dark:bg-[#0B0F17] border border-slate-200 dark:border-[#1F293D] rounded-lg px-3.5 py-2.5 font-mono text-slate-900 dark:text-white focus:outline-none focus:border-[#0EA5E9]"
             >
               <option value="operator">operator (Telemetry Ingestion & Finalization)</option>
               <option value="auditor">auditor (Verification, Compliance & Reconciliation)</option>
@@ -141,15 +141,15 @@ export const UserRegistrationPage: React.FC = () => {
         {registerMutation.isError && <ErrorState error={registerMutation.error} />}
 
         {registerMutation.data && (
-          <div className="p-4 bg-[#10B981]/10 border border-[#10B981]/40 rounded-xl text-xs font-mono text-emerald-200 space-y-1.5">
-            <div className="font-bold flex items-center gap-1.5 mb-1 text-emerald-400">
-              <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+          <div className="p-4 bg-emerald-50 dark:bg-[#10B981]/10 border border-emerald-200 dark:border-[#10B981]/40 rounded-xl text-xs font-mono text-emerald-800 dark:text-emerald-200 space-y-1.5">
+            <div className="font-bold flex items-center gap-1.5 mb-1 text-emerald-600 dark:text-emerald-400">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
               User Account Successfully Created
             </div>
-            <div>Username: <span className="text-white font-bold">{registerMutation.data.username}</span></div>
-            <div>User ID: <span className="text-slate-300 select-all">{registerMutation.data.user_id}</span></div>
-            <div>Role: <span className="text-[#0EA5E9]">{registerMutation.data.role}</span></div>
-            <div>Status: <span className="text-emerald-400">{registerMutation.data.status}</span></div>
+            <div>Username: <span className="text-slate-900 dark:text-white font-bold">{registerMutation.data.username}</span></div>
+            <div>User ID: <span className="text-slate-600 dark:text-slate-300 select-all">{registerMutation.data.user_id}</span></div>
+            <div>Role: <span className="text-sky-600 dark:text-[#0EA5E9]">{registerMutation.data.role}</span></div>
+            <div>Status: <span className="text-emerald-600 dark:text-emerald-400">{registerMutation.data.status}</span></div>
           </div>
         )}
       </div>

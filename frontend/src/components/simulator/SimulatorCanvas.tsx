@@ -80,30 +80,30 @@ export const SimulatorCanvas: React.FC<SimulatorCanvasProps> = ({
   const stateVersion = stepsGenerated + 42;
 
   return (
-    <div className="bg-slate-950 border border-slate-800 rounded-xl overflow-hidden shadow-2xl select-none relative">
+    <div className="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-sm dark:shadow-2xl select-none relative">
       {/* SCADA Canvas Header Ribbon */}
-      <div className="bg-slate-900/95 border-b border-slate-800 px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+      <div className="bg-slate-50 dark:bg-slate-900/95 border-b border-slate-200 dark:border-slate-800 px-4 py-3 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2.5">
-          <div className="p-2 rounded-lg bg-indigo-950 border border-indigo-800 text-indigo-400">
+          <div className="p-2 rounded-lg bg-indigo-100 dark:bg-indigo-950 border border-indigo-300 dark:border-indigo-800 text-indigo-700 dark:text-indigo-400">
             <Radio className="w-5 h-5 animate-pulse" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-sm font-bold text-slate-100 uppercase tracking-wide">
+              <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100 uppercase tracking-wide">
                 SCADA Telemetry Pipeline & Treatment Basin Visualizer
               </h2>
               <span
                 className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase ${
                   isRunning
-                    ? 'bg-emerald-950 text-emerald-300 border border-emerald-800'
-                    : 'bg-slate-800 text-slate-400'
+                    ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800'
+                    : 'bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-400'
                 }`}
               >
                 {isRunning ? 'TRANSMITTING 1Hz' : 'OFFLINE / STANDBY'}
               </span>
             </div>
-            <p className="text-[11px] text-slate-400 mt-0.5">
-              Target Facility: <span className="text-slate-200 font-semibold">{activeFacilityName || 'Selected STP'}</span> • Synthetic Sensor Telemetry & Ingestion Bus
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+              Target Facility: <span className="text-slate-800 dark:text-slate-200 font-semibold">{activeFacilityName || 'Selected STP'}</span> • Synthetic Sensor Telemetry & Ingestion Bus
             </p>
           </div>
         </div>
@@ -111,14 +111,14 @@ export const SimulatorCanvas: React.FC<SimulatorCanvasProps> = ({
         {/* Action Controls & Active Status Indicator */}
         <div className="flex items-center gap-2">
           {isAnomaly && (
-            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded bg-rose-950/80 border border-rose-800 text-rose-300 text-xs font-mono font-semibold animate-pulse">
-              <AlertTriangle className="w-3.5 h-3.5 text-rose-400" />
+            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded bg-rose-100 dark:bg-rose-950/80 border border-rose-300 dark:border-rose-800 text-rose-800 dark:text-rose-300 text-xs font-mono font-semibold animate-pulse">
+              <AlertTriangle className="w-3.5 h-3.5 text-rose-600 dark:text-rose-400" />
               <span>DISTURBANCE: {currentScenario.toUpperCase()}</span>
             </div>
           )}
 
-          <div className="hidden lg:flex items-center gap-1 text-[11px] font-mono text-slate-400 bg-slate-900 px-2.5 py-1 rounded border border-slate-800">
-            <Info className="w-3.5 h-3.5 text-sky-400" />
+          <div className="hidden lg:flex items-center gap-1 text-[11px] font-mono text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-900 px-2.5 py-1 rounded border border-slate-200 dark:border-slate-800">
+            <Info className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />
             <span>Click any node to inspect telemetry & validation rules</span>
           </div>
 
@@ -759,101 +759,101 @@ export const SimulatorCanvas: React.FC<SimulatorCanvasProps> = ({
       </div>
 
       {/* Real-Time Telemetry Gauges Ribbon */}
-      <div className="bg-slate-900 border-t border-slate-800 p-4 grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2.5">
+      <div className="bg-slate-50 dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 p-4 grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2.5">
         {/* Gauge 1: Inflow Rate */}
-        <div className="bg-slate-950 border border-slate-800 rounded-lg p-2.5">
-          <span className="text-[10px] text-slate-400 font-mono block">PLANT INFLOW</span>
+        <div className="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg p-2.5">
+          <span className="text-[10px] text-slate-500 dark:text-slate-400 font-mono block">PLANT INFLOW</span>
           <div className="flex items-baseline gap-1 mt-1">
-            <span className="text-base font-bold font-mono text-slate-100">10.0</span>
-            <span className="text-[10px] text-slate-500 font-mono">MLD</span>
+            <span className="text-base font-bold font-mono text-slate-900 dark:text-slate-100">10.0</span>
+            <span className="text-[10px] text-slate-400 dark:text-slate-500 font-mono">MLD</span>
           </div>
-          <span className="text-[10px] text-emerald-400 font-mono mt-0.5 block">NOMINAL</span>
+          <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-mono mt-0.5 block">NOMINAL</span>
         </div>
 
         {/* Gauge 2: Influent BOD */}
-        <div className="bg-slate-950 border border-slate-800 rounded-lg p-2.5">
-          <span className="text-[10px] text-slate-400 font-mono block">RAW BOD</span>
+        <div className="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg p-2.5">
+          <span className="text-[10px] text-slate-500 dark:text-slate-400 font-mono block">RAW BOD</span>
           <div className="flex items-baseline gap-1 mt-1">
-            <span className={`text-base font-bold font-mono ${isOrganicShock ? 'text-amber-400' : 'text-slate-100'}`}>
+            <span className={`text-base font-bold font-mono ${isOrganicShock ? 'text-amber-500 dark:text-amber-400' : 'text-slate-900 dark:text-slate-100'}`}>
               {liveBod.toFixed(0)}
             </span>
-            <span className="text-[10px] text-slate-500 font-mono">mg/L</span>
+            <span className="text-[10px] text-slate-400 dark:text-slate-500 font-mono">mg/L</span>
           </div>
-          <span className={`text-[10px] font-mono mt-0.5 block ${isOrganicShock ? 'text-amber-400' : 'text-emerald-400'}`}>
+          <span className={`text-[10px] font-mono mt-0.5 block ${isOrganicShock ? 'text-amber-600 dark:text-amber-400' : 'text-emerald-600 dark:text-emerald-400'}`}>
             {isOrganicShock ? 'SHOCK SPIKE' : 'NORMAL'}
           </span>
         </div>
 
         {/* Gauge 3: Influent COD */}
-        <div className="bg-slate-950 border border-slate-800 rounded-lg p-2.5">
-          <span className="text-[10px] text-slate-400 font-mono block">RAW COD</span>
+        <div className="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg p-2.5">
+          <span className="text-[10px] text-slate-500 dark:text-slate-400 font-mono block">RAW COD</span>
           <div className="flex items-baseline gap-1 mt-1">
-            <span className={`text-base font-bold font-mono ${isOrganicShock ? 'text-amber-400' : 'text-slate-100'}`}>
+            <span className={`text-base font-bold font-mono ${isOrganicShock ? 'text-amber-500 dark:text-amber-400' : 'text-slate-900 dark:text-slate-100'}`}>
               {liveCod.toFixed(0)}
             </span>
-            <span className="text-[10px] text-slate-500 font-mono">mg/L</span>
+            <span className="text-[10px] text-slate-400 dark:text-slate-500 font-mono">mg/L</span>
           </div>
-          <span className="text-[10px] text-slate-400 font-mono mt-0.5 block">RATIO: 2.22</span>
+          <span className="text-[10px] text-slate-500 dark:text-slate-400 font-mono mt-0.5 block">RATIO: 2.22</span>
         </div>
 
         {/* Gauge 4: Aeration DO */}
-        <div className="bg-slate-950 border border-slate-800 rounded-lg p-2.5">
-          <span className="text-[10px] text-slate-400 font-mono block">AERATION DO</span>
+        <div className="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg p-2.5">
+          <span className="text-[10px] text-slate-500 dark:text-slate-400 font-mono block">AERATION DO</span>
           <div className="flex items-baseline gap-1 mt-1">
-            <span className={`text-base font-bold font-mono ${liveDo < 2.0 ? 'text-rose-400' : 'text-emerald-400'}`}>
+            <span className={`text-base font-bold font-mono ${liveDo < 2.0 ? 'text-rose-600 dark:text-rose-400' : 'text-emerald-600 dark:text-emerald-400'}`}>
               {liveDo.toFixed(2)}
             </span>
-            <span className="text-[10px] text-slate-500 font-mono">mg/L</span>
+            <span className="text-[10px] text-slate-400 dark:text-slate-500 font-mono">mg/L</span>
           </div>
-          <span className={`text-[10px] font-mono mt-0.5 block ${liveDo < 2.0 ? 'text-rose-400' : 'text-emerald-400'}`}>
+          <span className={`text-[10px] font-mono mt-0.5 block ${liveDo < 2.0 ? 'text-rose-600 dark:text-rose-400' : 'text-emerald-600 dark:text-emerald-400'}`}>
             {liveDo < 2.0 ? 'CRITICAL LOW' : 'SETPOINT OK'}
           </span>
         </div>
 
         {/* Gauge 5: Discharged BOD */}
-        <div className="bg-slate-950 border border-slate-800 rounded-lg p-2.5">
-          <span className="text-[10px] text-slate-400 font-mono block">EFFLUENT BOD</span>
+        <div className="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg p-2.5">
+          <span className="text-[10px] text-slate-500 dark:text-slate-400 font-mono block">EFFLUENT BOD</span>
           <div className="flex items-baseline gap-1 mt-1">
-            <span className={`text-base font-bold font-mono ${effBod > 30 ? 'text-rose-400' : 'text-emerald-400'}`}>
+            <span className={`text-base font-bold font-mono ${effBod > 30 ? 'text-rose-600 dark:text-rose-400' : 'text-emerald-600 dark:text-emerald-400'}`}>
               {effBod.toFixed(1)}
             </span>
-            <span className="text-[10px] text-slate-500 font-mono">mg/L</span>
+            <span className="text-[10px] text-slate-400 dark:text-slate-500 font-mono">mg/L</span>
           </div>
-          <span className={`text-[10px] font-mono mt-0.5 block ${effBod > 30 ? 'text-rose-400' : 'text-emerald-400'}`}>
+          <span className={`text-[10px] font-mono mt-0.5 block ${effBod > 30 ? 'text-rose-600 dark:text-rose-400' : 'text-emerald-600 dark:text-emerald-400'}`}>
             {effBod > 30 ? 'EXCEEDED' : 'PASS (≤30)'}
           </span>
         </div>
 
         {/* Gauge 6: Ingestion Latency */}
-        <div className="bg-slate-950 border border-slate-800 rounded-lg p-2.5">
-          <span className="text-[10px] text-slate-400 font-mono block">LATENCY</span>
+        <div className="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg p-2.5">
+          <span className="text-[10px] text-slate-500 dark:text-slate-400 font-mono block">LATENCY</span>
           <div className="flex items-baseline gap-1 mt-1">
-            <span className="text-base font-bold font-mono text-sky-400">8.4</span>
-            <span className="text-[10px] text-slate-500 font-mono">ms</span>
+            <span className="text-base font-bold font-mono text-sky-600 dark:text-sky-400">8.4</span>
+            <span className="text-[10px] text-slate-400 dark:text-slate-500 font-mono">ms</span>
           </div>
-          <span className="text-[10px] text-sky-400 font-mono mt-0.5 block">SHA-256 HMAC</span>
+          <span className="text-[10px] text-sky-600 dark:text-sky-400 font-mono mt-0.5 block">SHA-256 HMAC</span>
         </div>
 
         {/* Gauge 7: Validation Pass Rate */}
-        <div className="bg-slate-950 border border-slate-800 rounded-lg p-2.5">
-          <span className="text-[10px] text-slate-400 font-mono block">PASS RATE</span>
+        <div className="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg p-2.5">
+          <span className="text-[10px] text-slate-500 dark:text-slate-400 font-mono block">PASS RATE</span>
           <div className="flex items-baseline gap-1 mt-1">
-            <span className={`text-base font-bold font-mono ${isAnomaly ? 'text-amber-400' : 'text-emerald-400'}`}>
+            <span className={`text-base font-bold font-mono ${isAnomaly ? 'text-amber-600 dark:text-amber-400' : 'text-emerald-600 dark:text-emerald-400'}`}>
               {isAnomaly ? '81.8%' : '99.8%'}
             </span>
           </div>
-          <span className={`text-[10px] font-mono mt-0.5 block ${isAnomaly ? 'text-amber-400' : 'text-emerald-400'}`}>
+          <span className={`text-[10px] font-mono mt-0.5 block ${isAnomaly ? 'text-amber-600 dark:text-amber-400' : 'text-emerald-600 dark:text-emerald-400'}`}>
             {isAnomaly ? 'OUTLIER FLAGGED' : 'OPTIMAL'}
           </span>
         </div>
 
         {/* Gauge 8: State Version */}
-        <div className="bg-slate-950 border border-slate-800 rounded-lg p-2.5">
-          <span className="text-[10px] text-slate-400 font-mono block">STATE VERSION</span>
+        <div className="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg p-2.5">
+          <span className="text-[10px] text-slate-500 dark:text-slate-400 font-mono block">STATE VERSION</span>
           <div className="flex items-baseline gap-1 mt-1">
-            <span className="text-base font-bold font-mono text-indigo-400">v{stateVersion}</span>
+            <span className="text-base font-bold font-mono text-indigo-600 dark:text-indigo-400">v{stateVersion}</span>
           </div>
-          <span className="text-[10px] text-indigo-400 font-mono mt-0.5 block">MONOTONIC</span>
+          <span className="text-[10px] text-indigo-600 dark:text-indigo-400 font-mono mt-0.5 block">MONOTONIC</span>
         </div>
       </div>
 

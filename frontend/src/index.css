@@ -4,6 +4,19 @@
 
 @layer base {
   :root {
+    --color-scada-bg: #F8FAFC;
+    --color-scada-card: #FFFFFF;
+    --color-scada-surface: #F1F5F9;
+    --color-scada-elevated: #E2E8F0;
+    --color-scada-border: #E2E8F0;
+    --color-scada-border-light: #CBD5E1;
+    --color-brand-cyan: #0284C7;
+    --color-status-valid: #10B981;
+    --color-status-suspect: #F59E0B;
+    --color-status-invalid: #EF4444;
+  }
+
+  .dark {
     --color-scada-bg: #0B0F17;
     --color-scada-card: #111827;
     --color-scada-surface: #161F30;
@@ -17,9 +30,14 @@
   }
 
   body {
-    @apply antialiased bg-[#0B0F17] text-slate-100 font-sans;
+    @apply antialiased bg-slate-100 dark:bg-[#0B0F17] text-slate-900 dark:text-slate-100 font-sans;
+    color-scheme: light;
+  }
+
+  html.dark body,
+  body.dark,
+  .dark body {
     color-scheme: dark;
-    background-color: #0B0F17;
   }
 
   /* Custom industrial scrollbars */
@@ -29,15 +47,27 @@
   }
 
   ::-webkit-scrollbar-track {
+    background: #F1F5F9;
+  }
+
+  .dark ::-webkit-scrollbar-track {
     background: #0B0F17;
   }
 
   ::-webkit-scrollbar-thumb {
-    background: #1F293D;
+    background: #CBD5E1;
     border-radius: 3px;
   }
 
+  .dark ::-webkit-scrollbar-thumb {
+    background: #1F293D;
+  }
+
   ::-webkit-scrollbar-thumb:hover {
+    background: #94A3B8;
+  }
+
+  .dark ::-webkit-scrollbar-thumb:hover {
     background: #334155;
   }
 }
@@ -45,26 +75,26 @@
 @layer components {
   /* Industrial SCADA Card */
   .scada-card {
-    @apply bg-[#111827] border border-[#1F293D] rounded-xl shadow-scada-card transition-all duration-200;
+    @apply bg-white dark:bg-[#111827] border border-slate-200 dark:border-[#1F293D] rounded-xl shadow-sm dark:shadow-scada-card transition-all duration-200;
   }
 
   .scada-card-hover {
-    @apply scada-card hover:border-slate-700 hover:shadow-scada-glow;
+    @apply scada-card hover:border-slate-300 dark:hover:border-slate-700 hover:shadow-md dark:hover:shadow-scada-glow;
   }
 
   /* Dense Technical Filter Rail */
   .scada-filter-bar {
-    @apply bg-[#111827] border border-[#1F293D] rounded-xl p-3 shadow-sm flex flex-wrap items-center gap-3 text-xs;
+    @apply bg-white dark:bg-[#111827] border border-slate-200 dark:border-[#1F293D] rounded-xl p-3 shadow-sm flex flex-wrap items-center gap-3 text-xs text-slate-700 dark:text-slate-300;
   }
 
   /* SCADA Input Fields */
   .scada-input {
-    @apply bg-[#0B0F17] border border-[#1F293D] rounded-lg px-3 py-1.5 text-xs font-mono text-slate-200 placeholder:text-slate-500 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/30 transition-all;
+    @apply bg-slate-50 dark:bg-[#0B0F17] border border-slate-300 dark:border-[#1F293D] rounded-lg px-3 py-1.5 text-xs font-mono text-slate-800 dark:text-slate-200 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/30 transition-all;
   }
 
   /* SCADA Select Fields */
   .scada-select {
-    @apply bg-[#0B0F17] border border-[#1F293D] rounded-lg px-2.5 py-1.5 text-xs font-mono text-slate-200 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/30 transition-all;
+    @apply bg-slate-50 dark:bg-[#0B0F17] border border-slate-300 dark:border-[#1F293D] rounded-lg px-2.5 py-1.5 text-xs font-mono text-slate-800 dark:text-slate-200 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/30 transition-all;
   }
 
   /* SCADA Action Buttons */
@@ -73,24 +103,24 @@
   }
 
   .scada-btn-secondary {
-    @apply inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-[#1E293B] hover:bg-slate-700 border border-[#334155] text-slate-200 rounded-lg text-xs font-medium shadow-sm transition-all focus:outline-none focus:ring-1 focus:ring-slate-400 disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-[#1E293B] dark:hover:bg-slate-700 border border-slate-300 dark:border-[#334155] text-slate-700 dark:text-slate-200 rounded-lg text-xs font-medium shadow-sm transition-all focus:outline-none focus:ring-1 focus:ring-slate-400 disabled:opacity-50 disabled:cursor-not-allowed;
   }
 
   .scada-btn-danger {
-    @apply inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-rose-950/80 hover:bg-rose-900 border border-rose-800 text-rose-300 rounded-lg text-xs font-medium shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-rose-500 disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 dark:bg-rose-950/80 dark:hover:bg-rose-900 dark:border-rose-800 dark:text-rose-300 rounded-lg text-xs font-medium shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-rose-500 disabled:opacity-50 disabled:cursor-not-allowed;
   }
 
   /* Industrial Data Grid Table */
   .scada-table-container {
-    @apply bg-[#111827] border border-[#1F293D] rounded-xl overflow-hidden shadow-scada-card;
+    @apply bg-white dark:bg-[#111827] border border-slate-200 dark:border-[#1F293D] rounded-xl overflow-hidden shadow-sm dark:shadow-scada-card;
   }
 
   .scada-table-header {
-    @apply bg-[#161F30] border-b border-[#1F293D] text-[10px] font-mono uppercase tracking-wider text-slate-400 py-3 px-4 text-left;
+    @apply bg-slate-50 dark:bg-[#161F30] border-b border-slate-200 dark:border-[#1F293D] text-[10px] font-mono uppercase tracking-wider text-slate-600 dark:text-slate-400 py-3 px-4 text-left;
   }
 
   .scada-table-row {
-    @apply border-b border-[#1F293D]/60 hover:bg-slate-800/40 transition-colors text-xs font-mono text-slate-300;
+    @apply border-b border-slate-100 dark:border-[#1F293D]/60 hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors text-xs font-mono text-slate-700 dark:text-slate-300;
   }
 
   .scada-table-cell {

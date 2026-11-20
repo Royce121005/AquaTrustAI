@@ -1,16 +1,14 @@
 import React, { useState } from 'react';
-import { useSearchParams, useNavigate, Link } from 'react-router-dom';
+import { useSearchParams, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { finalizeTreatmentRecordApi } from '../api/treatmentRecords';
 import { listFacilitiesApi } from '../api/facilities';
 import { useAuth } from '../context/AuthContext';
-import { ApiClientError } from '../api/client';
 import { ErrorState } from '../components/common/States';
-import { Stamp, Shield, AlertTriangle, ArrowRight, CheckCircle2, Clock, Calendar } from 'lucide-react';
+import { Stamp, CheckCircle2 } from 'lucide-react';
 
 export const FinalizationPage: React.FC = () => {
   const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { user } = useAuth();
 
@@ -56,9 +54,9 @@ export const FinalizationPage: React.FC = () => {
 
   if (!isOperatorOrAdmin) {
     return (
-      <div className="p-8 bg-amber-950/40 border border-amber-800 rounded-xl text-amber-200">
+      <div className="p-8 bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-800 rounded-xl text-amber-800 dark:text-amber-200">
         <h2 className="text-sm font-semibold uppercase tracking-wide font-mono">Unauthorized Role</h2>
-        <p className="text-xs mt-1 text-amber-300/90 leading-relaxed font-mono">
+        <p className="text-xs mt-1 text-amber-700 dark:text-amber-300/90 leading-relaxed font-mono">
           Only operators and administrators hold backend authority to aggregate and finalize treatment records.
         </p>
       </div>
@@ -67,43 +65,18 @@ export const FinalizationPage: React.FC = () => {
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
-      <div className="pb-4 border-b border-[#1F293D]">
-        <div className="flex items-center gap-2 mb-1">
-          <span className="text-[10px] font-mono uppercase tracking-widest text-cyan-400 font-semibold bg-cyan-950/60 border border-cyan-800/80 px-2 py-0.5 rounded">
-            Cryptographic Authority
-          </span>
-        </div>
-        <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white font-mono flex items-center gap-2.5">
-          <Stamp className="w-5 h-5 text-cyan-400" />
+      <div className="pb-4 border-b border-slate-200 dark:border-[#1F293D]">
+        <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white font-mono flex items-center gap-2.5">
+          <Stamp className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
           Aggregate &amp; Finalize Treatment Window
         </h1>
-        <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-          Backend authority boundary: aggregates telemetry window, computes atc-v1 canonical SHA-256 hash, issues ES256 digital signature, and triggers DLT anchor.
-        </p>
-      </div>
-
-      {/* Backend Policy Requirements Notice */}
-      <div className="scada-card p-5 text-xs space-y-2">
-        <div className="flex items-center gap-2 text-cyan-400 font-semibold uppercase tracking-wide font-mono">
-          <Shield className="w-4 h-4" />
-          Backend Deterministic Finalization Invariants
-        </div>
-        <p className="text-slate-400 leading-relaxed">
-          The backend enforces strict state transitions. Finalization is processed exclusively on the server and will be rejected with HTTP 422 if:
-        </p>
-        <ul className="list-disc pl-5 space-y-1.5 text-slate-300 font-mono text-[11px]">
-          <li>Quality status != valid (telemetry must pass deterministic validation)</li>
-          <li>Anomaly status == insufficient_data (AI inference engine must have sufficient window steps)</li>
-          <li>Compliance status not evaluable</li>
-          <li>Time window contains zero ingested observations</li>
-        </ul>
       </div>
 
       {/* Finalization Request Form */}
       <div className="scada-card p-6">
         <form onSubmit={handleSubmit} className="space-y-4 font-mono text-xs">
           <div>
-            <label className="block font-semibold text-slate-300 mb-1.5">
+            <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
               Facility Identifier (UUID or code)
             </label>
             {facilities && facilities.length > 0 ? (
@@ -131,7 +104,7 @@ export const FinalizationPage: React.FC = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block font-semibold text-slate-300 mb-1.5">
+              <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
                 Period Start (RFC 3339 UTC)
               </label>
               <input
@@ -145,7 +118,7 @@ export const FinalizationPage: React.FC = () => {
             </div>
 
             <div>
-              <label className="block font-semibold text-slate-300 mb-1.5">
+              <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
                 Period End (RFC 3339 UTC)
               </label>
               <input
@@ -160,7 +133,7 @@ export const FinalizationPage: React.FC = () => {
           </div>
 
           <div>
-            <label className="block font-semibold text-slate-300 mb-1.5">
+            <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
               Signing Key Identifier (ECDSA P-256)
             </label>
             <input
@@ -179,7 +152,7 @@ export const FinalizationPage: React.FC = () => {
             <button
               type="submit"
               disabled={finalizeMutation.isPending}
-              className="w-full py-3 px-4 bg-cyan-600 hover:bg-cyan-500 text-white rounded-lg text-xs font-semibold shadow-sm transition-colors flex items-center justify-center gap-2 disabled:opacity-50 font-mono"
+              className="w-full py-3 px-4 bg-cyan-600 hover:bg-cyan-500 text-white rounded-lg text-xs font-semibold shadow-sm transition-colors flex items-center justify-center gap-2 disabled:opacity-50 font-mono cursor-pointer"
             >
               {finalizeMutation.isPending ? (
                 <>
@@ -204,7 +177,7 @@ export const FinalizationPage: React.FC = () => {
             title="Finalization Rejected by Backend Engine"
             error={finalizeMutation.error}
           />
-          <div className="p-3 bg-[#0B0F17] border border-[#1F293D] rounded-xl text-xs text-slate-400 font-mono">
+          <div className="p-3 bg-slate-50 dark:bg-[#0B0F17] border border-slate-200 dark:border-[#1F293D] rounded-xl text-xs text-slate-600 dark:text-slate-400 font-mono">
             Finalization state preserved. The frontend does not locally alter record state when rejected.
           </div>
         </div>
@@ -212,42 +185,42 @@ export const FinalizationPage: React.FC = () => {
 
       {/* Finalization Success Result */}
       {finalizedRecord && (
-        <div className="bg-emerald-950/40 border border-emerald-800 rounded-xl p-6 shadow-scada-card space-y-4">
-          <div className="flex items-center gap-2 text-emerald-400 font-bold text-sm font-mono">
-            <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+        <div className="bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-300 dark:border-emerald-800 rounded-xl p-6 shadow-sm dark:shadow-scada-card space-y-4">
+          <div className="flex items-center gap-2 text-emerald-700 dark:text-emerald-400 font-bold text-sm font-mono">
+            <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
             Finalization Successfully Executed by Backend
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs font-mono pt-2">
-            <div className="p-3 bg-[#0B0F17]/60 border border-[#1F293D] rounded-lg">
-              <span className="text-slate-400 text-[10px] uppercase block">Record ID</span>
-              <span className="font-semibold text-cyan-400 select-all block mt-0.5 truncate">
+            <div className="p-3 bg-white dark:bg-[#0B0F17]/60 border border-emerald-200 dark:border-[#1F293D] rounded-lg">
+              <span className="text-slate-500 dark:text-slate-400 text-[10px] uppercase block">Record ID</span>
+              <span className="font-semibold text-cyan-700 dark:text-cyan-400 select-all block mt-0.5 truncate">
                 {finalizedRecord.record_id}
               </span>
             </div>
-            <div className="p-3 bg-[#0B0F17]/60 border border-[#1F293D] rounded-lg">
-              <span className="text-slate-400 text-[10px] uppercase block">Version</span>
-              <span className="font-semibold text-white block mt-0.5">
+            <div className="p-3 bg-white dark:bg-[#0B0F17]/60 border border-emerald-200 dark:border-[#1F293D] rounded-lg">
+              <span className="text-slate-500 dark:text-slate-400 text-[10px] uppercase block">Version</span>
+              <span className="font-semibold text-slate-900 dark:text-white block mt-0.5">
                 v{finalizedRecord.record_version}
               </span>
             </div>
-            <div className="p-3 bg-[#0B0F17]/60 border border-[#1F293D] rounded-lg">
-              <span className="text-slate-400 text-[10px] uppercase block">Compliance Verdict</span>
-              <span className="font-semibold text-emerald-400 block mt-0.5">
+            <div className="p-3 bg-white dark:bg-[#0B0F17]/60 border border-emerald-200 dark:border-[#1F293D] rounded-lg">
+              <span className="text-slate-500 dark:text-slate-400 text-[10px] uppercase block">Compliance Verdict</span>
+              <span className="font-semibold text-emerald-700 dark:text-emerald-400 block mt-0.5">
                 {finalizedRecord.compliance_status}
               </span>
             </div>
-            <div className="p-3 bg-[#0B0F17]/60 border border-[#1F293D] rounded-lg">
-              <span className="text-slate-400 text-[10px] uppercase block">DLT Anchor Status</span>
-              <span className="font-semibold text-slate-200 block mt-0.5">
+            <div className="p-3 bg-white dark:bg-[#0B0F17]/60 border border-emerald-200 dark:border-[#1F293D] rounded-lg">
+              <span className="text-slate-500 dark:text-slate-400 text-[10px] uppercase block">DLT Anchor Status</span>
+              <span className="font-semibold text-slate-800 dark:text-slate-200 block mt-0.5">
                 {finalizedRecord.anchor_status}
               </span>
             </div>
           </div>
 
           <div className="text-xs font-mono">
-            <span className="text-slate-400 text-[10px] uppercase block font-semibold">Canonical Hash (SHA-256):</span>
-            <div className="p-3 bg-[#070B12] border border-emerald-900/60 text-emerald-300 rounded-lg mt-1 break-all select-all font-bold">
+            <span className="text-slate-600 dark:text-slate-400 text-[10px] uppercase block font-semibold">Canonical Hash (SHA-256):</span>
+            <div className="p-3 bg-slate-50 dark:bg-[#070B12] border border-emerald-300 dark:border-emerald-900/60 text-emerald-800 dark:text-emerald-300 rounded-lg mt-1 break-all select-all font-bold">
               {finalizedRecord.canonical_hash}
             </div>
           </div>
@@ -255,13 +228,13 @@ export const FinalizationPage: React.FC = () => {
           <div className="flex items-center gap-3 pt-2">
             <Link
               to={`/treatment-records/${finalizedRecord.record_id}`}
-              className="px-3.5 py-1.5 bg-cyan-600 hover:bg-cyan-500 text-white rounded-lg text-xs font-semibold shadow-sm transition-colors font-mono"
+              className="px-3.5 py-1.5 bg-cyan-600 hover:bg-cyan-500 text-white rounded-lg text-xs font-semibold shadow-sm transition-colors font-mono cursor-pointer"
             >
               Inspect Record Detail &rarr;
             </Link>
             <Link
               to={`/verification?recordId=${finalizedRecord.record_id}`}
-              className="px-3.5 py-1.5 bg-emerald-700 hover:bg-emerald-600 text-white rounded-lg text-xs font-semibold shadow-sm transition-colors font-mono"
+              className="px-3.5 py-1.5 bg-emerald-700 hover:bg-emerald-600 text-white rounded-lg text-xs font-semibold shadow-sm transition-colors font-mono cursor-pointer"
             >
               Verify 4-Stage Proof &rarr;
             </Link>

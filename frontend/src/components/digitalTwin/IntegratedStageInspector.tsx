@@ -265,29 +265,29 @@ export const IntegratedStageInspector: React.FC<IntegratedStageInspectorProps> =
 
   return (
     <div
-      className={`w-full bg-[#0b1329] border border-slate-800 rounded-xl shadow-2xl text-slate-200 select-none overflow-hidden transition-all duration-300 ${
+      className={`w-full bg-white dark:bg-[#0b1329] border border-slate-200 dark:border-slate-800 rounded-xl shadow-lg dark:shadow-2xl text-slate-800 dark:text-slate-200 select-none overflow-hidden transition-all duration-300 ${
         isBelow ? 'p-4' : 'p-3.5 h-full flex flex-col justify-between'
       }`}
     >
       <div>
         {/* Top Header Ribbon with Stage Tabs & Action Controls */}
-        <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-800">
+        <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-200 dark:border-slate-800">
           <div className="flex items-center gap-3 flex-wrap">
-            <h2 className="text-xs sm:text-sm font-bold text-slate-100 tracking-wide flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-sky-400" />
+            <h2 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-slate-100 tracking-wide flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-sky-500 dark:bg-sky-400" />
               {config.title}
             </h2>
 
             {/* Quick Stage Switcher Pills */}
-            <div className="hidden sm:flex items-center gap-1 bg-slate-950/80 p-0.5 rounded-lg border border-slate-800">
+            <div className="hidden sm:flex items-center gap-1 bg-slate-100 dark:bg-slate-950/80 p-0.5 rounded-lg border border-slate-200 dark:border-slate-800">
               {STAGES.map((s) => (
                 <button
                   key={s.id}
                   onClick={() => onSelectStage?.(s.id)}
                   className={`px-2 py-0.5 text-[10px] font-mono rounded font-semibold transition-colors ${
                     stageId === s.id
-                      ? 'bg-sky-700 text-white shadow-sm'
-                      : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+                      ? 'bg-sky-600 text-white shadow-sm'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-200/60 dark:hover:bg-slate-800/60'
                   }`}
                 >
                   {s.label}
@@ -301,17 +301,17 @@ export const IntegratedStageInspector: React.FC<IntegratedStageInspectorProps> =
             {onTogglePlacement && (
               <button
                 onClick={() => onTogglePlacement(isBelow ? 'drawer' : 'below')}
-                className="flex items-center gap-1.5 px-2.5 py-1 rounded bg-slate-900 hover:bg-slate-800 border border-slate-700/80 text-[11px] font-mono text-slate-300 hover:text-white transition-colors"
+                className="flex items-center gap-1.5 px-2.5 py-1 rounded bg-slate-100 hover:bg-slate-200 dark:bg-slate-900 dark:hover:bg-slate-800 border border-slate-300 dark:border-slate-700/80 text-[11px] font-mono text-slate-700 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white transition-colors"
                 title={isBelow ? 'Switch to Slide Drawer Overlay' : 'Dock Inspector Below Canvas'}
               >
                 {isBelow ? (
                   <>
-                    <PanelRight className="w-3.5 h-3.5 text-sky-400" />
+                    <PanelRight className="w-3.5 h-3.5 text-sky-500 dark:text-sky-400" />
                     <span className="hidden md:inline">Slide Drawer</span>
                   </>
                 ) : (
                   <>
-                    <ChevronDown className="w-3.5 h-3.5 text-sky-400" />
+                    <ChevronDown className="w-3.5 h-3.5 text-sky-500 dark:text-sky-400" />
                     <span className="hidden md:inline">Dock Below</span>
                   </>
                 )}
@@ -321,7 +321,7 @@ export const IntegratedStageInspector: React.FC<IntegratedStageInspectorProps> =
             {/* Close Button */}
             <button
               onClick={onClose}
-              className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded transition-colors"
+              className="p-1.5 text-slate-500 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-800 rounded transition-colors"
               title="Close Stage Inspector"
               aria-label="Close Stage Inspector"
             >
@@ -331,15 +331,15 @@ export const IntegratedStageInspector: React.FC<IntegratedStageInspectorProps> =
         </div>
 
         {/* Sub-Tabs: Overview, Instruments, Trends, Events */}
-        <div className="flex items-center gap-1 mt-2.5 mb-3.5 border-b border-slate-800/80 text-[11px] font-medium">
+        <div className="flex items-center gap-1 mt-2.5 mb-3.5 border-b border-slate-200 dark:border-slate-800/80 text-[11px] font-medium">
           {(['overview', 'instruments', 'trends', 'events'] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
               className={`px-3 py-1.5 capitalize rounded-t transition-colors ${
                 activeTab === tab
-                  ? 'bg-sky-600/30 text-sky-400 border-b-2 border-sky-500 font-bold'
-                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/40'
+                  ? 'bg-sky-50 dark:bg-sky-600/30 text-sky-600 dark:text-sky-400 border-b-2 border-sky-500 font-bold'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/40'
               }`}
             >
               {tab}
@@ -358,23 +358,23 @@ export const IntegratedStageInspector: React.FC<IntegratedStageInspectorProps> =
         {activeTab === 'overview' && (
           <div className={isBelow ? 'space-y-4' : 'space-y-3'}>
             {/* Equipment Status Badge Card */}
-            <div className="bg-[#070d1e] border border-slate-800 rounded-lg p-3 flex items-center justify-between">
+            <div className="bg-slate-50 dark:bg-[#070d1e] border border-slate-200 dark:border-slate-800 rounded-lg p-3 flex items-center justify-between">
               <div className="flex items-center gap-2.5">
-                <div className="p-2 rounded bg-sky-950 border border-sky-800 text-sky-400">
+                <div className="p-2 rounded bg-sky-100 dark:bg-sky-950 border border-sky-300 dark:border-sky-800 text-sky-600 dark:text-sky-400">
                   <Cpu className="w-4 h-4" />
                 </div>
                 <div>
-                  <div className="text-xs font-bold text-slate-100">{config.equipmentName}</div>
-                  <div className="text-[10px] font-mono text-slate-400">{config.equipmentTag}</div>
+                  <div className="text-xs font-bold text-slate-900 dark:text-slate-100">{config.equipmentName}</div>
+                  <div className="text-[10px] font-mono text-slate-500 dark:text-slate-400">{config.equipmentTag}</div>
                 </div>
               </div>
               <span
                 className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase ${
                   stageStatus === 'ALARM'
-                    ? 'bg-rose-950 text-rose-400 border border-rose-800'
+                    ? 'bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-400 border border-rose-300 dark:border-rose-800'
                     : stageStatus === 'WARNING'
-                    ? 'bg-amber-950 text-amber-400 border border-amber-800'
-                    : 'bg-emerald-950 text-emerald-400 border border-emerald-800'
+                    ? 'bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-400 border border-amber-300 dark:border-amber-800'
+                    : 'bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-800'
                 }`}
               >
                 {stageStatus}
@@ -386,18 +386,18 @@ export const IntegratedStageInspector: React.FC<IntegratedStageInspectorProps> =
               {config.params.map((p, idx) => (
                 <div
                   key={idx}
-                  className={`bg-[#070d1e]/80 border border-slate-800/80 rounded-lg p-2.5 flex items-center justify-between text-xs hover:border-slate-700 transition-colors ${
+                  className={`bg-slate-50 dark:bg-[#070d1e]/80 border border-slate-200 dark:border-slate-800/80 rounded-lg p-2.5 flex items-center justify-between text-xs hover:border-slate-300 dark:hover:border-slate-700 transition-colors ${
                     isBelow ? 'flex-col items-start gap-1' : ''
                   }`}
                 >
-                  <span className="flex items-center gap-2 text-slate-400 text-[11px]">
+                  <span className="flex items-center gap-2 text-slate-600 dark:text-slate-400 text-[11px]">
                     <span
                       className="w-1.5 h-1.5 rounded-full shrink-0"
                       style={{ backgroundColor: p.dotColor || '#10b981' }}
                     />
                     {p.label}
                   </span>
-                  <span className="font-mono font-bold text-slate-100 text-xs sm:text-sm">
+                  <span className="font-mono font-bold text-slate-900 dark:text-slate-100 text-xs sm:text-sm">
                     {p.value}
                   </span>
                 </div>
@@ -405,10 +405,10 @@ export const IntegratedStageInspector: React.FC<IntegratedStageInspectorProps> =
             </div>
 
             {/* 24-Hour Trend Chart with Setpoint Marker */}
-            <div className="bg-[#070d1e] border border-slate-800 rounded-lg p-3">
+            <div className="bg-slate-50 dark:bg-[#070d1e] border border-slate-200 dark:border-slate-800 rounded-lg p-3">
               <div className="flex items-center justify-between text-[11px] mb-2 font-mono">
-                <span className="text-slate-300 font-semibold">{config.trendTitle}</span>
-                <span className="text-sky-400 text-[10px] font-semibold">{config.trendSetpoint}</span>
+                <span className="text-slate-800 dark:text-slate-300 font-semibold">{config.trendTitle}</span>
+                <span className="text-sky-600 dark:text-sky-400 text-[10px] font-semibold">{config.trendSetpoint}</span>
               </div>
 
               <div className="flex gap-2">
@@ -422,9 +422,9 @@ export const IntegratedStageInspector: React.FC<IntegratedStageInspectorProps> =
                 <div className="flex-1 h-20 relative">
                   <svg viewBox="0 0 250 65" className="w-full h-full" preserveAspectRatio="none">
                     {/* Horizontal reference grid lines */}
-                    <line x1="0" y1="5" x2="250" y2="5" stroke="#1e293b" strokeWidth="0.8" opacity="0.6" />
+                    <line x1="0" y1="5" x2="250" y2="5" stroke="currentColor" className="text-slate-200 dark:text-slate-800" strokeWidth="0.8" opacity="0.6" />
                     <line x1="0" y1="32" x2="250" y2="32" stroke="#38bdf8" strokeWidth="0.8" strokeDasharray="3 3" opacity="0.6" />
-                    <line x1="0" y1="60" x2="250" y2="60" stroke="#1e293b" strokeWidth="0.8" opacity="0.6" />
+                    <line x1="0" y1="60" x2="250" y2="60" stroke="currentColor" className="text-slate-200 dark:text-slate-800" strokeWidth="0.8" opacity="0.6" />
 
                     {/* Shaded Area fill under trend line */}
                     <path
@@ -459,29 +459,29 @@ export const IntegratedStageInspector: React.FC<IntegratedStageInspectorProps> =
         {/* ========================================================= */}
         {activeTab === 'instruments' && (
           <div className="space-y-2 max-h-[320px] overflow-y-auto pr-1">
-            <div className="text-[11px] font-mono text-slate-400 mb-2">
+            <div className="text-[11px] font-mono text-slate-600 dark:text-slate-400 mb-2">
               Calibrated field instrumentation bound to authoritative SCADA pipeline:
             </div>
             {config.instruments.map((inst, idx) => (
               <div
                 key={idx}
-                className="bg-[#070d1e] border border-slate-800 rounded-lg p-2.5 flex items-center justify-between gap-3 text-xs"
+                className="bg-slate-50 dark:bg-[#070d1e] border border-slate-200 dark:border-slate-800 rounded-lg p-2.5 flex items-center justify-between gap-3 text-xs"
               >
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
-                    <span className="font-mono font-bold text-sky-400 text-xs">{inst.tag}</span>
-                    <span className="text-[10px] text-slate-400 truncate">{inst.name}</span>
+                    <span className="font-mono font-bold text-sky-600 dark:text-sky-400 text-xs">{inst.tag}</span>
+                    <span className="text-[10px] text-slate-600 dark:text-slate-400 truncate">{inst.name}</span>
                   </div>
                   <div className="text-[10px] font-mono text-slate-500 mt-0.5">
-                    {inst.targetNorm} • <span className="text-emerald-400">{inst.quality}</span>
+                    {inst.targetNorm} • <span className="text-emerald-600 dark:text-emerald-400">{inst.quality}</span>
                   </div>
                 </div>
                 <div className="text-right shrink-0">
-                  <div className="font-mono font-bold text-slate-100 text-xs sm:text-sm">
+                  <div className="font-mono font-bold text-slate-900 dark:text-slate-100 text-xs sm:text-sm">
                     {inst.reading}
                   </div>
-                  <div className="flex items-center gap-1 justify-end text-[10px] text-emerald-400">
-                    <Check className="w-3 h-3 text-emerald-400" />
+                  <div className="flex items-center gap-1 justify-end text-[10px] text-emerald-600 dark:text-emerald-400">
+                    <Check className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
                     <span>Calibrated</span>
                   </div>
                 </div>
@@ -495,12 +495,12 @@ export const IntegratedStageInspector: React.FC<IntegratedStageInspectorProps> =
         {/* ========================================================= */}
         {activeTab === 'trends' && (
           <div className="space-y-3">
-            <div className="bg-[#070d1e] border border-slate-800 rounded-lg p-3">
+            <div className="bg-slate-50 dark:bg-[#070d1e] border border-slate-200 dark:border-slate-800 rounded-lg p-3">
               <div className="flex items-center justify-between text-xs font-mono mb-2">
-                <span className="font-bold text-slate-200">{config.trendTitle}</span>
-                <span className="text-sky-400 text-[11px]">{config.trendStat}</span>
+                <span className="font-bold text-slate-900 dark:text-slate-200">{config.trendTitle}</span>
+                <span className="text-sky-600 dark:text-sky-400 text-[11px]">{config.trendStat}</span>
               </div>
-              <div className="text-[11px] font-mono text-slate-400 mb-2">
+              <div className="text-[11px] font-mono text-slate-600 dark:text-slate-400 mb-2">
                 High-frequency rolling 1Hz state telemetry points across operating day:
               </div>
 
@@ -508,9 +508,9 @@ export const IntegratedStageInspector: React.FC<IntegratedStageInspectorProps> =
               <div className="h-32 w-full relative">
                 <svg viewBox="0 0 350 90" className="w-full h-full" preserveAspectRatio="none">
                   {/* Grid Lines */}
-                  <line x1="0" y1="10" x2="350" y2="10" stroke="#1e293b" strokeWidth="0.8" />
+                  <line x1="0" y1="10" x2="350" y2="10" stroke="currentColor" className="text-slate-200 dark:text-slate-800" strokeWidth="0.8" />
                   <line x1="0" y1="45" x2="350" y2="45" stroke="#38bdf8" strokeWidth="0.8" strokeDasharray="4 4" opacity="0.7" />
-                  <line x1="0" y1="80" x2="350" y2="80" stroke="#1e293b" strokeWidth="0.8" />
+                  <line x1="0" y1="80" x2="350" y2="80" stroke="currentColor" className="text-slate-200 dark:text-slate-800" strokeWidth="0.8" />
 
                   {/* Gradient Area */}
                   <defs>
@@ -550,10 +550,10 @@ export const IntegratedStageInspector: React.FC<IntegratedStageInspectorProps> =
         {activeTab === 'events' && (
           <div className="space-y-2 max-h-[300px] overflow-y-auto pr-1">
             {stageAlarms.length === 0 ? (
-              <div className="bg-[#070d1e] border border-slate-800 rounded-lg p-6 text-center">
-                <CheckCircle2 className="w-8 h-8 text-emerald-400 mx-auto mb-2" />
-                <div className="text-xs font-bold text-slate-200">All Stage Parameters Nominal</div>
-                <div className="text-[11px] text-slate-400 mt-1">
+              <div className="bg-slate-50 dark:bg-[#070d1e] border border-slate-200 dark:border-slate-800 rounded-lg p-6 text-center">
+                <CheckCircle2 className="w-8 h-8 text-emerald-600 dark:text-emerald-400 mx-auto mb-2" />
+                <div className="text-xs font-bold text-slate-900 dark:text-slate-200">All Stage Parameters Nominal</div>
+                <div className="text-[11px] text-slate-600 dark:text-slate-400 mt-1">
                   Zero active alarms or compliance violations for {config.equipmentName}.
                 </div>
               </div>
@@ -561,25 +561,25 @@ export const IntegratedStageInspector: React.FC<IntegratedStageInspectorProps> =
               stageAlarms.map((alarm) => (
                 <div
                   key={alarm.alarm_id}
-                  className="bg-[#070d1e] border border-rose-900/60 rounded-lg p-3 space-y-2 text-xs"
+                  className="bg-rose-50/70 dark:bg-[#070d1e] border border-rose-200 dark:border-rose-900/60 rounded-lg p-3 space-y-2 text-xs"
                 >
                   <div className="flex items-center justify-between">
-                    <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase bg-rose-950 text-rose-400 border border-rose-800">
+                    <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-400 border border-rose-300 dark:border-rose-800">
                       {alarm.severity}
                     </span>
-                    <span className="text-[10px] font-mono text-slate-400">
+                    <span className="text-[10px] font-mono text-slate-500 dark:text-slate-400">
                       {new Date(alarm.last_updated_at).toLocaleTimeString([], { hour12: false })}
                     </span>
                   </div>
-                  <div className="text-slate-200 font-medium">{alarm.message}</div>
+                  <div className="text-slate-900 dark:text-slate-200 font-medium">{alarm.message}</div>
                   <div className="flex items-center justify-between pt-1">
-                    <span className="text-[10px] font-mono text-slate-400">
-                      Observed: <strong className="text-slate-200">{alarm.observed_value} {alarm.unit}</strong> | Threshold: {alarm.threshold_value} {alarm.unit}
+                    <span className="text-[10px] font-mono text-slate-600 dark:text-slate-400">
+                      Observed: <strong className="text-slate-900 dark:text-slate-200">{alarm.observed_value} {alarm.unit}</strong> | Threshold: {alarm.threshold_value} {alarm.unit}
                     </span>
                     {onAcknowledgeAlarm && (
                       <button
                         onClick={() => onAcknowledgeAlarm(alarm.alarm_id)}
-                        className="px-2.5 py-1 rounded bg-rose-900/80 hover:bg-rose-800 text-white font-mono text-[10px] font-bold transition-colors"
+                        className="px-2.5 py-1 rounded bg-rose-600 hover:bg-rose-500 text-white font-mono text-[10px] font-bold transition-colors"
                       >
                         Acknowledge
                       </button>
@@ -593,24 +593,24 @@ export const IntegratedStageInspector: React.FC<IntegratedStageInspectorProps> =
       </div>
 
       {/* Provenance & Metadata Footer */}
-      <div className={`border-t border-slate-800 pt-3 text-[10px] font-mono text-slate-400 ${isBelow ? 'mt-4 grid grid-cols-2 md:grid-cols-4 gap-2' : 'space-y-1.5'}`}>
+      <div className={`border-t border-slate-200 dark:border-slate-800 pt-3 text-[10px] font-mono text-slate-500 dark:text-slate-400 ${isBelow ? 'mt-4 grid grid-cols-2 md:grid-cols-4 gap-2' : 'space-y-1.5'}`}>
         <div className="flex items-center justify-between">
           <span>Last Update:</span>
-          <span className="text-slate-200">{timeStr} (1s ago)</span>
+          <span className="text-slate-800 dark:text-slate-200">{timeStr} (1s ago)</span>
         </div>
         <div className="flex items-center justify-between">
           <span>Quality:</span>
-          <span className="text-emerald-400 font-bold flex items-center gap-1">
-            <CheckCircle2 className="w-3 h-3 text-emerald-400" /> Valid & Accepted
+          <span className="text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1">
+            <CheckCircle2 className="w-3 h-3 text-emerald-600 dark:text-emerald-400" /> Valid & Accepted
           </span>
         </div>
         <div className="flex items-center justify-between">
           <span>State Version:</span>
-          <span className="text-sky-400 font-bold">v{stateVersion}</span>
+          <span className="text-sky-600 dark:text-sky-400 font-bold">v{stateVersion}</span>
         </div>
         <div className="flex items-center justify-between">
           <span>Provenance:</span>
-          <span className="text-sky-400 flex items-center gap-1 hover:underline cursor-pointer">
+          <span className="text-sky-600 dark:text-sky-400 flex items-center gap-1 hover:underline cursor-pointer">
             Stored & Anchored <ExternalLink className="w-2.5 h-2.5" />
           </span>
         </div>

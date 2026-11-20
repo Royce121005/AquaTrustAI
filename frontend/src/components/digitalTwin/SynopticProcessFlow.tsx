@@ -10,6 +10,7 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { TwinState, TwinAlarmEvent } from '../../types/digitalTwin';
+import { useTheme } from '../../context/ThemeContext';
 import {
   ScadaPipe,
   ScadaPump,
@@ -45,6 +46,7 @@ export const SynopticProcessFlow: React.FC<SynopticProcessFlowProps> = ({
   isLoading = false,
   isRunning,
 }) => {
+  const { isDark } = useTheme();
   const [zoom, setZoom] = useState<number>(1);
   const [pan, setPan] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState<boolean>(false);
@@ -183,7 +185,7 @@ export const SynopticProcessFlow: React.FC<SynopticProcessFlowProps> = ({
 
   return (
     <div
-      className="relative bg-slate-950 border border-slate-800 rounded-xl overflow-hidden shadow-2xl select-none focus:outline-none"
+      className="relative bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-sm dark:shadow-2xl select-none focus:outline-none"
       onKeyDown={handleKeyDown}
       tabIndex={0}
       role="region"
@@ -192,26 +194,26 @@ export const SynopticProcessFlow: React.FC<SynopticProcessFlowProps> = ({
       {/* Top SCADA Control Overlay */}
       <div className="absolute top-3 left-3 right-3 z-20 flex flex-wrap items-center justify-between gap-2 pointer-events-none">
         {/* Left: Mode Badge & State Version */}
-        <div className="flex items-center gap-2 pointer-events-auto bg-slate-900/90 backdrop-blur border border-slate-700/80 px-3 py-1.5 rounded-lg shadow-md text-xs">
+        <div className="flex items-center gap-2 pointer-events-auto bg-white/90 dark:bg-slate-900/90 backdrop-blur border border-slate-200 dark:border-slate-700/80 px-3 py-1.5 rounded-lg shadow-md text-xs">
           <span className="flex h-2 w-2 relative">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
             <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
           </span>
-          <span className="font-mono font-bold tracking-wider text-emerald-400 uppercase">
+          <span className="font-mono font-bold tracking-wider text-emerald-700 dark:text-emerald-400 uppercase">
             [{modeBadge}]
           </span>
-          <span className="text-slate-500">|</span>
-          <span className="text-slate-200 font-mono font-medium">
+          <span className="text-slate-400 dark:text-slate-500">|</span>
+          <span className="text-slate-700 dark:text-slate-200 font-mono font-medium">
             STP Process Synoptic Flow
           </span>
-          <span className="text-slate-500">|</span>
-          <span className="text-sky-400 font-mono font-semibold">
+          <span className="text-slate-400 dark:text-slate-500">|</span>
+          <span className="text-sky-600 dark:text-sky-400 font-mono font-semibold">
             v{twinState?.state_version ?? 1}
           </span>
         </div>
 
         {/* Right: Zoom / Pan & Animation Speed Controls */}
-        <div className="flex items-center gap-1.5 pointer-events-auto bg-slate-900/90 backdrop-blur border border-slate-700/80 p-1 rounded-lg shadow-md">
+        <div className="flex items-center gap-1.5 pointer-events-auto bg-white/90 dark:bg-slate-900/90 backdrop-blur border border-slate-200 dark:border-slate-700/80 p-1 rounded-lg shadow-md">
           {/* Hydraulic Flow Animation Speed Toggle */}
           <button
             onClick={() => {
@@ -221,53 +223,53 @@ export const SynopticProcessFlow: React.FC<SynopticProcessFlowProps> = ({
               else setAnimSpeed('normal');
             }}
             title={`Toggle Animation Speed (Current: ${animSpeed.toUpperCase()})`}
-            className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-mono font-medium rounded hover:bg-slate-800 text-slate-300 transition-colors"
+            className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-mono font-medium rounded hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 transition-colors"
           >
-            <span className="text-[10px] text-slate-400 font-mono uppercase tracking-wider">Flow Anim:</span>
+            <span className="text-[10px] text-slate-500 dark:text-slate-400 font-mono uppercase tracking-wider">Flow Anim:</span>
             {animSpeed === 'paused' ? (
               <>
-                <Pause className="w-3.5 h-3.5 text-amber-400" />
-                <span className="text-amber-400">0x Paused</span>
+                <Pause className="w-3.5 h-3.5 text-amber-500 dark:text-amber-400" />
+                <span className="text-amber-600 dark:text-amber-400">0x Paused</span>
               </>
             ) : animSpeed === 'fast' ? (
               <>
-                <FastForward className="w-3.5 h-3.5 text-sky-400" />
-                <span className="text-sky-400">2x Fast</span>
+                <FastForward className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />
+                <span className="text-sky-600 dark:text-sky-400">2x Fast</span>
               </>
             ) : animSpeed === 'slow' ? (
               <>
-                <Play className="w-3.5 h-3.5 text-slate-400" />
-                <span className="text-slate-400">0.5x Slow</span>
+                <Play className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
+                <span className="text-slate-600 dark:text-slate-400">0.5x Slow</span>
               </>
             ) : (
               <>
-                <Play className="w-3.5 h-3.5 text-emerald-400" />
-                <span className="text-emerald-400">1x Normal</span>
+                <Play className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                <span className="text-emerald-600 dark:text-emerald-400">1x Normal</span>
               </>
             )}
           </button>
 
-          <div className="h-4 w-px bg-slate-700" />
+          <div className="h-4 w-px bg-slate-300 dark:bg-slate-700" />
 
           {/* Zoom controls */}
           <button
             onClick={handleZoomIn}
             title="Zoom In (+)"
-            className="p-1 text-slate-300 hover:text-white hover:bg-slate-800 rounded transition-colors"
+            className="p-1 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded transition-colors"
           >
             <ZoomIn className="w-3.5 h-3.5" />
           </button>
           <button
             onClick={handleZoomOut}
             title="Zoom Out (-)"
-            className="p-1 text-slate-300 hover:text-white hover:bg-slate-800 rounded transition-colors"
+            className="p-1 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded transition-colors"
           >
             <ZoomOut className="w-3.5 h-3.5" />
           </button>
           <button
             onClick={handleResetView}
             title="Reset View & Scale"
-            className="p-1 text-slate-300 hover:text-white hover:bg-slate-800 rounded transition-colors"
+            className="p-1 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded transition-colors"
           >
             <Maximize2 className="w-3.5 h-3.5" />
           </button>
@@ -296,7 +298,13 @@ export const SynopticProcessFlow: React.FC<SynopticProcessFlowProps> = ({
           <defs>
             {/* Background Grid Pattern */}
             <pattern id="scadaGrid" width="30" height="30" patternUnits="userSpaceOnUse">
-              <path d="M 30 0 L 0 0 0 30" fill="none" stroke="#1e293b" strokeWidth="0.75" strokeOpacity="0.4" />
+              <path
+                d="M 30 0 L 0 0 0 30"
+                fill="none"
+                stroke={isDark ? "#1e293b" : "#CBD5E1"}
+                strokeWidth="0.75"
+                strokeOpacity="0.4"
+              />
             </pattern>
 
             {/* Glowing filter for neon outlines */}
@@ -360,18 +368,18 @@ export const SynopticProcessFlow: React.FC<SynopticProcessFlowProps> = ({
 
             {/* 3D Cylindrical Tank Body Directional Lighting Gradient */}
             <linearGradient id="gradClarifierBody" x1="0" y1="0" x2="1" y2="0">
-              <stop offset="0%" stopColor="#081426" />
-              <stop offset="25%" stopColor="#1e3a5f" />
-              <stop offset="55%" stopColor="#0f2238" />
-              <stop offset="85%" stopColor="#0a1628" />
-              <stop offset="100%" stopColor="#040812" />
+              <stop offset="0%" stopColor={isDark ? "#081426" : "#e2e8f0"} />
+              <stop offset="25%" stopColor={isDark ? "#1e3a5f" : "#f1f5f9"} />
+              <stop offset="55%" stopColor={isDark ? "#0f2238" : "#cbd5e1"} />
+              <stop offset="85%" stopColor={isDark ? "#0a1628" : "#94a3b8"} />
+              <stop offset="100%" stopColor={isDark ? "#040812" : "#64748b"} />
             </linearGradient>
 
             {/* 3D Concrete Coping Top Highlight Gradient */}
             <linearGradient id="gradConcreteCoping" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#64748b" />
-              <stop offset="50%" stopColor="#475569" />
-              <stop offset="100%" stopColor="#334155" />
+              <stop offset="0%" stopColor={isDark ? "#64748b" : "#94A3B8"} />
+              <stop offset="50%" stopColor={isDark ? "#475569" : "#64748B"} />
+              <stop offset="100%" stopColor={isDark ? "#334155" : "#475569"} />
             </linearGradient>
 
             {/* Pipe Flow Arrow Markers */}
@@ -393,7 +401,7 @@ export const SynopticProcessFlow: React.FC<SynopticProcessFlowProps> = ({
           </defs>
 
           {/* Canvas Background & SCADA Grid */}
-          <rect width="1200" height="480" fill="#0b1120" />
+          <rect width="1200" height="480" fill={isDark ? "#0b1120" : "#F1F5F9"} />
           <rect width="1200" height="480" fill="url(#scadaGrid)" />
 
           {/* ========================================================= */}
@@ -534,16 +542,16 @@ export const SynopticProcessFlow: React.FC<SynopticProcessFlowProps> = ({
 
           {/* Floor-level Sludge Splitter Fitting at (842, 395) */}
           <g id="sludge-splitter-station" transform="translate(842, 395)">
-            <circle cx="0" cy="0" r="7" fill="#0f172a" stroke="#f59e0b" strokeWidth="1.8" />
+            <circle cx="0" cy="0" r="7" fill={isDark ? "#0f172a" : "#ffffff"} stroke="#f59e0b" strokeWidth="1.8" />
             <circle cx="0" cy="0" r="3" fill="#f59e0b" />
             <line x1="0" y1="-8" x2="0" y2="8" stroke="#d97706" strokeWidth="1.2" />
             <line x1="-8" y1="0" x2="8" y2="0" stroke="#d97706" strokeWidth="1.2" />
-            <rect x="8" y="-14" width="46" height="13" rx="2.5" fill="#090d16" stroke="#f59e0b" strokeWidth="0.8" />
-            <text x="31" y="-5" textAnchor="middle" fill="#f59e0b" fontSize="7" fontFamily="monospace" fontWeight="bold">
+            <rect x="8" y="-14" width="46" height="13" rx="2.5" fill={isDark ? "#090d16" : "#ffffff"} stroke={isDark ? "#f59e0b" : "#d97706"} strokeWidth="0.8" />
+            <text x="31" y="-5" textAnchor="middle" fill={isDark ? "#f59e0b" : "#b45309"} fontSize="7" fontFamily="monospace" fontWeight="bold">
               85% RAS
             </text>
-            <rect x="8" y="4" width="46" height="13" rx="2.5" fill="#090d16" stroke="#b45309" strokeWidth="0.8" />
-            <text x="31" y="13" textAnchor="middle" fill="#f59e0b" fontSize="7" fontFamily="monospace" fontWeight="bold">
+            <rect x="8" y="4" width="46" height="13" rx="2.5" fill={isDark ? "#090d16" : "#ffffff"} stroke={isDark ? "#b45309" : "#92400e"} strokeWidth="0.8" />
+            <text x="31" y="13" textAnchor="middle" fill={isDark ? "#f59e0b" : "#b45309"} fontSize="7" fontFamily="monospace" fontWeight="bold">
               15% WAS
             </text>
           </g>
@@ -701,24 +709,24 @@ export const SynopticProcessFlow: React.FC<SynopticProcessFlowProps> = ({
       </div>
 
       {/* Bottom Industrial Synoptic Legend & Navigation Help */}
-      <div className="bg-slate-900/95 border-t border-slate-800 px-4 py-2.5 flex flex-wrap items-center justify-between gap-3 text-[11px] text-slate-400">
+      <div className="bg-white/95 dark:bg-slate-900/95 border-t border-slate-200 dark:border-slate-800 px-4 py-2.5 flex flex-wrap items-center justify-between gap-3 text-[11px] text-slate-600 dark:text-slate-400">
         <div className="flex items-center gap-4 flex-wrap">
-          <span className="flex items-center gap-1.5 font-medium text-slate-300">
-            <span className="w-3.5 h-1 bg-sky-400 rounded-full inline-block animate-pulse"></span> Main Process Flow
+          <span className="flex items-center gap-1.5 font-medium text-slate-700 dark:text-slate-300">
+            <span className="w-3.5 h-1 bg-sky-500 dark:bg-sky-400 rounded-full inline-block animate-pulse"></span> Main Process Flow
           </span>
-          <span className="flex items-center gap-1.5 font-medium text-amber-400">
-            <span className="w-3.5 h-1 bg-amber-400 rounded-full inline-block animate-pulse"></span> Return Activated Sludge (RAS)
+          <span className="flex items-center gap-1.5 font-medium text-amber-600 dark:text-amber-400">
+            <span className="w-3.5 h-1 bg-amber-500 dark:bg-amber-400 rounded-full inline-block animate-pulse"></span> Return Activated Sludge (RAS)
           </span>
-          <span className="flex items-center gap-1.5 font-medium text-purple-300">
-            <Sparkles className="w-3.5 h-3.5 text-purple-400 inline" /> UV Photochemical Inactivation
+          <span className="flex items-center gap-1.5 font-medium text-purple-700 dark:text-purple-300">
+            <Sparkles className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400 inline" /> UV Photochemical Inactivation
           </span>
-          <span className="flex items-center gap-1.5 font-medium text-emerald-400">
-            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 inline" /> CPCB Schedule VI Standard Norms
+          <span className="flex items-center gap-1.5 font-medium text-emerald-700 dark:text-emerald-400">
+            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 inline" /> CPCB Schedule VI Standard Norms
           </span>
         </div>
 
-        <div className="flex items-center gap-2 text-slate-400 font-mono text-[10px]">
-          <span className="px-2 py-0.5 rounded bg-slate-800 border border-slate-700 text-sky-400 font-semibold">
+        <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 font-mono text-[10px]">
+          <span className="px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sky-700 dark:text-sky-400 font-semibold">
             CLICK OR USE ARROW KEYS TO INSPECT STAGE
           </span>
         </div>

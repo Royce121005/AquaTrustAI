@@ -71,11 +71,11 @@ export const AuditTimelineView: React.FC<AuditTimelineViewProps> = ({ facilityId
   };
 
   return (
-    <div className="bg-[#111827] border border-[#1F293D] rounded-xl p-5 shadow-xl">
-      <div className="flex flex-wrap items-center justify-between gap-3 mb-4 pb-3 border-b border-[#1F293D]">
+    <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-[#1F293D] rounded-xl p-5 shadow-sm dark:shadow-xl">
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-4 pb-3 border-b border-slate-200 dark:border-[#1F293D]">
         <div>
-          <h3 className="text-sm font-semibold text-white">Centralized Lifecycle Audit Trail</h3>
-          <p className="text-xs text-slate-400">
+          <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Centralized Lifecycle Audit Trail</h3>
+          <p className="text-xs text-slate-500 dark:text-slate-400">
             Immutable domain events across Telemetry, AI, Compliance, and DLT Finalizations
           </p>
         </div>
@@ -89,7 +89,7 @@ export const AuditTimelineView: React.FC<AuditTimelineViewProps> = ({ facilityId
               className={`px-2.5 py-1 rounded-md text-[11px] font-mono font-medium transition ${
                 selectedCategory === cat
                   ? 'bg-[#0EA5E9] text-white shadow-[0_0_10px_rgba(14,165,233,0.3)]'
-                  : 'bg-[#0B0F17] text-slate-400 border border-[#1F293D] hover:text-white hover:border-[#0EA5E9]/40'
+                  : 'bg-slate-100 dark:bg-[#0B0F17] text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-[#1F293D] hover:text-slate-900 dark:hover:text-white hover:border-sky-300 dark:hover:border-[#0EA5E9]/40'
               }`}
             >
               {cat}
@@ -101,42 +101,42 @@ export const AuditTimelineView: React.FC<AuditTimelineViewProps> = ({ facilityId
       {isLoading ? (
         <div className="space-y-3 animate-pulse py-4">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="h-14 bg-[#161F30]/60 rounded-lg border border-[#1F293D]" />
+            <div key={i} className="h-14 bg-slate-100 dark:bg-[#161F30]/60 rounded-lg border border-slate-200 dark:border-[#1F293D]" />
           ))}
         </div>
       ) : !data || data.timeline.length === 0 ? (
-        <p className="text-xs text-slate-400 italic text-center py-8 font-mono">
+        <p className="text-xs text-slate-500 dark:text-slate-400 italic text-center py-8 font-mono">
           No audit events recorded for the selected filter criteria.
         </p>
       ) : (
-        <div className="relative pl-6 space-y-4 before:absolute before:left-2.5 before:top-2 before:bottom-2 before:w-0.5 before:bg-[#1F293D]">
+        <div className="relative pl-6 space-y-4 before:absolute before:left-2.5 before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-200 dark:before:bg-[#1F293D]">
           {data.timeline.map((item) => (
             <div key={item.audit_log_id} className="relative group">
               {/* Timeline marker */}
-              <div className="absolute -left-6 top-1.5 p-1 bg-[#0B0F17] border border-[#1F293D] rounded-full shadow-sm group-hover:border-[#0EA5E9] transition">
+              <div className="absolute -left-6 top-1.5 p-1 bg-white dark:bg-[#0B0F17] border border-slate-200 dark:border-[#1F293D] rounded-full shadow-sm group-hover:border-[#0EA5E9] transition">
                 {getCategoryIcon(item.category)}
               </div>
 
-              <div className="bg-[#161F30]/70 hover:bg-[#1E293B] border border-[#1F293D] hover:border-[#0EA5E9]/40 rounded-xl p-3.5 transition">
+              <div className="bg-slate-50 dark:bg-[#161F30]/70 hover:bg-slate-100 dark:hover:bg-[#1E293B] border border-slate-200 dark:border-[#1F293D] hover:border-[#0EA5E9]/40 rounded-xl p-3.5 transition">
                 <div className="flex flex-wrap items-center justify-between gap-2 mb-1.5">
                   <div className="flex items-center space-x-2">
-                    <span className="text-[10px] font-mono font-bold uppercase px-2 py-0.5 bg-[#0B0F17] text-slate-300 border border-[#1F293D] rounded">
+                    <span className="text-[10px] font-mono font-bold uppercase px-2 py-0.5 bg-slate-200/80 dark:bg-[#0B0F17] text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-[#1F293D] rounded">
                       {item.category}
                     </span>
-                    <span className="text-xs font-semibold text-white">{item.action}</span>
+                    <span className="text-xs font-semibold text-slate-900 dark:text-white">{item.action}</span>
                   </div>
-                  <span className="text-[11px] text-slate-400 font-mono">
+                  <span className="text-[11px] text-slate-500 dark:text-slate-400 font-mono">
                     {new Date(item.timestamp).toLocaleTimeString()} ·{' '}
                     {new Date(item.timestamp).toLocaleDateString()}
                   </span>
                 </div>
 
-                <p className="text-xs text-slate-300 mt-1 leading-relaxed">{item.summary}</p>
+                <p className="text-xs text-slate-700 dark:text-slate-300 mt-1 leading-relaxed">{item.summary}</p>
 
-                <div className="flex items-center space-x-3 text-[10px] text-slate-400 font-mono mt-2 pt-2 border-t border-[#1F293D]">
-                  <span>Actor: <strong className="text-slate-300">{item.actor_role ?? 'system'}</strong></span>
-                  <span>Outcome: <strong className="text-emerald-400">{item.outcome}</strong></span>
-                  {item.resource_id && <span>Resource: <strong className="text-[#0EA5E9]">{item.resource_id.slice(0, 8)}...</strong></span>}
+                <div className="flex items-center space-x-3 text-[10px] text-slate-500 dark:text-slate-400 font-mono mt-2 pt-2 border-t border-slate-200 dark:border-[#1F293D]">
+                  <span>Actor: <strong className="text-slate-700 dark:text-slate-300">{item.actor_role ?? 'system'}</strong></span>
+                  <span>Outcome: <strong className="text-emerald-600 dark:text-emerald-400">{item.outcome}</strong></span>
+                  {item.resource_id && <span>Resource: <strong className="text-sky-600 dark:text-[#0EA5E9]">{item.resource_id.slice(0, 8)}...</strong></span>}
                 </div>
               </div>
             </div>
