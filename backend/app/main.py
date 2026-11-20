@@ -57,6 +57,13 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
             Base.metadata.create_all(bind=engine)
             with SessionLocal() as session:
                 seed_default_users(session)
+                try:
+                    from app.api.v1.facilities import auto_provision_all_facility_sensors
+                    count = auto_provision_all_facility_sensors(session)
+                    if count > 0:
+                        logger.info(f"Auto-provisioned canonical SCADA sensors across {count} facilities.")
+                except Exception as e:
+                    logger.warning(f"Sensor auto-provisioning notice: {e}")
             logger.info("Database schema and core authentication accounts verified successfully.")
         except Exception as exc:
             logger.warning(f"Database schema initialization notice: {exc}")

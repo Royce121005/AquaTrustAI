@@ -44,3 +44,42 @@ export async function getFacilitySensorsApi(facilityId: string): Promise<Sensor[
     method: 'GET',
   });
 }
+
+export interface SensorCreatePayload {
+  parameter: string;
+  unit: string;
+  treatment_stage?: string;
+  status?: string;
+  metadata?: Record<string, unknown>;
+}
+
+export async function createFacilitySensorApi(
+  facilityId: string,
+  payload: SensorCreatePayload
+): Promise<Sensor> {
+  return apiClient<Sensor>(`/facilities/${facilityId}/sensors`, {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function provisionFacilityDefaultSensorsApi(
+  facilityId: string
+): Promise<Sensor[]> {
+  return apiClient<Sensor[]>(`/facilities/${facilityId}/sensors/provision-defaults`, {
+    method: 'POST',
+  });
+}
+
+export async function provisionAllFacilitiesSensorsApi(): Promise<{
+  status: string;
+  facilities_provisioned: number;
+  message: string;
+}> {
+  return apiClient<{ status: string; facilities_provisioned: number; message: string }>(
+    '/facilities/provision-all-sensors',
+    {
+      method: 'POST',
+    }
+  );
+}

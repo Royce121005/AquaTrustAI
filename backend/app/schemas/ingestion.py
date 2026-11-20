@@ -95,6 +95,15 @@ class ReadingResponse(BaseModel):
     created_at: datetime
 
 
+class SensorCreate(BaseModel):
+    """Payload for registering a sensor probe under a facility."""
+    parameter: str
+    unit: str
+    treatment_stage: Optional[str] = "final_effluent"
+    status: str = "active"
+    metadata: Optional[Dict[str, Any]] = Field(default_factory=dict)
+
+
 class SensorResponse(BaseModel):
     """Sensor details response."""
     sensor_id: UUID

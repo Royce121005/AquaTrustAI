@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   getFacilityApi,
   getFacilitySensorsApi,
   getFacilityReadingsApi,
+  createFacilitySensorApi,
+  provisionFacilityDefaultSensorsApi,
 } from '../api/facilities';
 import { LoadingState, ErrorState, EmptyState } from '../components/common/States';
 import {
@@ -19,14 +21,26 @@ import {
   ArrowLeft,
   Filter,
   RefreshCw,
+  Plus,
+  Zap,
+  Check,
+  X,
 } from 'lucide-react';
 
 export const FacilityDetailPage: React.FC = () => {
   const { facilityId } = useParams<{ facilityId: string }>();
+  const queryClient = useQueryClient();
 
   // Filter state for readings
   const [paramFilter, setParamFilter] = useState<string>('');
   const [qualityFilter, setQualityFilter] = useState<string>('');
+
+  // Add Sensor Modal State
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [newParam, setNewParam] = useState('BOD');
+  const [newUnit, setNewUnit] = useState('mg/L');
+  const [newStage, setNewStage] = useState('final_effluent');
+  const [newModel, setNewModel] = useState('AquaSensor-BOD-Online');
 
   const facilityQuery = useQuery({
     queryKey: ['facility', facilityId],
@@ -38,6 +52,31 @@ export const FacilityDetailPage: React.FC = () => {
     queryKey: ['facility-sensors', facilityId],
     queryFn: () => getFacilitySensorsApi(facilityId!),
     enabled: !!facilityId,
+  });
+
+  const provisionMutation = useMutation({
+    mutationFn: () => provisionFacilityDefaultSensorsApi(facilityId!),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['facility-sensors', facilityId] });
+      queryClient.invalidateQueries({ queryKey: ['facility-readings', facilityId] });
+      queryClient.invalidateQueries({ queryKey: ['sensors-health'] });
+    },
+  });
+
+  const addSensorMutation = useMutation({
+    mutationFn: () =>
+      createFacilitySensorApi(facilityId!, {
+        parameter: newParam,
+        unit: newUnit,
+        treatment_stage: newStage,
+        metadata: { sensor_model: newModel, sampling_frequency: '15m' },
+      }),
+    onSuccess: () => {
+      setIsAddModalOpen(false);
+      queryClient.invalidateQueries({ queryKey: ['facility-sensors', facilityId] });
+      queryClient.invalidateQueries({ queryKey: ['facility-readings', facilityId] });
+      queryClient.invalidateQueries({ queryKey: ['sensors-health'] });
+    },
   });
 
   const readingsQuery = useQuery({
@@ -146,16 +185,36 @@ export const FacilityDetailPage: React.FC = () => {
 
       {/* Registered Facility Sensors */}
       <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-[#1F293D] rounded-xl shadow-sm dark:shadow-xl overflow-hidden transition-colors">
-        <div className="px-5 py-4 border-b border-slate-200 dark:border-[#1F293D] flex items-center justify-between bg-slate-50 dark:bg-[#161F30]/60">
+        <div className="px-5 py-4 border-b border-slate-200 dark:border-[#1F293D] flex flex-wrap items-center justify-between gap-3 bg-slate-50 dark:bg-[#161F30]/60">
           <div className="flex items-center gap-2">
             <Cpu className="w-4 h-4 text-[#0EA5E9]" />
             <h2 className="text-xs font-mono uppercase tracking-wider text-slate-800 dark:text-slate-300 font-semibold">
               Installed Sensor Nodes
             </h2>
+            <span className="text-xs text-slate-500 dark:text-slate-400 font-mono ml-2">
+              ({sensorsQuery.data?.length ?? 0} Sensors Registered)
+            </span>
           </div>
-          <span className="text-xs text-slate-500 dark:text-slate-400 font-mono">
-            {sensorsQuery.data?.length ?? 0} Sensors Registered
-          </span>
+
+          <div className="flex items-center gap-2">
+            {(!sensorsQuery.data || sensorsQuery.data.length === 0) && (
+              <button
+                onClick={() => provisionMutation.mutate()}
+                disabled={provisionMutation.isPending}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-semibold shadow-sm transition-all disabled:opacity-50"
+              >
+                <Zap className="w-3.5 h-3.5" />
+                {provisionMutation.isPending ? 'Provisioning Suite...' : 'Provision Standard SCADA Sensors'}
+              </button>
+            )}
+            <button
+              onClick={() => setIsAddModalOpen(true)}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#0EA5E9] hover:bg-[#0284C7] text-white rounded-lg text-xs font-semibold shadow-sm transition-all"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              Register Sensor
+            </button>
+          </div>
         </div>
 
         {sensorsQuery.isLoading ? (
@@ -165,10 +224,34 @@ export const FacilityDetailPage: React.FC = () => {
             <ErrorState error={sensorsQuery.error} />
           </div>
         ) : !sensorsQuery.data || sensorsQuery.data.length === 0 ? (
-          <EmptyState
-            title="No Sensors Registered"
-            message="No hardware sensors are mapped under this facility."
-          />
+          <div className="p-8 text-center flex flex-col items-center justify-center space-y-3">
+            <div className="p-3 rounded-full bg-sky-50 dark:bg-sky-950/50 border border-sky-200 dark:border-sky-800 text-[#0EA5E9]">
+              <Cpu className="w-8 h-8" />
+            </div>
+            <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">
+              No Hardware Sensors Registered
+            </h3>
+            <p className="text-xs text-slate-600 dark:text-slate-400 max-w-md">
+              No online telemetry probes are mapped under {fac.facility_name}. You can automatically provision the canonical 9-node CPCB SCADA sensor suite or register custom IoT probes.
+            </p>
+            <div className="flex items-center gap-3 pt-2">
+              <button
+                onClick={() => provisionMutation.mutate()}
+                disabled={provisionMutation.isPending}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold uppercase tracking-wider shadow-md transition-all disabled:opacity-50"
+              >
+                <Zap className="w-4 h-4" />
+                {provisionMutation.isPending ? 'Provisioning Sensors...' : 'Provision Standard SCADA Sensors'}
+              </button>
+              <button
+                onClick={() => setIsAddModalOpen(true)}
+                className="inline-flex items-center gap-1.5 px-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-[#161F30] dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200 rounded-lg text-xs font-semibold border border-slate-300 dark:border-slate-700 transition-colors"
+              >
+                <Plus className="w-4 h-4" />
+                Custom Sensor
+              </button>
+            </div>
+          </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse text-xs">
@@ -202,6 +285,110 @@ export const FacilityDetailPage: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Add Sensor Modal */}
+      {isAddModalOpen && (
+        <div className="fixed inset-0 bg-slate-900/60 dark:bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-[#1F293D] rounded-xl max-w-md w-full p-6 shadow-2xl">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-[#1F293D] mb-4">
+              <div className="flex items-center gap-2">
+                <Cpu className="w-5 h-5 text-[#0EA5E9]" />
+                <h3 className="text-base font-bold text-slate-900 dark:text-white">Register Telemetry Sensor</h3>
+              </div>
+              <button
+                onClick={() => setIsAddModalOpen(false)}
+                className="p-1 text-slate-400 hover:text-slate-700 dark:hover:text-white rounded"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                addSensorMutation.mutate();
+              }}
+              className="space-y-4"
+            >
+              <div>
+                <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
+                  Parameter Symbol
+                </label>
+                <input
+                  type="text"
+                  value={newParam}
+                  onChange={(e) => setNewParam(e.target.value.toUpperCase())}
+                  required
+                  placeholder="e.g. BOD, COD, TSS, PH, DO"
+                  className="w-full bg-slate-50 dark:bg-[#0B0F17] border border-slate-300 dark:border-[#1F293D] rounded-lg p-2.5 text-xs text-slate-900 dark:text-white font-mono focus:outline-none focus:border-[#0EA5E9]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
+                  Measurement Unit
+                </label>
+                <input
+                  type="text"
+                  value={newUnit}
+                  onChange={(e) => setNewUnit(e.target.value)}
+                  required
+                  placeholder="e.g. mg/L, pH units, MLD"
+                  className="w-full bg-slate-50 dark:bg-[#0B0F17] border border-slate-300 dark:border-[#1F293D] rounded-lg p-2.5 text-xs text-slate-900 dark:text-white font-mono focus:outline-none focus:border-[#0EA5E9]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
+                  Treatment Stage
+                </label>
+                <select
+                  value={newStage}
+                  onChange={(e) => setNewStage(e.target.value)}
+                  className="w-full bg-slate-50 dark:bg-[#0B0F17] border border-slate-300 dark:border-[#1F293D] rounded-lg p-2.5 text-xs text-slate-900 dark:text-white font-mono focus:outline-none focus:border-[#0EA5E9]"
+                >
+                  <option value="inlet">Inlet / Raw Influent</option>
+                  <option value="primary_clarifier">Primary Clarifier</option>
+                  <option value="secondary_aeration">Secondary Biological Aeration</option>
+                  <option value="secondary_clarifier">Secondary Clarifier</option>
+                  <option value="final_effluent">Final Effluent Discharge</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
+                  Sensor Model / Hardware Tag
+                </label>
+                <input
+                  type="text"
+                  value={newModel}
+                  onChange={(e) => setNewModel(e.target.value)}
+                  placeholder="e.g. AquaSensor-BOD-Online"
+                  className="w-full bg-slate-50 dark:bg-[#0B0F17] border border-slate-300 dark:border-[#1F293D] rounded-lg p-2.5 text-xs text-slate-900 dark:text-white font-mono focus:outline-none focus:border-[#0EA5E9]"
+                />
+              </div>
+
+              <div className="flex justify-end gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setIsAddModalOpen(false)}
+                  className="px-4 py-2 text-xs font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white bg-slate-100 dark:bg-[#161F30] rounded-lg border border-slate-200 dark:border-[#1F293D]"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={addSensorMutation.isPending}
+                  className="px-4 py-2 text-xs font-bold uppercase tracking-wider text-white bg-[#0EA5E9] hover:bg-[#0284C7] rounded-lg shadow-sm disabled:opacity-50 inline-flex items-center gap-1.5"
+                >
+                  <Check className="w-3.5 h-3.5" />
+                  {addSensorMutation.isPending ? 'Registering...' : 'Register Sensor'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* Facility Recent Telemetry Readings with Live Filters */}
       <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-[#1F293D] rounded-xl shadow-sm dark:shadow-xl overflow-hidden transition-colors">
