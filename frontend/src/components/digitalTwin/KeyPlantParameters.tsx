@@ -211,11 +211,11 @@ export const KeyPlantParameters: React.FC<KeyPlantParametersProps> = ({
   ];
 
   return (
-    <div className="bg-[#0b1329] border border-slate-800/80 rounded-xl p-4 shadow-xl select-none">
+    <div className="bg-white dark:bg-[#0b1329] border border-slate-200 dark:border-slate-800/80 rounded-xl p-4 shadow-sm dark:shadow-xl select-none">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <Activity className="w-4 h-4 text-sky-400" />
-          <h3 className="text-xs font-bold text-slate-200 uppercase tracking-wider">
+          <Activity className="w-4 h-4 text-sky-500 dark:text-sky-400" />
+          <h3 className="text-xs font-bold text-slate-900 dark:text-slate-200 uppercase tracking-wider">
             Key Plant Parameters
           </h3>
         </div>
@@ -230,20 +230,20 @@ export const KeyPlantParameters: React.FC<KeyPlantParametersProps> = ({
           return (
             <div
               key={card.id}
-              className="bg-[#070d1e] border border-slate-800/90 rounded-lg p-2.5 flex flex-col justify-between hover:border-slate-700 transition-colors"
+              className="bg-slate-50 dark:bg-[#070d1e] border border-slate-200 dark:border-slate-800/90 rounded-lg p-2.5 flex flex-col justify-between hover:border-slate-300 dark:hover:border-slate-700 transition-colors"
             >
               <div>
-                <div className="flex items-center gap-1.5 text-slate-400 text-[10px] font-medium truncate">
-                  <Icon className="w-3 h-3 text-sky-400 shrink-0" />
+                <div className="flex items-center gap-1.5 text-slate-600 dark:text-slate-400 text-[10px] font-medium truncate">
+                  <Icon className="w-3 h-3 text-sky-500 dark:text-sky-400 shrink-0" />
                   <span className="truncate">{card.label}</span>
                 </div>
 
                 <div className="flex items-baseline gap-1 mt-1">
-                  <span className="text-lg font-bold font-mono text-slate-100">
+                  <span className="text-lg font-bold font-mono text-slate-900 dark:text-slate-100">
                     {card.value}
                   </span>
                   {card.unit && (
-                    <span className="text-[10px] text-slate-400 font-mono">
+                    <span className="text-[10px] text-slate-500 dark:text-slate-400 font-mono">
                       {card.unit}
                     </span>
                   )}
@@ -251,12 +251,12 @@ export const KeyPlantParameters: React.FC<KeyPlantParametersProps> = ({
               </div>
 
               {/* Sparkline & Status Indicator */}
-              <div className="mt-2 pt-1 border-t border-slate-800/60">
+              <div className="mt-2 pt-1 border-t border-slate-200 dark:border-slate-800/60">
                 <div className="w-full mb-1">
                   {renderSparkline(card.sparkline, card.statusColor)}
                 </div>
 
-                <div className="flex items-center justify-between text-[9px] font-mono text-slate-400">
+                <div className="flex items-center justify-between text-[9px] font-mono text-slate-500 dark:text-slate-400">
                   <span className="flex items-center gap-1">
                     <span
                       className="w-1.5 h-1.5 rounded-full"
@@ -264,7 +264,7 @@ export const KeyPlantParameters: React.FC<KeyPlantParametersProps> = ({
                     />
                     <span style={{ color: card.statusColor }}>{card.status}</span>
                   </span>
-                  <span className="text-slate-500">{ageText}</span>
+                  <span className="text-slate-400 dark:text-slate-500">{ageText}</span>
                 </div>
               </div>
             </div>

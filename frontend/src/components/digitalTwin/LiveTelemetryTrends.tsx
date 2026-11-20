@@ -8,6 +8,7 @@ import {
   AlertCircle,
 } from 'lucide-react';
 import { TwinState } from '../../types/digitalTwin';
+import { useTheme } from '../../context/ThemeContext';
 
 interface LiveTelemetryTrendsProps {
   twinState: TwinState | null;
@@ -27,6 +28,7 @@ export const LiveTelemetryTrends: React.FC<LiveTelemetryTrendsProps> = ({
   twinState,
   maxPoints = 40,
 }) => {
+  const { isDark } = useTheme();
   const [history, setHistory] = useState<TrendPoint[]>([]);
   const lastVersionRef = useRef<number>(-1);
 
@@ -150,7 +152,7 @@ export const LiveTelemetryTrends: React.FC<LiveTelemetryTrendsProps> = ({
             cy={points[points.length - 1].split(',')[1]}
             r="3"
             fill={color}
-            stroke="#0f172a"
+            stroke={isDark ? '#0f172a' : '#ffffff'}
             strokeWidth="1.5"
           />
         )}
@@ -175,12 +177,12 @@ export const LiveTelemetryTrends: React.FC<LiveTelemetryTrendsProps> = ({
   const sourceMode = twinState?.source_mode || 'simulation';
 
   return (
-    <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-4 shadow-lg space-y-3">
+    <div className="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-sm dark:shadow-lg space-y-3">
       {/* Header */}
-      <div className="flex items-center justify-between pb-2 border-b border-slate-800/80">
+      <div className="flex items-center justify-between pb-2 border-b border-slate-200 dark:border-slate-800/80">
         <div className="flex items-center gap-2">
-          <Activity className="w-4 h-4 text-sky-400 animate-pulse" />
-          <h3 className="text-xs font-bold uppercase tracking-wider text-slate-200">
+          <Activity className="w-4 h-4 text-sky-500 dark:text-sky-400 animate-pulse" />
+          <h3 className="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-slate-200">
             Real-Time SCADA Telemetry Instrumentation (Rolling 1Hz)
           </h3>
         </div>
@@ -188,29 +190,29 @@ export const LiveTelemetryTrends: React.FC<LiveTelemetryTrendsProps> = ({
           <span
             className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
               sourceMode === 'live'
-                ? 'bg-emerald-950 text-emerald-400 border border-emerald-800'
-                : 'bg-sky-950 text-sky-400 border border-sky-800'
+                ? 'bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800'
+                : 'bg-sky-50 dark:bg-sky-950 text-sky-700 dark:text-sky-400 border border-sky-200 dark:border-sky-800'
             }`}
           >
             [{sourceMode.toUpperCase()}]
           </span>
-          <span className="text-slate-500">Points: {history.length}/{maxPoints}</span>
+          <span className="text-slate-500 dark:text-slate-400">Points: {history.length}/{maxPoints}</span>
         </div>
       </div>
 
       {/* Grid of 5 Parameter Sparklines */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
         {/* 1. BOD Sparkline */}
-        <div className="bg-slate-950/70 border border-slate-800/90 rounded-lg p-3 flex flex-col justify-between">
+        <div className="bg-slate-50 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-800/90 rounded-lg p-3 flex flex-col justify-between">
           <div className="flex items-center justify-between mb-1">
-            <span className="text-[11px] font-bold text-slate-400">Effluent BOD</span>
-            <span className="text-[10px] font-mono text-emerald-400">Norm ≤ 30</span>
+            <span className="text-[11px] font-bold text-slate-600 dark:text-slate-400">Effluent BOD</span>
+            <span className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400">Norm ≤ 30</span>
           </div>
           <div className="flex items-baseline gap-1 my-1 font-mono">
-            <span className={`text-xl font-black ${curPoint.bod > 30 ? 'text-rose-400' : 'text-emerald-400'}`}>
+            <span className={`text-xl font-black ${curPoint.bod > 30 ? 'text-rose-600 dark:text-rose-400' : 'text-emerald-600 dark:text-emerald-400'}`}>
               {curPoint.bod.toFixed(1)}
             </span>
-            <span className="text-[10px] text-slate-500">mg/L</span>
+            <span className="text-[10px] text-slate-500 dark:text-slate-400">mg/L</span>
           </div>
           <div className="mt-1">
             {renderSparkline(bodHistory, '#10b981', 'gradSparkBod', 10, 40, 30)}
@@ -218,16 +220,16 @@ export const LiveTelemetryTrends: React.FC<LiveTelemetryTrendsProps> = ({
         </div>
 
         {/* 2. COD Sparkline */}
-        <div className="bg-slate-950/70 border border-slate-800/90 rounded-lg p-3 flex flex-col justify-between">
+        <div className="bg-slate-50 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-800/90 rounded-lg p-3 flex flex-col justify-between">
           <div className="flex items-center justify-between mb-1">
-            <span className="text-[11px] font-bold text-slate-400">Effluent COD</span>
-            <span className="text-[10px] font-mono text-sky-400">Norm ≤ 250</span>
+            <span className="text-[11px] font-bold text-slate-600 dark:text-slate-400">Effluent COD</span>
+            <span className="text-[10px] font-mono text-sky-600 dark:text-sky-400">Norm ≤ 250</span>
           </div>
           <div className="flex items-baseline gap-1 my-1 font-mono">
-            <span className={`text-xl font-black ${curPoint.cod > 250 ? 'text-rose-400' : 'text-sky-400'}`}>
+            <span className={`text-xl font-black ${curPoint.cod > 250 ? 'text-rose-600 dark:text-rose-400' : 'text-sky-600 dark:text-sky-400'}`}>
               {curPoint.cod.toFixed(1)}
             </span>
-            <span className="text-[10px] text-slate-500">mg/L</span>
+            <span className="text-[10px] text-slate-500 dark:text-slate-400">mg/L</span>
           </div>
           <div className="mt-1">
             {renderSparkline(codHistory, '#38bdf8', 'gradSparkCod', 40, 300, 250)}
@@ -235,16 +237,16 @@ export const LiveTelemetryTrends: React.FC<LiveTelemetryTrendsProps> = ({
         </div>
 
         {/* 3. TSS Sparkline */}
-        <div className="bg-slate-950/70 border border-slate-800/90 rounded-lg p-3 flex flex-col justify-between">
+        <div className="bg-slate-50 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-800/90 rounded-lg p-3 flex flex-col justify-between">
           <div className="flex items-center justify-between mb-1">
-            <span className="text-[11px] font-bold text-slate-400">Effluent TSS</span>
-            <span className="text-[10px] font-mono text-amber-400">Norm ≤ 50</span>
+            <span className="text-[11px] font-bold text-slate-600 dark:text-slate-400">Effluent TSS</span>
+            <span className="text-[10px] font-mono text-amber-600 dark:text-amber-400">Norm ≤ 50</span>
           </div>
           <div className="flex items-baseline gap-1 my-1 font-mono">
-            <span className={`text-xl font-black ${curPoint.tss > 50 ? 'text-rose-400' : 'text-amber-400'}`}>
+            <span className={`text-xl font-black ${curPoint.tss > 50 ? 'text-rose-600 dark:text-rose-400' : 'text-amber-600 dark:text-amber-400'}`}>
               {curPoint.tss.toFixed(1)}
             </span>
-            <span className="text-[10px] text-slate-500">mg/L</span>
+            <span className="text-[10px] text-slate-500 dark:text-slate-400">mg/L</span>
           </div>
           <div className="mt-1">
             {renderSparkline(tssHistory, '#f59e0b', 'gradSparkTss', 5, 60, 50)}
@@ -252,16 +254,16 @@ export const LiveTelemetryTrends: React.FC<LiveTelemetryTrendsProps> = ({
         </div>
 
         {/* 4. DO Sparkline */}
-        <div className="bg-slate-950/70 border border-slate-800/90 rounded-lg p-3 flex flex-col justify-between">
+        <div className="bg-slate-50 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-800/90 rounded-lg p-3 flex flex-col justify-between">
           <div className="flex items-center justify-between mb-1">
-            <span className="text-[11px] font-bold text-slate-400">Aeration DO</span>
-            <span className="text-[10px] font-mono text-teal-400">Setpt ≥ 2.0</span>
+            <span className="text-[11px] font-bold text-slate-600 dark:text-slate-400">Aeration DO</span>
+            <span className="text-[10px] font-mono text-teal-600 dark:text-teal-400">Setpt ≥ 2.0</span>
           </div>
           <div className="flex items-baseline gap-1 my-1 font-mono">
-            <span className={`text-xl font-black ${curPoint.do < 1.0 ? 'text-rose-400' : curPoint.do < 2.0 ? 'text-amber-400' : 'text-teal-400'}`}>
+            <span className={`text-xl font-black ${curPoint.do < 1.0 ? 'text-rose-600 dark:text-rose-400' : curPoint.do < 2.0 ? 'text-amber-600 dark:text-amber-400' : 'text-teal-600 dark:text-teal-400'}`}>
               {curPoint.do.toFixed(2)}
             </span>
-            <span className="text-[10px] text-slate-500">mg/L</span>
+            <span className="text-[10px] text-slate-500 dark:text-slate-400">mg/L</span>
           </div>
           <div className="mt-1">
             {renderSparkline(doHistory, '#14b8a6', 'gradSparkDo', 0.5, 4.0, 2.0)}
@@ -269,16 +271,16 @@ export const LiveTelemetryTrends: React.FC<LiveTelemetryTrendsProps> = ({
         </div>
 
         {/* 5. pH Sparkline */}
-        <div className="bg-slate-950/70 border border-slate-800/90 rounded-lg p-3 flex flex-col justify-between">
+        <div className="bg-slate-50 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-800/90 rounded-lg p-3 flex flex-col justify-between">
           <div className="flex items-center justify-between mb-1">
-            <span className="text-[11px] font-bold text-slate-400">Effluent pH</span>
-            <span className="text-[10px] font-mono text-purple-400">6.5 – 8.5</span>
+            <span className="text-[11px] font-bold text-slate-600 dark:text-slate-400">Effluent pH</span>
+            <span className="text-[10px] font-mono text-purple-600 dark:text-purple-400">6.5 – 8.5</span>
           </div>
           <div className="flex items-baseline gap-1 my-1 font-mono">
-            <span className={`text-xl font-black ${curPoint.ph < 6.5 || curPoint.ph > 8.5 ? 'text-rose-400' : 'text-purple-400'}`}>
+            <span className={`text-xl font-black ${curPoint.ph < 6.5 || curPoint.ph > 8.5 ? 'text-rose-600 dark:text-rose-400' : 'text-purple-600 dark:text-purple-400'}`}>
               {curPoint.ph.toFixed(2)}
             </span>
-            <span className="text-[10px] text-slate-500">units</span>
+            <span className="text-[10px] text-slate-500 dark:text-slate-400">units</span>
           </div>
           <div className="mt-1">
             {renderSparkline(phHistory, '#c084fc', 'gradSparkPh', 6.0, 9.0)}
