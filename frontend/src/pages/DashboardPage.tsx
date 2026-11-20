@@ -226,7 +226,7 @@ export const DashboardPage: React.FC = () => {
             <button
               onClick={handleRefreshAll}
               disabled={isManualRefreshing}
-              className="inline-flex items-center justify-center gap-2 px-3.5 py-2.5 min-w-[105px] bg-[#1E293B]/90 border border-[#334155] hover:border-slate-500 text-slate-200 rounded-xl text-xs font-semibold font-mono shadow-sm transition-colors disabled:opacity-70"
+              className="inline-flex items-center justify-center gap-2 px-3.5 py-2.5 min-w-[125px] bg-[#1E293B]/90 border border-[#334155] hover:border-slate-500 text-slate-200 rounded-xl text-xs font-semibold font-mono shadow-sm transition-colors disabled:opacity-70"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${isManualRefreshing ? 'animate-spin text-cyan-400' : 'text-slate-400'}`} />
               <span>{isManualRefreshing ? 'REFRESHING' : 'REFRESH'}</span>
