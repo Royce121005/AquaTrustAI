@@ -26,8 +26,6 @@ from app.db.base import utc_now
 # Canonical anchor plant UUIDs to maintain strict foreign key integrity
 CANONICAL_ANCHORS = {
     "STP_UP_LUCKNOW_045": uuid.UUID("085a9719-c9d0-4562-b4d7-bc389dec12b3"),
-    "STP_UP_KANPUR_014": uuid.UUID("13000000-0000-0000-0000-000000000014"),
-    "STP_UP_VARANASI_032": uuid.UUID("14000000-0000-0000-0000-000000000032"),
 }
 
 
