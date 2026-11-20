@@ -164,24 +164,23 @@ export const DashboardPage: React.FC = () => {
     refetchInterval: 20000,
   });
 
-  const isRefreshing =
-    facilitiesQuery.isFetching ||
-    anomaliesQuery.isFetching ||
-    complianceQuery.isFetching ||
-    validationQuery.isFetching ||
-    recordsQuery.isFetching ||
-    dltQuery.isFetching;
+  const [isManualRefreshing, setIsManualRefreshing] = useState(false);
 
-  const handleRefreshAll = () => {
-    facilitiesQuery.refetch();
-    anomaliesQuery.refetch();
-    complianceQuery.refetch();
-    validationQuery.refetch();
-    recordsQuery.refetch();
-    dltQuery.refetch();
+  const handleRefreshAll = async () => {
+    setIsManualRefreshing(true);
+    try {
+      await Promise.allSettled([
+        facilitiesQuery.refetch(),
+        anomaliesQuery.refetch(),
+        complianceQuery.refetch(),
+        validationQuery.refetch(),
+        recordsQuery.refetch(),
+        dltQuery.refetch(),
+      ]);
+    } finally {
+      setTimeout(() => setIsManualRefreshing(false), 500);
+    }
   };
-
-  const currentCred = ROLE_CREDENTIALS[userRole] || ROLE_CREDENTIALS.operator;
 
   return (
     <div className="space-y-6 pb-12 anim-slide-top">
@@ -226,11 +225,11 @@ export const DashboardPage: React.FC = () => {
 
             <button
               onClick={handleRefreshAll}
-              disabled={isRefreshing}
-              className="inline-flex items-center gap-2 px-3.5 py-2.5 bg-[#1E293B]/90 border border-[#334155] hover:border-slate-500 text-slate-200 rounded-xl text-xs font-semibold font-mono shadow-sm transition-all disabled:opacity-50"
+              disabled={isManualRefreshing}
+              className="inline-flex items-center justify-center gap-2 px-3.5 py-2.5 min-w-[105px] bg-[#1E293B]/90 border border-[#334155] hover:border-slate-500 text-slate-200 rounded-xl text-xs font-semibold font-mono shadow-sm transition-colors disabled:opacity-70"
             >
-              <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin text-cyan-400' : 'text-slate-400'}`} />
-              <span>{isRefreshing ? 'REFRESHING...' : 'REFRESH'}</span>
+              <RefreshCw className={`w-3.5 h-3.5 ${isManualRefreshing ? 'animate-spin text-cyan-400' : 'text-slate-400'}`} />
+              <span>{isManualRefreshing ? 'REFRESHING' : 'REFRESH'}</span>
             </button>
           </div>
         </div>
