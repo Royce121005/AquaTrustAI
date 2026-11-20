@@ -170,23 +170,23 @@ export const SimulatorPage: React.FC = () => {
   return (
     <div className="space-y-6 pb-12">
       {/* Top SCADA Operations Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#1F293D]">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200 dark:border-[#1F293D]">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <span className="text-[10px] font-mono uppercase tracking-widest text-cyan-400 font-semibold bg-cyan-950/60 border border-cyan-800/80 px-2 py-0.5 rounded">
+            <span className="text-[10px] font-mono uppercase tracking-widest text-cyan-600 dark:text-cyan-400 font-semibold bg-cyan-50 dark:bg-cyan-950/60 border border-cyan-200 dark:border-cyan-800/80 px-2 py-0.5 rounded">
               SCADA Telemetry Edge Engine
             </span>
           </div>
           <div className="flex items-center gap-2.5">
-            <Radio className="w-5 h-5 text-cyan-400" />
-            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white font-mono">
+            <Radio className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
+            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white font-mono">
               SCADA Telemetry Simulator &amp; Anomaly Studio
             </h1>
             <span
               className={`px-2.5 py-0.5 rounded-md text-[10px] font-mono font-bold uppercase border shadow-sm ${
                 sim?.is_running
-                  ? 'bg-emerald-950/80 text-emerald-300 border-emerald-700'
-                  : 'bg-slate-900 text-slate-400 border-slate-700'
+                  ? 'bg-emerald-50 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-700'
+                  : 'bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-400 border-slate-300 dark:border-slate-700'
               }`}
             >
               {sim?.is_running ? 'STREAMING ACTIVE' : 'STOPPED'}
@@ -195,45 +195,45 @@ export const SimulatorPage: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#111827] border border-[#1F293D] text-xs font-mono">
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-[#111827] border border-slate-200 dark:border-[#1F293D] text-xs font-mono">
             <span
               className={`w-2 h-2 rounded-full ${
-                wsConnected ? 'bg-emerald-400 animate-pulse' : 'bg-rose-500'
+                wsConnected ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'
               }`}
             />
-            <span className="text-slate-300">
-              WebSocket: <strong className={wsConnected ? 'text-emerald-400' : 'text-rose-400'}>{wsConnected ? 'CONNECTED' : 'POLLING'}</strong>
+            <span className="text-slate-700 dark:text-slate-300">
+              WebSocket: <strong className={wsConnected ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}>{wsConnected ? 'CONNECTED' : 'POLLING'}</strong>
             </span>
           </div>
           <button
             onClick={() => statusQuery.refetch()}
             disabled={statusQuery.isFetching}
-            className="p-2 bg-[#1E293B] border border-[#334155] rounded-lg text-slate-300 hover:text-white hover:bg-slate-700 transition-colors"
+            className="p-2 bg-slate-100 dark:bg-[#1E293B] border border-slate-300 dark:border-[#334155] rounded-lg text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
             title="Refresh Status"
           >
-            <RefreshCw className={`w-3.5 h-3.5 ${statusQuery.isFetching ? 'animate-spin text-cyan-400' : ''}`} />
+            <RefreshCw className={`w-3.5 h-3.5 ${statusQuery.isFetching ? 'animate-spin text-cyan-500' : ''}`} />
           </button>
         </div>
       </div>
 
       {wsError && (
-        <div className="p-3 bg-amber-950/40 border border-amber-800/80 text-amber-300 rounded-xl text-xs font-mono">
+        <div className="p-3 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/80 text-amber-800 dark:text-amber-300 rounded-xl text-xs font-mono">
           Notice: {wsError}. HTTP polling active.
         </div>
       )}
 
       {/* Digital Twin Synchronization Banner */}
-      <div className="scada-card p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-slate-200">
+      <div className="scada-card p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-slate-700 dark:text-slate-200">
         <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded-lg bg-cyan-950/70 border border-cyan-800 text-cyan-400">
+          <div className="p-2.5 rounded-lg bg-cyan-50 dark:bg-cyan-950/70 border border-cyan-200 dark:border-cyan-800 text-cyan-600 dark:text-cyan-400">
             <Cpu className="w-5 h-5 animate-pulse" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-xs font-bold uppercase tracking-wider text-cyan-400 font-mono">
+              <span className="text-xs font-bold uppercase tracking-wider text-cyan-700 dark:text-cyan-400 font-mono">
                 Digital Twin SCADA Synchronization Active
               </span>
-              <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-950 text-emerald-400 border border-emerald-800 font-semibold">
+              <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 font-semibold">
                 1Hz ENGINE SYNC
               </span>
             </div>
@@ -249,14 +249,14 @@ export const SimulatorPage: React.FC = () => {
       </div>
 
       {/* Visualizer Mode Toggle */}
-      <div className="flex items-center justify-between border-b border-[#1F293D] pb-3">
+      <div className="flex items-center justify-between border-b border-slate-200 dark:border-[#1F293D] pb-3">
         <div className="flex items-center gap-2">
           <button
             onClick={() => setViewMode('pipeline')}
             className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold font-mono transition-all ${
               viewMode === 'pipeline'
                 ? 'bg-cyan-600 text-white shadow-sm'
-                : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-800/60'
             }`}
           >
             <Radio className="w-3.5 h-3.5" />
@@ -267,7 +267,7 @@ export const SimulatorPage: React.FC = () => {
             className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold font-mono transition-all ${
               viewMode === 'synoptic'
                 ? 'bg-cyan-600 text-white shadow-sm'
-                : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-800/60'
             }`}
           >
             <Layers className="w-3.5 h-3.5" />
@@ -318,15 +318,15 @@ export const SimulatorPage: React.FC = () => {
 
       {/* Simulator Runtime State & Ingestion Controls */}
       <div className="scada-card p-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#1F293D]">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200 dark:border-[#1F293D]">
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-sm font-semibold text-white uppercase tracking-wide font-mono">
+              <span className="text-sm font-semibold text-slate-900 dark:text-white uppercase tracking-wide font-mono">
                 Runtime Simulation Configuration
               </span>
             </div>
-            <p className="text-xs text-slate-400 font-mono mt-0.5">
-              Target Facility: <span className="text-cyan-400">{sim?.active_facility_name || selectedFacilityName}</span>
+            <p className="text-xs text-slate-500 dark:text-slate-400 font-mono mt-0.5">
+              Target Facility: <span className="text-cyan-600 dark:text-cyan-400">{sim?.active_facility_name || selectedFacilityName}</span>
             </p>
           </div>
 
@@ -356,7 +356,7 @@ export const SimulatorPage: React.FC = () => {
         {/* Configuration Selectors */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 text-xs font-mono">
           <div>
-            <label className="block text-slate-300 font-semibold mb-1.5">
+            <label className="block text-slate-700 dark:text-slate-300 font-semibold mb-1.5">
               Target Facility Profile
             </label>
             <select
@@ -376,9 +376,9 @@ export const SimulatorPage: React.FC = () => {
           </div>
 
           <div>
-            <label className="block text-slate-300 font-semibold mb-1.5 flex items-center justify-between">
+            <label className="block text-slate-700 dark:text-slate-300 font-semibold mb-1.5 flex items-center justify-between">
               <span>Telemetry Ingestion Tick Interval:</span>
-              <span className="text-cyan-400 font-bold">{intervalSeconds}s</span>
+              <span className="text-cyan-600 dark:text-cyan-400 font-bold">{intervalSeconds}s</span>
             </label>
             <input
               type="range"
@@ -399,27 +399,27 @@ export const SimulatorPage: React.FC = () => {
         </div>
 
         {/* Runtime Statistics Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4 mt-4 border-t border-[#1F293D] text-xs font-mono">
-          <div className="bg-[#0B0F17]/80 p-3.5 rounded-lg border border-[#1F293D]">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4 mt-4 border-t border-slate-200 dark:border-[#1F293D] text-xs font-mono">
+          <div className="bg-slate-50 dark:bg-[#0B0F17]/80 p-3.5 rounded-lg border border-slate-200 dark:border-[#1F293D]">
             <span className="text-slate-500 block text-[10px] uppercase font-semibold">Steps Generated</span>
-            <span className="text-xl font-bold text-white tabular-nums">{sim?.steps_generated ?? 0}</span>
+            <span className="text-xl font-bold text-slate-900 dark:text-white tabular-nums">{sim?.steps_generated ?? 0}</span>
           </div>
 
-          <div className="bg-[#0B0F17]/80 p-3.5 rounded-lg border border-[#1F293D]">
+          <div className="bg-slate-50 dark:bg-[#0B0F17]/80 p-3.5 rounded-lg border border-slate-200 dark:border-[#1F293D]">
             <span className="text-slate-500 block text-[10px] uppercase font-semibold">Readings Ingested</span>
-            <span className="text-xl font-bold text-cyan-400 tabular-nums">{sim?.readings_ingested ?? 0}</span>
+            <span className="text-xl font-bold text-cyan-600 dark:text-cyan-400 tabular-nums">{sim?.readings_ingested ?? 0}</span>
           </div>
 
-          <div className="bg-[#0B0F17]/80 p-3.5 rounded-lg border border-[#1F293D]">
+          <div className="bg-slate-50 dark:bg-[#0B0F17]/80 p-3.5 rounded-lg border border-slate-200 dark:border-[#1F293D]">
             <span className="text-slate-500 block text-[10px] uppercase font-semibold">Physical Scenario</span>
-            <span className="font-semibold text-slate-200 uppercase block mt-1 truncate">
+            <span className="font-semibold text-slate-700 dark:text-slate-200 uppercase block mt-1 truncate">
               {sim?.current_scenario || 'baseline_normal'}
             </span>
           </div>
 
-          <div className="bg-[#0B0F17]/80 p-3.5 rounded-lg border border-[#1F293D]">
+          <div className="bg-slate-50 dark:bg-[#0B0F17]/80 p-3.5 rounded-lg border border-slate-200 dark:border-[#1F293D]">
             <span className="text-slate-500 block text-[10px] uppercase font-semibold">Last Tick At</span>
-            <span className="text-slate-300 block mt-1">
+            <span className="text-slate-700 dark:text-slate-300 block mt-1">
               {sim?.last_tick_at ? new Date(sim.last_tick_at).toLocaleTimeString() : 'N/A'}
             </span>
           </div>
@@ -429,8 +429,8 @@ export const SimulatorPage: React.FC = () => {
       {/* Disturbance Scenario Studio (Anomaly Injection) */}
       <div className="scada-card p-6 space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-white uppercase tracking-wide flex items-center gap-2 font-mono">
-            <AlertTriangle className="w-4 h-4 text-rose-400" />
+          <h2 className="text-sm font-semibold text-slate-900 dark:text-white uppercase tracking-wide flex items-center gap-2 font-mono">
+            <AlertTriangle className="w-4 h-4 text-rose-500 dark:text-rose-400" />
             Disturbance Scenario Studio &amp; Anomaly Injection
           </h2>
         </div>
@@ -444,15 +444,15 @@ export const SimulatorPage: React.FC = () => {
               onClick={() => setScenarioId(sc.id)}
               className={`p-3 rounded-xl border text-left transition-all ${
                 scenarioId === sc.id
-                  ? 'border-rose-500/80 bg-rose-950/40 shadow-sm shadow-rose-950/50'
-                  : 'border-[#1F293D] hover:border-slate-700 bg-[#0B0F17]/80 hover:bg-[#161F30]'
+                  ? 'border-rose-400 bg-rose-50 dark:border-rose-500/80 dark:bg-rose-950/40 shadow-sm'
+                  : 'border-slate-200 dark:border-[#1F293D] hover:border-slate-400 dark:hover:border-slate-700 bg-slate-50 dark:bg-[#0B0F17]/80 hover:bg-slate-100 dark:hover:bg-[#161F30]'
               }`}
             >
               <div className="flex items-center justify-between">
-                <span className="font-semibold text-xs text-slate-200 font-mono">{sc.name}</span>
+                <span className="font-semibold text-xs text-slate-900 dark:text-slate-200 font-mono">{sc.name}</span>
                 {scenarioId === sc.id && <span className="w-2 h-2 rounded-full bg-rose-500"></span>}
               </div>
-              <span className="text-[10px] font-mono text-rose-400 block mt-1">{sc.target}</span>
+              <span className="text-[10px] font-mono text-rose-600 dark:text-rose-400 block mt-1">{sc.target}</span>
             </button>
           ))}
         </div>
@@ -466,7 +466,7 @@ export const SimulatorPage: React.FC = () => {
         >
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-slate-300 font-semibold mb-1">
+              <label className="block text-slate-700 dark:text-slate-300 font-semibold mb-1">
                 Disturbance Severity Magnitude (0.1 to 5.0)
               </label>
               <input
@@ -481,7 +481,7 @@ export const SimulatorPage: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-slate-300 font-semibold mb-1">
+              <label className="block text-slate-700 dark:text-slate-300 font-semibold mb-1">
                 Duration (Simulation Steps, 1 to 500)
               </label>
               <input
@@ -505,7 +505,7 @@ export const SimulatorPage: React.FC = () => {
               {injectMutation.isPending ? 'Injecting Disturbance...' : 'Inject Disturbance Scenario'}
             </button>
             {!sim?.is_running && (
-              <span className="text-[11px] text-amber-400 font-mono">
+              <span className="text-[11px] text-amber-600 dark:text-amber-400 font-mono">
                 Simulation engine must be running before disturbances can be injected.
               </span>
             )}
@@ -515,8 +515,8 @@ export const SimulatorPage: React.FC = () => {
         {injectMutation.isError && <ErrorState error={injectMutation.error} />}
 
         {injectMutation.isSuccess && (
-          <div className="p-3 bg-emerald-950/60 border border-emerald-800 rounded-lg text-xs font-mono text-emerald-300 flex items-center gap-2">
-            <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+          <div className="p-3 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 rounded-lg text-xs font-mono text-emerald-800 dark:text-emerald-300 flex items-center gap-2">
+            <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
             Disturbance scenario successfully dispatched into synthetic telemetry stream! Check the live canvas above.
           </div>
         )}

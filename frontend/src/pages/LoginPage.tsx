@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import { ApiClientError } from '../api/client';
 import {
   ArrowRight,
@@ -8,6 +9,8 @@ import {
   Droplets,
   ExternalLink,
   Lock,
+  Sun,
+  Moon,
 } from 'lucide-react';
 
 export const LoginPage: React.FC = () => {
@@ -18,6 +21,7 @@ export const LoginPage: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const { login } = useAuth();
+  const { isDark, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -56,114 +60,123 @@ export const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#070B12] text-slate-100 flex flex-col justify-between selection:bg-[#0EA5E9] selection:text-white relative overflow-hidden bg-[url('/assets/facility_backdrop.jpg')] bg-cover bg-center bg-no-repeat">
-      {/* High-Contrast Dual Layer Dark Backdrop Scrim */}
-      {/* Layer 1: Global darkening so lights never overpower content */}
-      <div className="absolute inset-0 bg-[#070B12]/80 pointer-events-none -z-10" />
-      {/* Layer 2: Deep directional vignette for crystal-clear readability */}
-      <div className="absolute inset-0 bg-gradient-to-r from-[#070B12] via-[#070B12]/95 to-[#070B12]/60 pointer-events-none -z-10" />
+    <div className="min-h-screen bg-slate-100 dark:bg-[#070B12] text-slate-900 dark:text-slate-100 flex flex-col justify-between selection:bg-[#0EA5E9] selection:text-white relative overflow-hidden bg-[url('/assets/facility_backdrop.jpg')] bg-cover bg-center bg-no-repeat transition-colors duration-200">
+      {/* High-Contrast Dual Layer Dark/Light Backdrop Scrim */}
+      <div className="absolute inset-0 bg-slate-100/85 dark:bg-[#070B12]/80 pointer-events-none -z-10" />
+      <div className="absolute inset-0 bg-gradient-to-r from-slate-100/95 via-slate-100/90 to-slate-100/70 dark:from-[#070B12] dark:via-[#070B12]/95 dark:to-[#070B12]/60 pointer-events-none -z-10" />
 
       {/* Top Application Header */}
-      <header className="w-full border-b border-slate-800/80 bg-[#070B12]/90 backdrop-blur-md px-6 lg:px-12 py-4 flex items-center justify-between z-20 anim-slide-top">
+      <header className="w-full border-b border-slate-200 dark:border-slate-800/80 bg-white/90 dark:bg-[#070B12]/90 backdrop-blur-md px-6 lg:px-12 py-4 flex items-center justify-between z-20 anim-slide-top">
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-xl bg-[#0EA5E9]/15 border border-[#0EA5E9]/30 flex items-center justify-center text-[#0EA5E9] shadow-sm shrink-0">
             <Droplets className="w-5 h-5 text-[#0EA5E9]" />
           </div>
           <div>
-            <div className="text-lg font-bold tracking-tight text-white">
+            <div className="text-lg font-bold tracking-tight text-slate-900 dark:text-white">
               AquaTrust AI
             </div>
-            <p className="text-xs text-slate-400 hidden sm:block">
+            <p className="text-xs text-slate-500 dark:text-slate-400 hidden sm:block">
               Intelligent Wastewater Monitoring Platform
             </p>
           </div>
         </div>
 
-        <Link
-          to="/verify"
-          className="flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700 text-xs font-medium text-slate-200 transition-colors"
-        >
-          <span>Public Verification</span>
-          <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
-        </Link>
+        <div className="flex items-center gap-2.5">
+          <button
+            type="button"
+            onClick={toggleTheme}
+            aria-label="Toggle theme"
+            className="p-2 rounded-lg bg-slate-100 hover:bg-slate-200 border border-slate-300 text-slate-700 dark:bg-slate-800/80 dark:hover:bg-slate-700 dark:border-slate-700 dark:text-slate-200 transition-colors"
+            title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+          >
+            {isDark ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-slate-600" />}
+          </button>
+          <Link
+            to="/verify"
+            className="flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 border border-slate-300 text-xs font-medium text-slate-700 dark:bg-slate-800/80 dark:hover:bg-slate-700/80 dark:border-slate-700 dark:text-slate-200 transition-colors"
+          >
+            <span>Public Verification</span>
+            <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
+          </Link>
+        </div>
       </header>
 
       {/* Main Content Area */}
       <main className="flex-1 grid grid-cols-1 lg:grid-cols-12 max-w-7xl mx-auto w-full px-6 py-8 lg:px-12 items-center gap-10 lg:gap-14 relative z-10">
-        {/* Left Column: Hero Content contained in a high-contrast dark surface */}
+        {/* Left Column: Hero Content contained in a high-contrast dual surface */}
         <div className="lg:col-span-7 flex flex-col justify-center anim-slide-left">
-          <div className="bg-[#0B0F17]/90 backdrop-blur-xl border border-slate-800/90 rounded-2xl p-7 sm:p-9 shadow-2xl">
+          <div className="bg-white/95 dark:bg-[#0B0F17]/90 backdrop-blur-xl border border-slate-200 dark:border-slate-800/90 rounded-2xl p-7 sm:p-9 shadow-xl dark:shadow-2xl">
             {/* Headline */}
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-white leading-tight">
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-slate-900 dark:text-white leading-tight">
               Industrial Wastewater Intelligence.
               <span className="block text-[#0EA5E9] mt-1.5">Grounded in Trust.</span>
             </h1>
 
             {/* Description - 100% Visible & Legible */}
-            <p className="text-slate-300 text-sm sm:text-base mt-4 leading-relaxed max-w-xl">
+            <p className="text-slate-600 dark:text-slate-300 text-sm sm:text-base mt-4 leading-relaxed max-w-xl">
               Real-time SCADA telemetry, automated environmental compliance, and tamper-evident audit records for modern water treatment facilities.
             </p>
 
             {/* Clean 3-Metric Overview */}
-            <div className="grid grid-cols-3 gap-3 my-6 pt-5 border-t border-slate-800/80">
-              <div className="p-3 rounded-xl bg-[#111827]/80 border border-slate-800">
-                <div className="text-[11px] text-slate-400">Flow Rate</div>
-                <div className="text-xl sm:text-2xl font-bold text-white mt-0.5">24.5 <span className="text-xs font-normal text-slate-400">MLD</span></div>
+            <div className="grid grid-cols-3 gap-3 my-6 pt-5 border-t border-slate-200 dark:border-slate-800/80">
+              <div className="p-3 rounded-xl bg-slate-50 dark:bg-[#111827]/80 border border-slate-200 dark:border-slate-800">
+                <div className="text-[11px] text-slate-500 dark:text-slate-400">Flow Rate</div>
+                <div className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white mt-0.5">24.5 <span className="text-xs font-normal text-slate-500 dark:text-slate-400">MLD</span></div>
                 <div className="text-[10px] text-slate-500 mt-0.5">Continuous STP Inflow</div>
               </div>
 
-              <div className="p-3 rounded-xl bg-[#111827]/80 border border-slate-800">
-                <div className="text-[11px] text-slate-400">Efficiency</div>
-                <div className="text-xl sm:text-2xl font-bold text-white mt-0.5">98.4<span className="text-xs font-normal text-slate-400">%</span></div>
-                <div className="text-[10px] text-emerald-400 mt-0.5">BOD / COD Removal</div>
+              <div className="p-3 rounded-xl bg-slate-50 dark:bg-[#111827]/80 border border-slate-200 dark:border-slate-800">
+                <div className="text-[11px] text-slate-500 dark:text-slate-400">Efficiency</div>
+                <div className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white mt-0.5">98.4<span className="text-xs font-normal text-slate-500 dark:text-slate-400">%</span></div>
+                <div className="text-[10px] text-emerald-600 dark:text-emerald-400 mt-0.5 font-semibold">BOD / COD Removal</div>
               </div>
 
-              <div className="p-3 rounded-xl bg-[#111827]/80 border border-slate-800">
-                <div className="text-[11px] text-slate-400">Audit Status</div>
-                <div className="text-xl sm:text-2xl font-bold text-white mt-0.5">100<span className="text-xs font-normal text-slate-400">%</span></div>
-                <div className="text-[10px] text-cyan-400 mt-0.5">Verified Records</div>
+              <div className="p-3 rounded-xl bg-slate-50 dark:bg-[#111827]/80 border border-slate-200 dark:border-slate-800">
+                <div className="text-[11px] text-slate-500 dark:text-slate-400">Audit Status</div>
+                <div className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white mt-0.5">100<span className="text-xs font-normal text-slate-500 dark:text-slate-400">%</span></div>
+                <div className="text-[10px] text-cyan-600 dark:text-cyan-400 mt-0.5 font-semibold">Verified Records</div>
               </div>
             </div>
 
             {/* Synoptic Treatment Flow - Clean & Uncluttered */}
-            <div className="pt-4 border-t border-slate-800/80">
-              <div className="text-xs font-medium text-slate-400 mb-3 flex items-center justify-between">
+            <div className="pt-4 border-t border-slate-200 dark:border-slate-800/80">
+              <div className="text-xs font-medium text-slate-600 dark:text-slate-400 mb-3 flex items-center justify-between">
                 <span>Treatment Process Flow</span>
-                <span className="text-[11px] text-emerald-400 font-mono">Live Monitoring</span>
+                <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-mono font-semibold">Live Monitoring</span>
               </div>
 
               <div className="grid grid-cols-4 gap-2 text-center text-xs">
-                <div className="p-2.5 rounded-lg bg-[#111827] border border-slate-800">
-                  <div className="text-[10px] text-slate-400">1. Influent</div>
-                  <div className="font-semibold text-white mt-0.5">220 mg/L</div>
+                <div className="p-2.5 rounded-lg bg-slate-50 dark:bg-[#111827] border border-slate-200 dark:border-slate-800">
+                  <div className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">1. Influent</div>
+                  <div className="font-semibold text-slate-900 dark:text-white mt-0.5">220 mg/L</div>
                   <div className="text-[9px] text-slate-500 mt-0.5">Raw Inflow</div>
                 </div>
 
-                <div className="p-2.5 rounded-lg bg-[#111827] border border-[#0EA5E9]/30">
-                  <div className="text-[10px] text-[#0EA5E9]">2. Aeration</div>
-                  <div className="font-semibold text-cyan-200 mt-0.5">2.0 mg/L</div>
-                  <div className="text-[9px] text-slate-400 mt-0.5">DO Basin</div>
+                <div className="p-2.5 rounded-lg bg-cyan-50/70 dark:bg-[#111827] border border-cyan-200 dark:border-[#0EA5E9]/30">
+                  <div className="text-[10px] text-cyan-700 dark:text-[#0EA5E9] font-medium">2. Aeration</div>
+                  <div className="font-semibold text-cyan-900 dark:text-cyan-200 mt-0.5">2.0 mg/L</div>
+                  <div className="text-[9px] text-cyan-700 dark:text-slate-400 mt-0.5">DO Basin</div>
                 </div>
 
-                <div className="p-2.5 rounded-lg bg-[#111827] border border-emerald-500/30">
-                  <div className="text-[10px] text-emerald-400">3. Effluent</div>
-                  <div className="font-semibold text-emerald-300 mt-0.5">&lt; 10 mg/L</div>
-                  <div className="text-[9px] text-emerald-400/80 mt-0.5">Compliant ✓</div>
+                <div className="p-2.5 rounded-lg bg-emerald-50/70 dark:bg-[#111827] border border-emerald-200 dark:border-emerald-500/30">
+                  <div className="text-[10px] text-emerald-700 dark:text-emerald-400 font-medium">3. Effluent</div>
+                  <div className="font-semibold text-emerald-900 dark:text-emerald-300 mt-0.5">&lt; 10 mg/L</div>
+                  <div className="text-[9px] text-emerald-600 dark:text-emerald-400/80 mt-0.5 font-semibold">Compliant ✓</div>
                 </div>
 
-                <div className="p-2.5 rounded-lg bg-[#111827] border border-indigo-500/30">
-                  <div className="text-[10px] text-indigo-400">4. Ledger</div>
-                  <div className="font-semibold text-indigo-200 mt-0.5">Anchored</div>
-                  <div className="text-[9px] text-indigo-400/80 mt-0.5">Verified ✓</div>
+                <div className="p-2.5 rounded-lg bg-indigo-50/70 dark:bg-[#111827] border border-indigo-200 dark:border-indigo-500/30">
+                  <div className="text-[10px] text-indigo-700 dark:text-indigo-400 font-medium">4. Ledger</div>
+                  <div className="font-semibold text-indigo-900 dark:text-indigo-200 mt-0.5">Anchored</div>
+                  <div className="text-[9px] text-indigo-600 dark:text-indigo-400/80 mt-0.5 font-semibold">Verified ✓</div>
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Right Column: Secure SCADA Gateway Terminal (Exact approved design) */}
+        {/* Right Column: Secure SCADA Gateway Terminal */}
         <div className="lg:col-span-5 flex flex-col items-center justify-center w-full anim-slide-right">
-          <div className="w-full max-w-md bg-[#0F172A]/92 border border-cyan-500/30 rounded-2xl p-7 sm:p-9 shadow-[0_20px_50px_rgba(0,0,0,0.8),0_0_30px_rgba(14,165,233,0.15)] backdrop-blur-xl relative anim-border-glow overflow-hidden">
+          <div className="w-full max-w-md bg-white/95 dark:bg-[#0F172A]/92 border border-cyan-500/30 rounded-2xl p-7 sm:p-9 shadow-[0_20px_50px_rgba(0,0,0,0.08),0_0_30px_rgba(14,165,233,0.1)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.8),0_0_30px_rgba(14,165,233,0.15)] backdrop-blur-xl relative anim-border-glow overflow-hidden">
             {/* Top Accent Gradient Line */}
             <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-[#0EA5E9] to-transparent" />
 
@@ -173,7 +186,7 @@ export const LoginPage: React.FC = () => {
                 <div className="text-[11px] font-mono uppercase tracking-wider text-[#0EA5E9] font-bold">
                   SECURE SCADA GATEWAY
                 </div>
-                <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-tight mt-1">
+                <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white tracking-tight mt-1">
                   Authorized Sign In
                 </h2>
               </div>
@@ -184,15 +197,15 @@ export const LoginPage: React.FC = () => {
             </div>
 
             {/* Role Demo Prefill Box with Professional Credential Tags */}
-            <div className="bg-[#0B0F17]/90 border border-[#1F293D] rounded-xl p-3.5 mt-5">
+            <div className="bg-slate-50 dark:bg-[#0B0F17]/90 border border-slate-200 dark:border-[#1F293D] rounded-xl p-3.5 mt-5">
               <div className="grid grid-cols-4 gap-1.5 sm:gap-2">
                 <button
                   type="button"
                   onClick={() => handleRoleSelect('operator', 'operator', 'operator123')}
                   className={`py-1.5 px-2 rounded-lg text-xs border text-center transition-all truncate cursor-pointer ${
                     activeRole === 'operator'
-                      ? 'border-[#0EA5E9] bg-[#0EA5E9]/20 text-[#0EA5E9] font-bold shadow-[0_0_12px_rgba(14,165,233,0.3)]'
-                      : 'border-[#1F293D] bg-[#161F30] hover:bg-[#1E293B] hover:border-slate-600 text-slate-400'
+                      ? 'border-[#0EA5E9] bg-[#0EA5E9]/15 dark:bg-[#0EA5E9]/20 text-[#0284C7] dark:text-[#0EA5E9] font-bold shadow-[0_0_12px_rgba(14,165,233,0.25)]'
+                      : 'border-slate-200 dark:border-[#1F293D] bg-white dark:bg-[#161F30] hover:bg-slate-100 dark:hover:bg-[#1E293B] hover:border-slate-400 dark:hover:border-slate-600 text-slate-600 dark:text-slate-400'
                   }`}
                   title="Plant Operator — Physical STP SCADA controls"
                 >
@@ -204,8 +217,8 @@ export const LoginPage: React.FC = () => {
                   onClick={() => handleRoleSelect('admin', 'admin', 'admin123')}
                   className={`py-1.5 px-2 rounded-lg text-xs border text-center transition-all truncate cursor-pointer ${
                     activeRole === 'admin'
-                      ? 'border-[#0EA5E9] bg-[#0EA5E9]/20 text-[#0EA5E9] font-bold shadow-[0_0_12px_rgba(14,165,233,0.3)]'
-                      : 'border-[#1F293D] bg-[#161F30] hover:bg-[#1E293B] hover:border-slate-600 text-slate-400'
+                      ? 'border-[#0EA5E9] bg-[#0EA5E9]/15 dark:bg-[#0EA5E9]/20 text-[#0284C7] dark:text-[#0EA5E9] font-bold shadow-[0_0_12px_rgba(14,165,233,0.25)]'
+                      : 'border-slate-200 dark:border-[#1F293D] bg-white dark:bg-[#161F30] hover:bg-slate-100 dark:hover:bg-[#1E293B] hover:border-slate-400 dark:hover:border-slate-600 text-slate-600 dark:text-slate-400'
                   }`}
                   title="System Administrator — Infrastructure & Users"
                 >
@@ -217,8 +230,8 @@ export const LoginPage: React.FC = () => {
                   onClick={() => handleRoleSelect('auditor', 'auditor', 'auditor123')}
                   className={`py-1.5 px-2 rounded-lg text-xs border text-center transition-all truncate cursor-pointer ${
                     activeRole === 'auditor'
-                      ? 'border-[#0EA5E9] bg-[#0EA5E9]/20 text-[#0EA5E9] font-bold shadow-[0_0_12px_rgba(14,165,233,0.3)]'
-                      : 'border-[#1F293D] bg-[#161F30] hover:bg-[#1E293B] hover:border-slate-600 text-slate-400'
+                      ? 'border-[#0EA5E9] bg-[#0EA5E9]/15 dark:bg-[#0EA5E9]/20 text-[#0284C7] dark:text-[#0EA5E9] font-bold shadow-[0_0_12px_rgba(14,165,233,0.25)]'
+                      : 'border-slate-200 dark:border-[#1F293D] bg-white dark:bg-[#161F30] hover:bg-slate-100 dark:hover:bg-[#1E293B] hover:border-slate-400 dark:hover:border-slate-600 text-slate-600 dark:text-slate-400'
                   }`}
                   title="Compliance Auditor — Forensic Merkle Verification"
                 >
@@ -230,8 +243,8 @@ export const LoginPage: React.FC = () => {
                   onClick={() => handleRoleSelect('regulator', 'regulator', 'regulator123')}
                   className={`py-1.5 px-2 rounded-lg text-xs border text-center transition-all truncate cursor-pointer ${
                     activeRole === 'regulator'
-                      ? 'border-[#0EA5E9] bg-[#0EA5E9]/20 text-[#0EA5E9] font-bold shadow-[0_0_12px_rgba(14,165,233,0.3)]'
-                      : 'border-[#1F293D] bg-[#161F30] hover:bg-[#1E293B] hover:border-slate-600 text-slate-400'
+                      ? 'border-[#0EA5E9] bg-[#0EA5E9]/15 dark:bg-[#0EA5E9]/20 text-[#0284C7] dark:text-[#0EA5E9] font-bold shadow-[0_0_12px_rgba(14,165,233,0.25)]'
+                      : 'border-slate-200 dark:border-[#1F293D] bg-white dark:bg-[#161F30] hover:bg-slate-100 dark:hover:bg-[#1E293B] hover:border-slate-400 dark:hover:border-slate-600 text-slate-600 dark:text-slate-400'
                   }`}
                   title="Regulatory Inspector — CPCB Official Oversight"
                 >
@@ -243,8 +256,8 @@ export const LoginPage: React.FC = () => {
 
             {/* Error Message */}
             {errorMsg && (
-              <div className="mt-4 p-3 bg-[#EF4444]/15 border border-[#EF4444]/40 rounded-xl text-rose-200 text-xs flex items-start gap-2.5">
-                <AlertCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+              <div className="mt-4 p-3 bg-[#EF4444]/15 border border-[#EF4444]/40 rounded-xl text-rose-700 dark:text-rose-200 text-xs flex items-start gap-2.5">
+                <AlertCircle className="w-4 h-4 text-rose-500 dark:text-rose-400 shrink-0 mt-0.5" />
                 <div className="flex-1">{errorMsg}</div>
               </div>
             )}
@@ -252,7 +265,7 @@ export const LoginPage: React.FC = () => {
             {/* Login Form */}
             <form onSubmit={handleSubmit} className="space-y-4 mt-5">
               <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1.5">
+                <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">
                   Official ID / License No. or Email
                 </label>
                 <input
@@ -261,12 +274,12 @@ export const LoginPage: React.FC = () => {
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   placeholder="e.g. OPR-DEL-0842 or operator"
-                  className="w-full px-3.5 py-2.5 bg-[#0B0F17] border border-[#1F293D] rounded-lg text-xs text-white placeholder-slate-500 focus:outline-none focus:border-[#0EA5E9] font-mono transition-colors focus:ring-1 focus:ring-[#0EA5E9]/50"
+                  className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-[#0B0F17] border border-slate-300 dark:border-[#1F293D] rounded-lg text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-[#0EA5E9] font-mono transition-colors focus:ring-1 focus:ring-[#0EA5E9]/50"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1.5">
+                <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">
                   Security Key / Password
                 </label>
                 <input
@@ -275,7 +288,7 @@ export const LoginPage: React.FC = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••••••"
-                  className="w-full px-3.5 py-2.5 bg-[#0B0F17] border border-[#1F293D] rounded-lg text-xs text-white placeholder-slate-500 focus:outline-none focus:border-[#0EA5E9] font-mono transition-colors focus:ring-1 focus:ring-[#0EA5E9]/50"
+                  className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-[#0B0F17] border border-slate-300 dark:border-[#1F293D] rounded-lg text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-[#0EA5E9] font-mono transition-colors focus:ring-1 focus:ring-[#0EA5E9]/50"
                 />
               </div>
 
@@ -283,7 +296,7 @@ export const LoginPage: React.FC = () => {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full py-3 px-4 bg-[#0EA5E9] hover:bg-[#0284C7] text-white rounded-lg text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(14,165,233,0.4)] active:scale-[0.99] disabled:opacity-50 mt-6 cursor-pointer"
+                className="w-full py-3 px-4 bg-[#0EA5E9] hover:bg-[#0284C7] text-white rounded-lg text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(14,165,233,0.35)] active:scale-[0.99] disabled:opacity-50 mt-6 cursor-pointer"
               >
                 {isSubmitting ? (
                   <>
@@ -300,10 +313,10 @@ export const LoginPage: React.FC = () => {
             </form>
 
             {/* Public Portal Link */}
-            <div className="mt-5 pt-4 border-t border-[#1F293D] text-center">
+            <div className="mt-5 pt-4 border-t border-slate-200 dark:border-[#1F293D] text-center">
               <Link
                 to="/verify"
-                className="text-xs text-[#0EA5E9] hover:text-cyan-300 transition-colors inline-flex items-center gap-1.5 font-medium"
+                className="text-xs text-[#0EA5E9] hover:text-cyan-700 dark:hover:text-cyan-300 transition-colors inline-flex items-center gap-1.5 font-medium"
               >
                 <span>Public Verification Portal</span>
                 <span>&rarr;</span>
@@ -314,7 +327,7 @@ export const LoginPage: React.FC = () => {
       </main>
 
       {/* Clean Footer */}
-      <footer className="w-full border-t border-slate-800/80 bg-[#070B12]/90 backdrop-blur-md px-6 lg:px-12 py-3.5 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 gap-2 z-20">
+      <footer className="w-full border-t border-slate-200 dark:border-slate-800/80 bg-white/90 dark:bg-[#070B12]/90 backdrop-blur-md px-6 lg:px-12 py-3.5 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 gap-2 z-20">
         <div>AquaTrust AI &bull; Water Quality Monitoring &amp; Traceability</div>
         <div>&copy; 2026 AquaTrust AI. All rights reserved.</div>
       </footer>

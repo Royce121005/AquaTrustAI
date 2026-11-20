@@ -14,10 +14,10 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-900 text-slate-100">
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100">
         <div className="flex flex-col items-center gap-3">
-          <div className="w-8 h-8 border-2 border-brand-500 border-t-transparent rounded-full animate-spin"></div>
-          <p className="text-sm font-medium text-slate-400">Verifying session authority...</p>
+          <div className="w-8 h-8 border-2 border-sky-500 border-t-transparent rounded-full animate-spin"></div>
+          <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Verifying session authority...</p>
         </div>
       </div>
     );
@@ -47,10 +47,12 @@ export const RoleGuard: React.FC<RoleGuardProps> = ({ children, allowedRoles }) 
 
   if (!hasAccess) {
     return (
-      <ForbiddenState
-        title="Unauthorized Role Access"
-        message={`Your assigned role (${user.role}) lacks authority to access this operational view. Internal authorization policy strictly enforced.`}
-      />
+      <div className="p-6 max-w-2xl mx-auto">
+        <ForbiddenState
+          title="Unauthorized Role Access"
+          message={`Your assigned role (${user.role}) lacks authority to access this operational view. Internal authorization policy strictly enforced.`}
+        />
+      </div>
     );
   }
 
