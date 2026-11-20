@@ -53,26 +53,18 @@ export const TopBar: React.FC = () => {
     <header className="h-14 bg-[#0B0F17]/95 backdrop-blur-md border-b border-[#1F293D] text-slate-100 flex items-center justify-between px-4 sm:px-6 shrink-0 z-30 select-none">
       <div className="flex items-center gap-4 sm:gap-6">
         {/* Brand Group */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center text-white shadow-md shadow-cyan-500/20 font-bold shrink-0">
             <Droplets className="w-4 h-4 text-white fill-current" />
           </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="font-bold text-sm tracking-tight text-white font-mono">
-                AquaTrust<span className="text-cyan-400">AI</span>
-              </span>
-            </div>
-            <p className="text-[10px] text-slate-400 font-mono hidden md:block">
-              Intelligent Wastewater Monitoring &amp; Blockchain Traceability
-            </p>
-          </div>
+          <span className="font-bold text-base tracking-tight text-white font-mono">
+            AquaTrust<span className="text-cyan-400">AI</span>
+          </span>
         </div>
 
         {/* Facility Context Selector */}
         <div className="hidden lg:flex items-center gap-2 pl-4 border-l border-[#1F293D] text-xs">
           <Building2 className="w-3.5 h-3.5 text-cyan-400" />
-          <span className="text-slate-400 font-mono text-[11px]">Plant Scope:</span>
           {facilities && facilities.length > 0 ? (
             <select
               value={selectedFacilityId || ''}
@@ -121,7 +113,7 @@ export const TopBar: React.FC = () => {
 
             <button
               onClick={() => logout()}
-              title="Logout session and revoke token"
+              title="Logout"
               className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-800/80 rounded-lg border border-transparent hover:border-slate-700 transition-colors"
             >
               <LogOut className="w-4 h-4" />

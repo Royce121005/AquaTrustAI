@@ -176,9 +176,6 @@ export const LoginPage: React.FC = () => {
                 <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-tight mt-1">
                   Authorized Sign In
                 </h2>
-                <p className="text-xs text-slate-400 mt-1">
-                  Enter registered credentials to access operational telemetry.
-                </p>
               </div>
               <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#0EA5E9]/15 border border-[#0EA5E9]/35 text-[10px] font-mono text-[#0EA5E9] shrink-0 font-medium">
                 <Lock className="w-3 h-3 text-[#0EA5E9]" />
@@ -188,9 +185,6 @@ export const LoginPage: React.FC = () => {
 
             {/* Role Demo Prefill Box with Professional Credential Tags */}
             <div className="bg-[#0B0F17]/90 border border-[#1F293D] rounded-xl p-3.5 mt-5">
-              <label className="block text-xs font-medium text-slate-300 mb-2">
-                Quick Role Prefill (Demo Testing):
-              </label>
               <div className="grid grid-cols-4 gap-1.5 sm:gap-2">
                 <button
                   type="button"
@@ -305,18 +299,13 @@ export const LoginPage: React.FC = () => {
               </button>
             </form>
 
-            {/* Note under button */}
-            <p className="text-[10px] text-slate-500 text-center mt-3.5 leading-relaxed font-mono">
-              Role-based non-repudiation enforced. Telemetry actions watermarked per RBAC policy.
-            </p>
-
             {/* Public Portal Link */}
             <div className="mt-5 pt-4 border-t border-[#1F293D] text-center">
               <Link
                 to="/verify"
                 className="text-xs text-[#0EA5E9] hover:text-cyan-300 transition-colors inline-flex items-center gap-1.5 font-medium"
               >
-                <span>Public Trust Verification Portal (No login required)</span>
+                <span>Public Verification Portal</span>
                 <span>&rarr;</span>
               </Link>
             </div>

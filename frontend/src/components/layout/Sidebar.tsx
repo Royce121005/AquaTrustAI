@@ -200,9 +200,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
     >
       <div className="h-10 px-3 border-b border-[#1F293D]/80 flex items-center justify-between text-[10px] font-mono uppercase tracking-wider text-slate-400">
         {!isCollapsed && (
-          <span className="truncate flex items-center gap-1.5">
+          <span className="truncate flex items-center gap-1.5 font-semibold text-slate-300">
             <span className="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>
-            Scope: <span className="text-slate-200">{currentRole}</span>
+            <span className="capitalize">{currentRole}</span>
           </span>
         )}
         {onToggleCollapse && (
@@ -260,15 +260,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
       </nav>
 
       {/* Operational Footer Notice */}
-      {!isCollapsed && (
-        <div className="p-3 border-t border-[#1F293D] bg-[#070B12]/80 text-[10px] text-slate-400 font-mono">
-          <p className="font-semibold text-slate-300 flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-            CPCB 2021 Normative Boundary
-          </p>
-          <p className="mt-0.5 text-slate-400">SHA-256 / ES256 Signed Finality</p>
-        </div>
-      )}
     </aside>
   );
 };

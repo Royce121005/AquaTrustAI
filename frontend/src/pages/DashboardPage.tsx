@@ -209,12 +209,8 @@ export const DashboardPage: React.FC = () => {
 
             <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white font-mono flex items-center gap-3">
               <Activity className="w-7 h-7 text-cyan-400" />
-              Operational Intelligence &amp; SCADA Trust
+              Operational SCADA Dashboard
             </h1>
-
-            <p className="text-xs text-slate-300 max-w-3xl leading-relaxed">
-              Deterministic kinetic twin simulation, continuous pre-AI physical validation, multi-dimensional anomaly detection, and cryptographic distributed ledger audit anchoring.
-            </p>
           </div>
 
           {/* Action Header Buttons */}
@@ -234,43 +230,8 @@ export const DashboardPage: React.FC = () => {
               className="inline-flex items-center gap-2 px-3.5 py-2.5 bg-[#1E293B]/90 border border-[#334155] hover:border-slate-500 text-slate-200 rounded-xl text-xs font-semibold font-mono shadow-sm transition-all disabled:opacity-50"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin text-cyan-400' : 'text-slate-400'}`} />
-              <span>{isRefreshing ? 'REFRESHING...' : 'REFRESH TELEMETRY'}</span>
+              <span>{isRefreshing ? 'REFRESHING...' : 'REFRESH'}</span>
             </button>
-          </div>
-        </div>
-
-        {/* 2. Cryptographic Role Identity Strip */}
-        <div className="mt-5 pt-4 border-t border-[#1F293D] flex flex-col md:flex-row md:items-center justify-between gap-4">
-          {/* Active Verified Credential */}
-          <div className="flex items-center gap-3">
-            <div className={`p-2 rounded-xl bg-slate-900 border border-[#1F293D] ${currentCred.glowClass}`}>
-              <ShieldCheck className={`w-5 h-5 ${currentCred.color}`} />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-[11px] font-bold text-slate-200 font-mono uppercase tracking-wider">
-                  Verified Credential:
-                </span>
-                <span className={`px-2 py-0.5 rounded text-[11px] font-mono font-bold border ${currentCred.badgeBg}`}>
-                  {currentCred.credentialId}
-                </span>
-                <span className="text-[10px] text-slate-400 font-mono hidden sm:inline">
-                  • {currentCred.authority}
-                </span>
-              </div>
-              <p className="text-[11px] text-slate-400 font-mono mt-0.5">
-                Authorized Scope: <span className="text-slate-300">{currentCred.scope}</span>
-              </p>
-            </div>
-          </div>
-
-          {/* Authenticated Active Role Display */}
-          <div className="flex items-center gap-2 bg-[#0B0F17] px-3 py-1.5 rounded-xl border border-[#1F293D] text-[11px] font-mono self-start md:self-auto">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="text-[10px] text-slate-400 uppercase font-semibold">Active Session Role:</span>
-            <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border ${currentCred.badgeBg}`}>
-              {userRole.replace('_', ' ')}
-            </span>
           </div>
         </div>
       </div>
@@ -455,15 +416,7 @@ export const DashboardPage: React.FC = () => {
                 {userRole === 'auditor' && 'Compliance Auditor Forensic Trust Deck'}
                 {userRole === 'admin' && 'Enterprise System Administration Deck'}
               </h2>
-              <p className="text-[11px] text-slate-400 font-mono">
-                Direct SCADA control circuits and cryptographic inspection routes for {userRole.toUpperCase()}
-              </p>
             </div>
-          </div>
-          <div className="text-right">
-            <span className="text-[10px] font-mono text-cyan-400 bg-cyan-950/60 border border-cyan-800/70 px-2 py-0.5 rounded">
-              NON-REPUDIATION ENFORCED
-            </span>
           </div>
         </div>
 
@@ -481,9 +434,6 @@ export const DashboardPage: React.FC = () => {
                     <ArrowUpRight className="w-3.5 h-3.5 opacity-60 group-hover:opacity-100 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
                   </div>
                   <h3 className="text-xs font-bold text-white font-mono uppercase">Digital Twin SCADA</h3>
-                  <p className="text-[11px] text-slate-400 mt-1 leading-snug">
-                    Inspect 5-stage kinetic CSTR basin simulation &amp; RAS return loops.
-                  </p>
                 </div>
                 <span className="text-[10px] text-cyan-400 font-mono font-semibold mt-3 block">
                   Launch Room &rarr;
@@ -500,9 +450,6 @@ export const DashboardPage: React.FC = () => {
                     <ArrowUpRight className="w-3.5 h-3.5 opacity-60 group-hover:opacity-100 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
                   </div>
                   <h3 className="text-xs font-bold text-white font-mono uppercase">Simulator Controls</h3>
-                  <p className="text-[11px] text-slate-400 mt-1 leading-snug">
-                    Inject wet-weather storm surges, toxic shock, and DO setpoint shifts.
-                  </p>
                 </div>
                 <span className="text-[10px] text-blue-400 font-mono font-semibold mt-3 block">
                   Adjust Parameters &rarr;
@@ -519,9 +466,6 @@ export const DashboardPage: React.FC = () => {
                     <ArrowUpRight className="w-3.5 h-3.5 opacity-60 group-hover:opacity-100 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
                   </div>
                   <h3 className="text-xs font-bold text-white font-mono uppercase">Live Telemetry</h3>
-                  <p className="text-[11px] text-slate-400 mt-1 leading-snug">
-                    Real-time dissolved oxygen, pH, BOD, and TSS multi-sensor streams.
-                  </p>
                 </div>
                 <span className="text-[10px] text-teal-400 font-mono font-semibold mt-3 block">
                   Inspect Sensors &rarr;
@@ -538,9 +482,6 @@ export const DashboardPage: React.FC = () => {
                     <ArrowUpRight className="w-3.5 h-3.5 opacity-60 group-hover:opacity-100 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
                   </div>
                   <h3 className="text-xs font-bold text-white font-mono uppercase">Finalize Window</h3>
-                  <p className="text-[11px] text-slate-400 mt-1 leading-snug">
-                    Seal time window telemetry for cryptographic anchoring and CPCB audit.
-                  </p>
                 </div>
                 <span className="text-[10px] text-emerald-400 font-mono font-semibold mt-3 block">
                   Commit Window &rarr;
@@ -561,9 +502,6 @@ export const DashboardPage: React.FC = () => {
                     <ArrowUpRight className="w-3.5 h-3.5 opacity-60 group-hover:opacity-100 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
                   </div>
                   <h3 className="text-xs font-bold text-white font-mono uppercase">Schedule VI Standards</h3>
-                  <p className="text-[11px] text-slate-400 mt-1 leading-snug">
-                    Inspect discharge thresholds: BOD &le; 30, COD &le; 250, TSS &le; 50 mg/L.
-                  </p>
                 </div>
                 <span className="text-[10px] text-purple-400 font-mono font-semibold mt-3 block">
                   Verify Limits &rarr;
@@ -580,9 +518,6 @@ export const DashboardPage: React.FC = () => {
                     <ArrowUpRight className="w-3.5 h-3.5 opacity-60 group-hover:opacity-100 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
                   </div>
                   <h3 className="text-xs font-bold text-white font-mono uppercase">Digital Certificates</h3>
-                  <p className="text-[11px] text-slate-400 mt-1 leading-snug">
-                    Review and cryptographically stamp compliance certificates.
-                  </p>
                 </div>
                 <span className="text-[10px] text-cyan-400 font-mono font-semibold mt-3 block">
                   Inspect Certs &rarr;
@@ -599,9 +534,6 @@ export const DashboardPage: React.FC = () => {
                     <ArrowUpRight className="w-3.5 h-3.5 opacity-60 group-hover:opacity-100 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
                   </div>
                   <h3 className="text-xs font-bold text-white font-mono uppercase">Public Trust Portal</h3>
-                  <p className="text-[11px] text-slate-400 mt-1 leading-snug">
-                    Zero-auth public verification gateway for citizens and journalists.
-                  </p>
                 </div>
                 <span className="text-[10px] text-emerald-400 font-mono font-semibold mt-3 block">
                   Open Portal &rarr;
@@ -618,9 +550,6 @@ export const DashboardPage: React.FC = () => {
                     <ArrowUpRight className="w-3.5 h-3.5 opacity-60 group-hover:opacity-100 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
                   </div>
                   <h3 className="text-xs font-bold text-white font-mono uppercase">Forensic Audit Log</h3>
-                  <p className="text-[11px] text-slate-400 mt-1 leading-snug">
-                    Unredacted historical telemetry &amp; operator actions timeline.
-                  </p>
                 </div>
                 <span className="text-[10px] text-amber-400 font-mono font-semibold mt-3 block">
                   Audit Records &rarr;
@@ -641,9 +570,6 @@ export const DashboardPage: React.FC = () => {
                     <ArrowUpRight className="w-3.5 h-3.5 opacity-60 group-hover:opacity-100 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
                   </div>
                   <h3 className="text-xs font-bold text-white font-mono uppercase">DLT Ledger Explorer</h3>
-                  <p className="text-[11px] text-slate-400 mt-1 leading-snug">
-                    Verify SHA-256 Merkle root trees, block heights, and consensus receipts.
-                  </p>
                 </div>
                 <span className="text-[10px] text-emerald-400 font-mono font-semibold mt-3 block">
                   Inspect Ledger &rarr;
@@ -660,9 +586,6 @@ export const DashboardPage: React.FC = () => {
                     <ArrowUpRight className="w-3.5 h-3.5 opacity-60 group-hover:opacity-100 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
                   </div>
                   <h3 className="text-xs font-bold text-white font-mono uppercase">Cryptographic Audit</h3>
-                  <p className="text-[11px] text-slate-400 mt-1 leading-snug">
-                    Re-compute payload hashes and validate against on-chain Merkle leaves.
-                  </p>
                 </div>
                 <span className="text-[10px] text-cyan-400 font-mono font-semibold mt-3 block">
                   Execute Audit &rarr;
@@ -679,9 +602,6 @@ export const DashboardPage: React.FC = () => {
                     <ArrowUpRight className="w-3.5 h-3.5 opacity-60 group-hover:opacity-100 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
                   </div>
                   <h3 className="text-xs font-bold text-white font-mono uppercase">Append-Only Corrections</h3>
-                  <p className="text-[11px] text-slate-400 mt-1 leading-snug">
-                    Inspect laboratory split-sample corrections and reason code annotations.
-                  </p>
                 </div>
                 <span className="text-[10px] text-amber-400 font-mono font-semibold mt-3 block">
                   Review Logs &rarr;
@@ -698,9 +618,6 @@ export const DashboardPage: React.FC = () => {
                     <ArrowUpRight className="w-3.5 h-3.5 opacity-60 group-hover:opacity-100 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
                   </div>
                   <h3 className="text-xs font-bold text-white font-mono uppercase">Sealed Records Fleet</h3>
-                  <p className="text-[11px] text-slate-400 mt-1 leading-snug">
-                    All sealed operational treatment windows across regional plants.
-                  </p>
                 </div>
                 <span className="text-[10px] text-blue-400 font-mono font-semibold mt-3 block">
                   Browse Records &rarr;
@@ -721,9 +638,6 @@ export const DashboardPage: React.FC = () => {
                     <ArrowUpRight className="w-3.5 h-3.5 opacity-60 group-hover:opacity-100 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
                   </div>
                   <h3 className="text-xs font-bold text-white font-mono uppercase">Fleet Management</h3>
-                  <p className="text-[11px] text-slate-400 mt-1 leading-snug">
-                    Provision STP/ETP facilities, register IoT gateways &amp; sensors.
-                  </p>
                 </div>
                 <span className="text-[10px] text-cyan-400 font-mono font-semibold mt-3 block">
                   Manage Fleet &rarr;
@@ -740,9 +654,6 @@ export const DashboardPage: React.FC = () => {
                     <ArrowUpRight className="w-3.5 h-3.5 opacity-60 group-hover:opacity-100 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
                   </div>
                   <h3 className="text-xs font-bold text-white font-mono uppercase">System Diagnostics</h3>
-                  <p className="text-[11px] text-slate-400 mt-1 leading-snug">
-                    Database pool connection status, API gateway latencies, worker tasks.
-                  </p>
                 </div>
                 <span className="text-[10px] text-purple-400 font-mono font-semibold mt-3 block">
                   Server Health &rarr;
@@ -759,9 +670,6 @@ export const DashboardPage: React.FC = () => {
                     <ArrowUpRight className="w-3.5 h-3.5 opacity-60 group-hover:opacity-100 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
                   </div>
                   <h3 className="text-xs font-bold text-white font-mono uppercase">Consensus Node Ops</h3>
-                  <p className="text-[11px] text-slate-400 mt-1 leading-snug">
-                    Inspect Hyperledger Fabric peer status, chaincode endorsement state.
-                  </p>
                 </div>
                 <span className="text-[10px] text-emerald-400 font-mono font-semibold mt-3 block">
                   DLT Gateway &rarr;
@@ -778,9 +686,6 @@ export const DashboardPage: React.FC = () => {
                     <ArrowUpRight className="w-3.5 h-3.5 opacity-60 group-hover:opacity-100 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
                   </div>
                   <h3 className="text-xs font-bold text-white font-mono uppercase">Enterprise Audit</h3>
-                  <p className="text-[11px] text-slate-400 mt-1 leading-snug">
-                    Cross-facility cryptographic ledger dump &amp; compliance history.
-                  </p>
                 </div>
                 <span className="text-[10px] text-amber-400 font-mono font-semibold mt-3 block">
                   Export Logs &rarr;
@@ -800,9 +705,6 @@ export const DashboardPage: React.FC = () => {
               Continuous Physical Treatment Pipeline
             </span>
           </div>
-          <span className="text-[11px] font-mono text-cyan-400 bg-cyan-950/80 px-2.5 py-0.5 rounded border border-cyan-800">
-            KINETIC DIGITAL TWIN SYNC: 100%
-          </span>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-3 text-xs font-mono">
@@ -814,9 +716,6 @@ export const DashboardPage: React.FC = () => {
             </div>
             <div className="text-base font-bold text-white">220 mg/L BOD</div>
             <div className="text-[11px] text-slate-400 mt-1">Flow: 24.5 MLD • TSS: 190 mg/L</div>
-            <div className="mt-2 text-[10px] text-emerald-400 bg-emerald-950/50 px-2 py-0.5 rounded inline-block">
-              &bull; Screening &amp; Grit OK
-            </div>
           </div>
 
           {/* Stage 2 */}
@@ -827,9 +726,6 @@ export const DashboardPage: React.FC = () => {
             </div>
             <div className="text-base font-bold text-cyan-300">DO: 2.0 mg/L</div>
             <div className="text-[11px] text-slate-400 mt-1">MLSS: 3,200 mg/L • Temp: 22.4&deg;C</div>
-            <div className="mt-2 text-[10px] text-emerald-400 bg-emerald-950/50 px-2 py-0.5 rounded inline-block">
-              &bull; Nitrification Optimal
-            </div>
           </div>
 
           {/* Stage 3 */}
@@ -840,9 +736,6 @@ export const DashboardPage: React.FC = () => {
             </div>
             <div className="text-base font-bold text-emerald-400">BOD &lt; 10 mg/L</div>
             <div className="text-[11px] text-slate-400 mt-1">TSS: 12 mg/L • pH: 7.4</div>
-            <div className="mt-2 text-[10px] text-emerald-400 bg-emerald-950/50 px-2 py-0.5 rounded inline-block">
-              &bull; CPCB Sched VI Pass ✓
-            </div>
           </div>
 
           {/* Stage 4 */}
@@ -852,10 +745,7 @@ export const DashboardPage: React.FC = () => {
               <span className="text-purple-400">Anchored</span>
             </div>
             <div className="text-base font-bold text-purple-300">SHA-256 Merkle</div>
-            <div className="text-[11px] text-slate-400 mt-1">NIST P-256 • Immutably Sealed</div>
-            <div className="mt-2 text-[10px] text-purple-400 bg-purple-950/50 px-2 py-0.5 rounded inline-block">
-              &bull; Non-Repudiation Stamped
-            </div>
+            <div className="text-[11px] text-slate-400 mt-1">NIST P-256 Signed</div>
           </div>
         </div>
       </div>
@@ -871,9 +761,6 @@ export const DashboardPage: React.FC = () => {
               <h2 className="text-sm font-bold text-white uppercase tracking-wider font-mono">
                 Distributed Ledger Transport Boundary
               </h2>
-              <p className="text-[11px] text-slate-400 font-mono">
-                Cryptographic Anchor Pipeline &amp; Consensus Node State
-              </p>
             </div>
           </div>
           <DltModeBadge
@@ -895,11 +782,6 @@ export const DashboardPage: React.FC = () => {
               <span className="font-extrabold text-white text-base mt-0.5 block">
                 {dltQuery.data?.mode || 'LOCAL_SIMULATION'}
               </span>
-              <p className="text-[11px] text-slate-400 mt-1.5 leading-relaxed">
-                {dltQuery.data?.mode === 'FABRIC'
-                  ? 'Hyperledger Fabric Production Channel active with Byzantine fault-tolerant Raft peer consensus.'
-                  : 'Cryptographic simulation active. SHA-256 Merkle roots computed in-memory, deterministic verification ready.'}
-              </p>
             </div>
 
             <div className="p-3.5 bg-[#0B0F17]/80 border border-[#1F293D] rounded-xl">
@@ -934,9 +816,6 @@ export const DashboardPage: React.FC = () => {
                     ? `Seq: #${dltQuery.data.simulation_sequence}`
                     : 'Block #10492 Anchored'}
                 </span>
-                <p className="text-[11px] text-slate-400 mt-1 leading-snug">
-                  Every 15-minute time window sealed with SHA-256 root.
-                </p>
               </div>
               <div className="mt-3 pt-2.5 border-t border-[#1F293D]">
                 <Link
@@ -960,9 +839,6 @@ export const DashboardPage: React.FC = () => {
             <h2 className="text-sm font-bold text-white uppercase tracking-wider font-mono">
               Recent Treatment Records Ledger
             </h2>
-            <span className="text-[10px] font-mono text-slate-400 bg-slate-800/80 px-2 py-0.5 rounded border border-slate-700 hidden sm:inline">
-              IMMUTABLE AUDIT DATA
-            </span>
           </div>
           <Link
             to="/treatment-records"
