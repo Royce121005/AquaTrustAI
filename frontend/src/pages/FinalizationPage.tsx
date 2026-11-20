@@ -28,6 +28,16 @@ export const FinalizationPage: React.FC = () => {
     staleTime: 60000,
   });
 
+  // Automatically sync facilityId to actual UUID when facilities load
+  React.useEffect(() => {
+    if (facilities && facilities.length > 0) {
+      const isUUID = /^[0-9a-f]{8}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{12}$/i.test(facilityId);
+      if (!isUUID) {
+        setFacilityId(facilities[0].facility_id);
+      }
+    }
+  }, [facilities, facilityId]);
+
   const finalizeMutation = useMutation({
     mutationFn: () =>
       finalizeTreatmentRecordApi({

@@ -6,8 +6,94 @@ from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.enum.table import WD_TABLE_ALIGNMENT
 from docx.oxml import OxmlElement, parse_xml
 from docx.oxml.ns import nsdecls, qn
+import docx.opc.constants
 
-def set_cell_margins(cell, top=100, bottom=100, left=150, right=150):
+def clean_math_text(s: str) -> str:
+    s = s.strip()
+    if s.startswith('$$') and s.endswith('$$'):
+        s = s[2:-2].strip()
+    elif s.startswith('$') and s.endswith('$'):
+        s = s[1:-1].strip()
+
+    # Known typos
+    s = s.replace('($WCIS)', '(WCI)').replace('$WCIS', 'WCI').replace('$WCI', 'WCI')
+
+    # Specific macros
+    s = re.sub(r'\\text\{([^}]+)\}', r'\1', s)
+    s = re.sub(r'\\mathbf\{([^}]+)\}', r'\1', s)
+    s = re.sub(r'\\mathbb\{([A-Za-z]+)\}', r'\1', s)
+    s = re.sub(r'\\mathcal\{([A-Za-z]+)\}', r'\1', s)
+    s = re.sub(r'\\mathtt\{([^}]+)\}', r'\1', s)
+    s = re.sub(r'\\widehat\{([^}]+)\}', r'ŷ_\1', s)
+
+    # Fractions
+    frac_pattern = r'\\frac\{((?:[^{}]|\{[^{}]*\})*)\}\{((?:[^{}]|\{[^{}]*\})*)\}'
+    while re.search(frac_pattern, s):
+        s = re.sub(frac_pattern, r'(\1 / \2)', s)
+
+    # Left and Right delimiters
+    s = re.sub(r'\\left\[', r'[', s)
+    s = re.sub(r'\\right\]', r']', s)
+    s = re.sub(r'\\left\(', r'(', s)
+    s = re.sub(r'\\right\)', r')', s)
+    s = re.sub(r'\\left\|', r'|', s)
+    s = re.sub(r'\\right\|', r'|', s)
+    s = s.replace(r'\left', '').replace(r'\right', '')
+
+    # Standard symbols
+    s = s.replace(r'\cdot', ' · ')
+    s = s.replace(r'\times', ' × ')
+    s = s.replace(r'\Delta', 'Δ')
+    s = s.replace(r'\mu', 'μ')
+    s = s.replace(r'\sigma', 'σ')
+    s = s.replace(r'\alpha', 'α')
+    s = s.replace(r'\beta', 'β')
+    s = s.replace(r'\theta', 'θ')
+    s = s.replace(r'\lambda', 'λ')
+    s = s.replace(r'\epsilon', 'ε')
+    s = s.replace(r'\psi', 'ψ')
+    s = s.replace(r'\eta', 'η')
+    s = re.sub(r'\\le\b', '≤', s)
+    s = re.sub(r'\\ge\b', '≥', s)
+    s = re.sub(r'\\to\b', '→', s)
+    s = re.sub(r'\\in\b', '∈', s)
+    s = s.replace(r'\dots', '...')
+    s = s.replace(r'\parallel', ' ‖ ')
+    s = s.replace(r'\%', '%')
+    s = s.replace(r'\_', '_')
+    s = s.replace(r'\sum', '∑')
+    s = s.replace(r'\sqrt', '√')
+    s = s.replace(r'\ln', 'ln')
+    s = s.replace(r'\log', 'log')
+    s = s.replace(r'\min', 'min')
+    s = s.replace(r'\max', 'max')
+    s = s.replace(r'\quad', '   ')
+
+    # Subscripts & Superscripts
+    s = re.sub(r'_\{([^}]+)\}', r'_\1', s)
+    s = re.sub(r'\^\{([^}]+)\}', r'^\1', s)
+    s = s.replace('{', '').replace('}', '')
+    s = s.replace('\\', '')
+
+    # Clean double parentheses
+    s = re.sub(r'\(\s*\(([^()]+)\)\s*\)', r'(\1)', s)
+    s = re.sub(r'\s+', ' ', s)
+    return s.strip()
+
+def add_hyperlink(paragraph, url, text, font_size=11, color="1155CC", underline=True):
+    """Add a native Word clickable hyperlink run to a paragraph."""
+    part = paragraph.part
+    r_id = part.relate_to(url, docx.opc.constants.RELATIONSHIP_TYPE.HYPERLINK, is_external=True)
+    hyperlink = parse_xml(f'<w:hyperlink xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" r:id="{r_id}" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"/>')
+    new_run = parse_xml(f'<w:r xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"/>')
+    new_run_prop = parse_xml(f'<w:rPr xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/><w:color w:val="{color}"/><w:u w:val="{"single" if underline else "none"}"/><w:sz w:val="{int(font_size * 2)}"/></w:rPr>')
+    new_run.append(new_run_prop)
+    new_run_text = parse_xml(f'<w:t xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xml:space="preserve">{text}</w:t>')
+    new_run.append(new_run_text)
+    hyperlink.append(new_run)
+    paragraph._p.append(hyperlink)
+
+def set_cell_margins(cell, top=80, bottom=80, left=120, right=120):
     """Set inner padding for a table cell."""
     tcPr = cell._tc.get_or_add_tcPr()
     tcMar = OxmlElement('w:tcMar')
@@ -18,8 +104,8 @@ def set_cell_margins(cell, top=100, bottom=100, left=150, right=150):
         tcMar.append(node)
     tcPr.append(tcMar)
 
-def set_cell_borders(cell, color="444444", sz="4", val="single"):
-    """Set clean, standard dark/gray borders for table cells."""
+def set_cell_borders(cell, color="666666", sz="4", val="single"):
+    """Set clean, standard dark/gray borders for table cells with NO background shading."""
     tcPr = cell._tc.get_or_add_tcPr()
     tcBorders = parse_xml(f'''
         <w:tcBorders {nsdecls("w")}>
@@ -32,11 +118,26 @@ def set_cell_borders(cell, color="444444", sz="4", val="single"):
     tcPr.append(tcBorders)
 
 def add_formatted_runs(paragraph, text, base_font_name="Times New Roman", base_font_size=12, italic_all=False):
-    """Parses markdown bold, italic, code, and math tokens into runs."""
-    tokens = re.split(r'(\*\*.*?\*\*|\*.*?\*|`.*?`|\$.*?\$)', text)
+    """Parses markdown bold, italic, code, math, and hyperlinks into runs."""
+    pattern = r'(\*\*.*?\*\*|\*.*?\*|`.*?`|\$.*?\$|\[.*?\]\(https?://[^\)]+\)|https?://[^\s\)]+)'
+    tokens = re.split(pattern, text)
     for token in tokens:
         if not token:
             continue
+
+        # Markdown Link [label](url)
+        link_match = re.match(r'^\[(.*?)\]\((https?://[^\)]+)\)$', token)
+        if link_match:
+            label = link_match.group(1).strip()
+            url = link_match.group(2).strip()
+            add_hyperlink(paragraph, url, label, font_size=base_font_size)
+            continue
+
+        # Raw URL
+        if re.match(r'^https?://\S+$', token):
+            add_hyperlink(paragraph, token, token, font_size=base_font_size)
+            continue
+
         run = paragraph.add_run()
         run.font.name = base_font_name
         run.font.size = Pt(base_font_size)
@@ -55,9 +156,12 @@ def add_formatted_runs(paragraph, text, base_font_name="Times New Roman", base_f
             run.font.size = Pt(base_font_size - 1)
             run.font.color.rgb = RGBColor(120, 20, 40)
         elif token.startswith('$') and token.endswith('$') and len(token) >= 2:
-            run.text = token[1:-1]
+            # Clean math typography
+            math_content = clean_math_text(token[1:-1])
+            run.text = math_content
             run.font.name = 'Cambria Math'
             run.italic = True
+            run.font.color.rgb = RGBColor(15, 35, 75)
         else:
             run.text = token
 
@@ -87,7 +191,7 @@ def parse_markdown_to_docx(md_path, docx_path):
     
     in_table = False
     table_lines = []
-    last_was_page_break = True  # Avoid starting with a page break
+    last_was_page_break = True  # Avoid starting with an unnecessary blank page
 
     def flush_table():
         nonlocal in_table, table_lines, last_was_page_break
@@ -119,7 +223,7 @@ def parse_markdown_to_docx(md_path, docx_path):
                     
                     set_cell_margins(cell, top=70, bottom=70, left=100, right=100)
                     # Simple clean borders, NO BACKGROUND COLOR
-                    set_cell_borders(cell, color="555555" if r_idx == 0 else "888888", sz="6" if r_idx == 0 else "4")
+                    set_cell_borders(cell, color="444444" if r_idx == 0 else "777777", sz="6" if r_idx == 0 else "4")
 
                     if r_idx == 0:
                         add_formatted_runs(p, val, base_font_size=10.5)
@@ -170,6 +274,11 @@ def parse_markdown_to_docx(md_path, docx_path):
     while i < len(lines):
         line = lines[i].rstrip()
         
+        # Ignore raw LaTeX spacing commands
+        if line.strip().startswith(r'\vspace'):
+            i += 1
+            continue
+
         # Code blocks
         if line.strip().startswith('```'):
             if in_table:
@@ -264,9 +373,10 @@ def parse_markdown_to_docx(md_path, docx_path):
         if line.strip().startswith('$$') and line.strip().endswith('$$') and len(line.strip()) > 4:
             p = doc.add_paragraph()
             p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-            p.paragraph_format.space_before = Pt(4)
-            p.paragraph_format.space_after = Pt(4)
-            math_text = line.strip()[2:-2].strip()
+            p.paragraph_format.space_before = Pt(6)
+            p.paragraph_format.space_after = Pt(6)
+            raw_math = line.strip()[2:-2].strip()
+            math_text = clean_math_text(raw_math)
             run = p.add_run(math_text)
             run.font.name = 'Cambria Math'
             run.font.size = Pt(12)
@@ -346,15 +456,27 @@ def parse_markdown_to_docx(md_path, docx_path):
     if in_code_block:
         flush_code()
 
+    # Save to primary and clean targets
+    saved_paths = []
     try:
         doc.save(docx_path)
-        print(f"Successfully generated DOCX report at: {docx_path}")
+        saved_paths.append(docx_path)
     except PermissionError:
-        alt_path = docx_path.replace('.docx', '_Clean.docx')
-        doc.save(alt_path)
-        print(f"Original file was open in Word; saved updated report to: {alt_path}")
+        print(f"Note: {docx_path} is open in Word, saving to alternative Clean path.")
+
+    clean_path = docx_path.replace('.docx', '_Clean.docx')
+    if clean_path != docx_path:
+        try:
+            doc.save(clean_path)
+            saved_paths.append(clean_path)
+        except PermissionError:
+            pass
+
+    print(f"Successfully generated DOCX report at: {saved_paths}")
 
 if __name__ == '__main__':
     md_file = r"c:\Users\Risa vilas dias\aquatrust-ai\AquaTrustAI\docs\AQUATRUSTAI_FINAL_PROJECT_REPORT.md"
     docx_file = r"c:\Users\Risa vilas dias\aquatrust-ai\AquaTrustAI\docs\AquaTrustAI_Final_Project_Report_Complete.docx"
     parse_markdown_to_docx(md_file, docx_file)
+    docx_file_main = r"c:\Users\Risa vilas dias\aquatrust-ai\AquaTrustAI\docs\AquaTrustAI_Final_Project_Report.docx"
+    parse_markdown_to_docx(md_file, docx_file_main)

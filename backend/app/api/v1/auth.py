@@ -44,7 +44,7 @@ DEMO_USERS = {
         "role": UserRole.OPERATOR.value,
         "email": "operator@aquatrust.internal",
         "display_name": "Plant Operator",
-        "facility_id": "FAC-CPCB-001",
+        "facility_id": "085a9719-c9d0-4562-b4d7-bc389dec12b3",
     },
     "auditor": {
         "hashed_password": get_password_hash("auditor123"),

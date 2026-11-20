@@ -121,9 +121,9 @@ To resolve these operational and transparency deficits, this project presents **
 
 The intelligence tier comprises an integrated multi-model pipeline:
 1. **Sensor Trust & Anomaly Detection:** An ensemble combining statistical rolling $Z$-score/IQR bounds with an Isolation Forest ($n=150$, contamination 5%) detecting 10 distinct sensor failure and process anomaly archetypes (`STUCK_SENSOR`, `SENSOR_FAILURE`, `SENSOR_DRIFT`, `PARAMETER_INCONSISTENCY`, `SUDDEN_SPIKE`, `MISSING_READING`, `DUPLICATE_READING`, `SUDDEN_PROCESS_CHANGE`, `STATISTICAL_ANOMALY`, and `NORMAL`) with a 5-tier calibrated severity score.
-2. **Treatment Quality Prediction:** Multi-output regressors (Random Forest and Gradient Boosted trees) predicting final effluent metrics—Biochemical Oxygen Demand ($DBO\text{-}S$, RMSE 6.16 mg/L), Chemical Oxygen Demand ($DQO\text{-}S$, RMSE 27.05 mg/L), Total Suspended Solids ($SS\text{-}S$, RMSE 7.30 mg/L), and Effluent pH ($PH\text{-}S$, RMSE 0.166)—with instant Central Pollution Control Board (CPCB) General Discharge Standard breach evaluation.
+2. **Treatment Quality Prediction:** Multi-output regressors (Random Forest and Gradient Boosted trees) predicting final effluent metrics—Biochemical Oxygen Demand ($DBO-S$, RMSE 6.16 mg/L), Chemical Oxygen Demand ($DQO-S$, RMSE 27.05 mg/L), Total Suspended Solids ($SS-S$, RMSE 7.30 mg/L), and Effluent pH ($PH-S$, RMSE 0.166)—with instant Central Pollution Control Board (CPCB) General Discharge Standard breach evaluation.
 3. **Prescriptive Process Optimization:** Closed-loop recommendation algorithms calculating stoichiometric dissolved oxygen (DO) setpoints (1.5–2.5 mg/L), polyaluminium chloride (PAC) coagulant dosing adjustments, and equalization basin diversion triggers.
-4. **Sustainability & Circularity Engine:** Real-time quantifications of stoichiometric blower power savings, freshwater recovery volume ($kL$), Water Circularity Index ($\%$), and Scope 2 indirect carbon emission avoidance ($kg\text{ CO}_2e$).
+4. **Sustainability & Circularity Engine:** Real-time quantifications of stoichiometric blower power savings, freshwater recovery volume ($kL$), Water Circularity Index ($%$), and Scope 2 indirect carbon emission avoidance ($kg CO_2e$).
 
 To ensure absolute auditability without incurring excessive on-chain computational overhead, AquaTrust AI employs a **hybrid off-chain/on-chain storage and verification architecture**. High-frequency sensor time-series, AI predictions, and operational intervention logs are persisted off-chain in an ACID-compliant PostgreSQL database. Canonical cycle evidence snapshots (`atc-v1`) are batched into SHA-256 Merkle trees. Root hashes and cryptographic proofs are anchored to an immutable distributed ledger (Solidity smart contracts on Ganache / Hyperledger Fabric 2.5 channel). A high-performance FastAPI asynchronous backend exposes RESTful and WebSocket telemetry endpoints to a reactive web dashboard built with React, Vite, and Tailwind CSS, featuring synoptic SCADA plant schematics, 3D digital twin state visualization, real-time alert triage, and one-click cryptographic tamper verification.
 
@@ -173,22 +173,23 @@ Finally, we express our heartfelt appreciation to our peers, batchmates, and fri
 
 ### Chapter 2: Literature Review ................................................................................. 10
 - 2.1 Overview of Research Landscape ..................................................................... 10
-- 2.2 Literature Review Matrix Table .......................................................................... 11
-- 2.3 Synthesis of Research Gaps & Novel Contributions ............................................ 14
+- 2.2 Literature Review — Part I ............................................................................. 11
+- 2.3 Literature Review — Part II ............................................................................ 13
+- 2.4 Research Gaps and Identified Scope ................................................................ 15
 
-### Chapter 3: Mathematical Formulation and Problem Modeling ................................ 16
-- 3.1 Mathematical Modeling of Sensor Trust & Anomaly Scoring .............................. 16
-  - 3.1.1 Normalized Z-Score and Interquartile Bounds .......................................... 16
-  - 3.1.2 Isolation Forest Path Length and Anomaly Score ...................................... 17
-  - 3.1.3 Five-Tier Calibrated Trust Degradation Formulation ................................ 18
-- 3.2 Effluent Water Quality Multi-Target Prediction Formulation .............................. 19
-- 3.3 Metcalf & Eddy Stoichiometric Aeration Power & Coagulant Dosing Formulas ..... 20
-  - 3.3.1 Aeration Basin Oxygen Transfer and Power Dissipation ............................. 20
-  - 3.3.2 Chemical Coagulant Optimization ............................................................ 21
-  - 3.3.3 Water Circularity & Scope 2 Indirect Carbon Avoidance ........................... 22
-- 3.4 Cryptographic Data Integrity and Merkle Tree Formulation .............................. 23
-  - 3.4.1 Canonical Serialization (`atc-v1`) and SHA-256 Hashing ............................ 23
-  - 3.4.2 RFC 6962 Compliant Merkle Tree Audit Proofs ....................................... 24
+### Chapter 3: System Modeling and Problem Formulation ................................ 16
+- 3.1 Sensor Trust Engine and Anomaly Detection Modeling ................................. 16
+  - 3.1.1 Real-Time Statistical Validation and Dynamic Bounds ............................. 16
+  - 3.1.2 Multivariate Anomaly Detection with Isolation Forests ........................... 17
+  - 3.1.3 Five-Tier Calibrated Trust Scoring Framework .................................... 18
+- 3.2 Effluent Water Quality Multi-Target Prediction Modeling ........................... 19
+- 3.3 Process Optimization and Sustainability Modeling .................................. 20
+  - 3.3.1 Aeration Basin Oxygen Transfer and Power Optimization ........................... 20
+  - 3.3.2 Chemical Coagulant Optimization ................................................. 21
+  - 3.3.3 Water Circularity Index and Scope 2 Carbon Avoidance ............................ 22
+- 3.4 Cryptographic Data Integrity and Merkle Tree Formulation .......................... 23
+  - 3.4.1 Canonical Serialization (`atc-v1`) and Tamper-Proof Hashing ..................... 23
+  - 3.4.2 RFC 6962 Binary Merkle Trees and Compact Audit Proofs ........................... 24
 
 ### Chapter 4: System Architecture and Design ........................................................... 26
 - 4.1 System Overview and High-Level Architecture ................................................... 26
@@ -234,8 +235,23 @@ Finally, we express our heartfelt appreciation to our peers, batchmates, and fri
 - 7.3 Limitations of the Current Implementation ....................................................... 77
 - 7.4 Future Enhancements and Research Directions ................................................. 78
 
-### References ............................................................................................................. 80
-### Appendix A: Key Code Listings and Smart Contract Definitions ........................... 83
+### References
+
+1. D. S. Thakkar, A. Thakker, R. Gupta, N. K. Jadav, S. Tanwar, G. Pau, G. Sharma, F. Alqahtani, and A. Tolba, "Blockchain-Orchestrated Intelligent Water Treatment Plant Profiling Framework to Enhance Human Life Expectancy," *IEEE Access*, vol. 12, pp. 49151–49166, 2024. DOI: [10.1109/ACCESS.2024.3384607](https://doi.org/10.1109/ACCESS.2024.3384607)
+2. M. A. Mohammed, A. Lakhan, K. H. Abdulkareem, M. K. Abd Ghani, H. A. Marhoon, S. Kadry, J. Nedoma, R. Martinek, and B. G. Zapirain, "Industrial Internet of Water Things architecture for data standardization based on blockchain and digital twin technology," *Journal of Advanced Research*, vol. 66, pp. 1–14, 2024. DOI: [10.1016/j.jare.2023.10.005](https://doi.org/10.1016/j.jare.2023.10.005)
+3. Q. Abbas, R. Almakki, M. Albathan, W. J. Obidallah, and Z. Alshaikh, "Secure Water Quality Monitoring using Blockchain-Smart Contract and IoT in 6G Smart Cities," *Water Resources Management*, vol. 40, 2026. DOI: [10.1007/s11269-026-04630-2](https://doi.org/10.1007/s11269-026-04630-2)
+4. P. Mukherjee, S. Sengupta, and P. K. Sadhu, "Blockchain-IoT and optioneering driven framework for smart water management in emerging urban areas," *iScience*, Cell Press, vol. 28, no. 1, p. 113927, 2025. DOI: [10.1016/j.isci.2025.113927](https://doi.org/10.1016/j.isci.2025.113927)
+5. M. Pincheira, M. Vecchio, R. Giaffreda, and S. S. Kanhere, "Cost-effective IoT devices as trustworthy data sources for a blockchain-based water management system in precision agriculture," *Computers and Electronics in Agriculture*, vol. 180, p. 105889, 2021. DOI: [10.1016/j.compag.2020.105889](https://doi.org/10.1016/j.compag.2020.105889)
+6. M. Pincheira, M. Vecchio, and S. S. Kanhere, "Exploiting Constrained IoT Devices in a Trustless Blockchain-based Water Management System," in *Proc. 2020 IEEE International Conference on Blockchain and Cryptocurrency (ICBC)*, Toronto, ON, Canada, 2020, pp. 1–3. DOI: [10.1109/ICBC48266.2020.9169404](https://doi.org/10.1109/ICBC48266.2020.9169404)
+7. S. Hakak, W. Z. Khan, G. A. Gilkar, N. Haider, M. Imran, and S. Alkatheiri, "Industrial Wastewater Management using Blockchain Technology: Architecture, Requirements, and Future Directions," *IEEE Internet of Things Magazine*, vol. 3, no. 2, pp. 38–43, 2020. DOI: [10.1109/IOTM.0001.1900092](https://doi.org/10.1109/IOTM.0001.1900092)
+8. B. Bordel, D. Martín, R. Alcarria, and T. Robles, "A Blockchain-based Water Control System for the Automatic Management of Irrigation Communities," in *Proc. 2019 IEEE International Conference on Consumer Electronics (ICCE)*, Las Vegas, NV, USA, 2019, pp. 1–4. DOI: [10.1109/ICCE.2019.8662058](https://doi.org/10.1109/ICCE.2019.8662058)
+9. Metcalf & Eddy, Inc., G. Tchobanoglous, H. D. Stensel, R. Tsuchihashi, and F. L. Burton, *Wastewater Engineering: Treatment and Resource Recovery*, 5th ed. New York, NY, USA: McGraw-Hill Education, 2014. Link: [https://books.google.com/books?isbn=9780073401188](https://books.google.com/books?isbn=9780073401188)
+10. Central Pollution Control Board (CPCB), Ministry of Environment, Forest and Climate Change, Government of India, "General Standards for Discharge of Environmental Pollutants: Effluents," *Environment (Protection) Rules*, Schedule VI, 1986. Link: [https://moef.gov.in/](https://moef.gov.in/)
+11. S. A. Crosby and D. S. Wallach, "Certificate Transparency," RFC 6962, Internet Engineering Task Force (IETF), 2013. Link: [https://datatracker.ietf.org/doc/html/rfc6962](https://datatracker.ietf.org/doc/html/rfc6962)
+12. F. T. Liu, K. M. Ting, and Z.-H. Zhou, "Isolation Forest," in *Proc. 2008 Eighth IEEE International Conference on Data Mining (ICDM)*, Pisa, Italy, 2008, pp. 413–422. DOI: [10.1109/ICDM.2008.17](https://doi.org/10.1109/ICDM.2008.17)
+13. UCI Machine Learning Repository, "Water Treatment Plant Data Set," School of Information and Computer Science, University of California, Irvine, 1993. Link: [https://archive.ics.uci.edu/dataset/120/water+treatment+plant](https://archive.ics.uci.edu/dataset/120/water+treatment+plant)
+
+# Appendix A: Key Code Listings and Smart Contract Definitions ........................... 83
 
 \newpage
 
@@ -263,12 +279,15 @@ Finally, we express our heartfelt appreciation to our peers, batchmates, and fri
 
 - **Table 1.1:** Comparative Analysis: Conventional Plant Operations vs. AquaTrust AI .............. 5
 - **Table 1.2:** Indian CPCB Effluent Discharge Standards for Inland Surface Waters .................. 7
-- **Table 2.1:** Comprehensive Literature Review Matrix across Key Wastewater AI and DLT Research 11
+- **Table 2.1:** Literature Review — Part I: AI, IoT, and DLT Frameworks ................................. 11
+- **Table 2.2:** Literature Review — Part II: Low-Cost IoT Trust & Automated Water Systems ........ 13
 - **Table 3.1:** 10 Sensor Failure and Process Anomaly Types with Physical Indicators ................. 19
 - **Table 4.1:** Core Relational Schema Mapping (PostgreSQL Tables and Primary Keys) .............. 39
 - **Table 5.1:** Software, Library, and Framework Dependency Inventory .................................... 44
 - **Table 5.2:** Hyperparameter Configurations for Gradient Boosted and Random Forest Models ..... 48
 - **Table 5.3:** RESTful API Endpoint Specification Table (FastAPI Routes) ................................. 51
+- **Table 5.4:** Smart Contract Core State Schema & Struct Definitions ..................................... 53
+- **Table 5.5:** Smart Contract Functional Method Specification ............................................. 54
 - **Table 6.1:** Overall System Automated Test Execution Summary (293 Tests) ........................... 62
 - **Table 6.2:** Empirical Performance Metrics of Effluent Water Quality Prediction Models ......... 64
 - **Table 6.3:** Classification Performance of Sensor Trust & Anomaly Inference Engine ............... 66
@@ -312,7 +331,7 @@ Finally, we express our heartfelt appreciation to our peers, batchmates, and fri
 | **STP** | Sewage Treatment Plant (domestic/sanitary wastewater facility) |
 | **TSS / SS** | Total Suspended Solids ($mg/L$) |
 | **UCI** | University of California, Irvine (Machine Learning Repository) |
-| **WCI** | Water Circularity Index ($\%$) |
+| **WCI** | Water Circularity Index ($%$) |
 
 \newpage
 
@@ -331,7 +350,7 @@ A typical decentralized treatment plant follows a sequential physical, biologica
 5. **Tertiary Polishing & Disinfection:** Pressure sand filtration, activated carbon absorption, and ozonation or chlorination to eliminate residual suspended solids and pathogenic microorganisms prior to non-potable reuse (toilet flushing, HVAC cooling towers, landscape irrigation) or discharge into municipal storm drains.
 
 ## 1.2 Comparison between Conventional ETP/STP Monitoring and Proposed System
-Despite legal mandates requiring compliance with stringent discharge standards (e.g., Effluent $BOD \le 10\text{--}30\text{ mg/L}$, $COD \le 50\text{--}250\text{ mg/L}$, $TSS \le 20\text{--}100\text{ mg/L}$, $pH\text{ 6.5--8.5}$), the vast majority of decentralized treatment facilities across developing nations operate in an uninstrumented, unmonitored "black box" mode.
+Despite legal mandates requiring compliance with stringent discharge standards (e.g., Effluent $BOD ≤ 10–30 mg/L$, $COD ≤ 50–250 mg/L$, $TSS ≤ 20–100 mg/L$, $pH 6.5--8.5$), the vast majority of decentralized treatment facilities across developing nations operate in an uninstrumented, unmonitored "black box" mode.
 
 Conventional decentralized facilities suffer from three major systemic flaws:
 1. **Periodic Manual Grab Sampling:** Compliance is certified based on physical grab samples collected manually once a month or once a quarter. This infrequent sampling fails to capture transient organic shocks, biological process washouts, and nocturnal untreated bypass events.
@@ -348,14 +367,14 @@ AquaTrust AI addresses these gaps by transforming physical and synthetic plant d
 | **Effluent Monitoring** | 5-day delayed laboratory incubation for $BOD_5$ | Real-time multi-target regression ($DBO, DQO, SS, pH$) |
 | **Process Control** | Ad-hoc manual blower and chemical valve tuning | Prescriptive closed-loop stoichiometric DO setpoints |
 | **Audit Trail** | Unencrypted, editable CSV/Excel sheets or paper logs | Cryptographic Merkle Root hashing anchored to DLT |
-| **Verification Speed** | Weeks of manual forensic inspections | Immediate cryptographic hash & proof check ($< 1\text{ sec}$) |
+| **Verification Speed** | Weeks of manual forensic inspections | Immediate cryptographic hash & proof check ($< 1 sec$) |
 | **Carbon Tracking** | None; unquantified energy dissipation | Continuous calculation of Scope 2 avoided emissions |
 
 ## 1.3 Motivation
 Decentralized wastewater treatment plants are uniquely positioned to solve urban water scarcity. By treating wastewater at the source, residential and commercial complexes can recover millions of liters of reusable non-potable water, drastically relieving pressure on depleted municipal reservoirs and subterranean aquifers.
 
 However, decentralized facilities operate under acute resource constraints:
-- They lack capital budgets exceeding \$50,000 for full industrial-grade SCADA hardware installations.
+- They lack capital budgets exceeding $50,000 for full industrial-grade SCADA hardware installations.
 - They lack qualified biological process engineers on-site, relying instead on semi-skilled building caretakers.
 - Regulators have zero technical means to verify whether a submitted laboratory compliance slip represents actual plant performance or post-hoc document fabrication.
 
@@ -368,21 +387,26 @@ AquaTrust AI resolves this dual deficit by providing an integrated software plat
 
 ## 1.5 Objectives of the Project
 The primary engineering objectives of this project are:
-1. To design an automated sensor trust engine that detects 10 distinct sensor and process anomaly types and assigns calibrated trust scores.
-2. To develop multi-target machine learning regressors predicting effluent BOD, COD, TSS, and pH with real-time CPCB compliance breach evaluation.
-3. To formulate a prescriptive closed-loop optimization engine that generates quantitative dissolved oxygen setpoints, chemical coagulant dosing advice, and basin diversion triggers.
-4. To implement a digital twin state machine that tracks biological digestion kinetics, mechanical blower power, and Scope 2 carbon emission avoidance.
-5. To build a tamper-evident audit architecture utilizing canonical JSON hashing, SHA-256 Merkle tree batching, and smart contract anchoring on a distributed ledger.
-6. To develop a responsive web SCADA dashboard providing synoptic plant visualization, real-time alert triage, and single-click cryptographic proof verification.
-7. To validate system reliability and performance through comprehensive automated unit, concurrency, and fault-injection test suites.
+1. Simulate a multi-facility wastewater monitoring environment using public datasets.
+2. Standardize heterogeneous wastewater measurements through a common data interface.
+3. Provide web dashboards for facility operators, auditors and regulatory stakeholders.
+4. Apply AI-based anomaly detection to BOD, COD, TSS, pH, ammonical nitrogen and total nitrogen.
+5. Evaluate measurements through configurable quality-assurance and compliance rules.
+6. Generate digitally signed and cryptographically hashed treatment records.
+7. Record treatment events, hashes, compliance and audit metadata on a permissioned DLT.
+8. Support append-only corrections without deleting original treatment records.
+9. Compare centralized, blockchain-centric and hybrid DLT architectures using measurable metrics.
+10. Assess and predict wastewater treatment performance using AI and historical monitoring data.
+11. Quantify wastewater-treatment sustainability using measurable indicators such as treated-water reuse, freshwater savings, chemical consumption, energy consumption, and treatment efficiency.
+12. Provide AI-assisted process recommendations for improving treatment performance and responding to detected anomalies.
 
 *Table 1.2: Indian CPCB Effluent Discharge Standards for Inland Surface Waters*
 | Parameter | Permissible CPCB Discharge Limit | AquaTrust AI Threshold Class |
 | :--- | :--- | :--- |
-| **pH** | $5.5\text{ -- }9.0$ (Strict: $6.5\text{ -- }8.5$) | Normal within range; breach if $<6.5$ or $>8.5$ |
-| **BOD ($DBO_5$)** | $\le 30.0\text{ mg/L}$ (Urban STP: $\le 10.0\text{ mg/L}$) | Warning if $\ge 25.0\text{ mg/L}$; Breach if $> 30.0\text{ mg/L}$ |
-| **COD ($DQO$)** | $\le 250.0\text{ mg/L}$ (Decentralized: $\le 50.0\text{ mg/L}$) | Warning if $\ge 45.0\text{ mg/L}$; Breach if $> 50.0\text{ mg/L}$ |
-| **TSS ($SS$)** | $\le 100.0\text{ mg/L}$ (Decentralized: $\le 20.0\text{ mg/L}$) | Warning if $\ge 18.0\text{ mg/L}$; Breach if $> 20.0\text{ mg/L}$ |
+| **pH** | 5.5 – 9.0 (Strict: 6.5 – 8.5) | Normal within range; breach if < 6.5 or > 8.5 |
+| **BOD (DBO5)** | ≤ 30.0 mg/L (Urban STP: ≤ 10.0 mg/L) | Warning if ≥ 25.0 mg/L; Breach if > 30.0 mg/L |
+| **COD (DQO)** | ≤ 250.0 mg/L (Decentralized: ≤ 50.0 mg/L) | Warning if ≥ 45.0 mg/L; Breach if > 50.0 mg/L |
+| **TSS (SS)** | ≤ 100.0 mg/L (Decentralized: ≤ 20.0 mg/L) | Warning if ≥ 18.0 mg/L; Breach if > 20.0 mg/L |
 
 ## 1.6 Alignment with UN Sustainable Development Goals (SDGs)
 AquaTrust AI directly addresses five United Nations Sustainable Development Goals:
@@ -399,177 +423,155 @@ AquaTrust AI directly addresses five United Nations Sustainable Development Goal
 ## 2.1 Overview of Research Landscape
 Modern wastewater engineering research intersects four computational paradigms: (1) biological process kinetics and Activated Sludge Models (ASM), (2) data-driven machine learning for water quality forecasting, (3) automated sensor health validation and anomaly detection, and (4) cryptographic distributed ledger technology (DLT) for regulatory compliance tracking. While each domain has seen substantial independent advancements, decentralized facilities remain unserviced due to high deployment costs, operational complexity, and fragmented architectures.
 
-## 2.2 Literature Review Matrix Table
-Table 2.1 systematically analyzes peer-reviewed literature across these key domains, detailing the methodology, core findings, and specific technical gaps resolved by AquaTrust AI.
+## 2.2 Literature Review — Part I
+Table 2.1 outlines peer-reviewed investigations into artificial intelligence, Internet of Things (IoT), and distributed ledger architectures for smart water and wastewater treatment facilities.
 
-*Table 2.1: Comprehensive Literature Review Matrix across Key Wastewater AI and DLT Research*
-| Author(s) & Year | Domain / Focus Area | Methodology & Models Used | Key Findings & Strengths | Limitations & Gaps Addressed by AquaTrust AI |
-| :--- | :--- | :--- | :--- | :--- |
-| **Rane et al. (2023)** | AI, ML, IoT, and Blockchain in Wastewater Systems | Comprehensive survey of computational intelligence and smart sensing in wastewater treatment. | Identified ensemble decision trees as superior to deep networks on small tabular plant datasets ($N < 2,000$). | Focused on theoretical frameworks; lacked empirical code implementation, closed-loop control, or Merkle-based DLT integration. |
-| **Granata et al. (2017)** | Effluent Quality Parameter Prediction | Support Vector Regression (SVR with RBF kernel) and Random Forest (RF) on municipal wastewater data. | Achieved $R^2 > 0.85$ for effluent BOD, COD, and TSS; proved tree bagging handles collinearity effectively. | High computational training latency for SVR; did not provide real-time CPCB regulatory breach evaluation or anomaly screening. |
-| **Melesse et al. (2020)** | Deep Learning for Temporal Water Monitoring | Recurrent Neural Networks (RNN) and Long Short-Term Memory (LSTM) networks. | Effectively modeled non-linear multi-day temporal dependencies in large municipal facilities. | Severe hyperparameter sensitivity, vulnerability to overfitting with small datasets, and high edge execution latency ($>80\text{ ms}$). |
-| **Liu, Ting & Zhou (2008)** | Anomaly Detection in High-Dimensional Data | Isolation Forest algorithm based on recursive random attribute splitting trees. | Proved anomalies are isolated near the root; achieved linear time complexity $\mathcal{O}(n)$ and minimal memory footprint. | Standalone Isolation Forest cannot differentiate between sensor hardware drift and genuine physical biological shock loads. |
-| **Chandola et al. (2009)** | Industrial Sensor Anomaly Taxonomies | Survey of statistical, distance-based, and spectral anomaly detection techniques. | Formulated foundational taxonomy separating point, contextual, and collective sensor anomalies. | Static statistical bounds generate high false alarm rates during natural diurnal wastewater hydraulic surges. |
-| **Metcalf & Eddy (2014)** | Biochemical Process Engineering & Kinetics | Stoichiometric gas-transfer and biological Activated Sludge kinetic equations. | Established standard mathematical models for aeration oxygen requirement ($AOR/SOR$) and blower power dissipation. | Purely deterministic equations fail when incoming physical sensor feeds are noisy, uncalibrated, or missing. |
-| **Corominas et al. (2018)** | Digital Twins in Water Recovery Facilities | Systematic review of digital twin architectures and process simulation frameworks. | Outlined benefits of synchronized physical-virtual state tracking for predictive maintenance and scenario testing. | Most twins require multimillion-dollar SCADA instrumentation grids infeasible for decentralized housing or industrial plants. |
-| **Androulaki et al. (2018)** | Permissioned Distributed Ledgers | Hyperledger Fabric: execute-order-validate architecture with Raft CFT consensus. | Zero transaction gas costs, enterprise privacy channels, and sub-second transaction finality. | Heavy multi-organization container footprints; writing raw streaming telemetry directly to chain causes severe state bloat. |
-| **Crosby & Wallach (2013, RFC 6962)** | Cryptographic Certificate Transparency | Binary SHA-256 Merkle audit trees and compact inclusion proof generation. | Proved high-frequency event streams can be verified off-chain using 32-byte root hashes with $\mathcal{O}(\log n)$ proofs. | Applied purely to web PKI; not previously unified with physical industrial wastewater compliance or AI inference outputs. |
+*Table 2.1: Literature Review — Part I*
+| PAPER / YEAR | APPROACH | KEY CONTRIBUTION | LIMITATION |
+| :--- | :--- | :--- | :--- |
+| **[1] IEEE Access, 2024** | AI + IoT + Blockchain + IPFS | Water-treatment profiling and intelligent monitoring. | Focuses on treatment profiling, not scalable multi-facility traceability and QA. |
+| **[2] J. Adv. Research, 2024** | IIoT + Blockchain + Digital Twin | Data standardization and industrial water-management architecture. | Broad industrial focus; limited wastewater-specific trust validation and audit. |
+| **[3] Water Res. Mgmt., 2026** | IoT + Blockchain + Smart Contracts + DL | Secure water-quality monitoring. | Focused on water quality, not scalable decentralized treatment traceability. |
+| **[4] iScience, 2025** | Blockchain + IoT + Optimization | Smart water-management decision support. | Urban water management focus; no wastewater auditing or multi-facility traceability. |
 
-## 2.3 Synthesis of Research Gaps & Novel Contributions
-From the systematic analysis above, three critical research gaps emerge:
-1. **The Telemetry-Trust Dilemma:** Machine learning models for effluent prediction assume pristine sensor inputs. In practice, aquatic sensors biofoul rapidly. Standalone statistical rules create excessive false alarms, while black-box anomaly detectors cannot separate probe failures from real influent shocks. AquaTrust AI solves this with a **two-tier hybrid engine** combining physical constraints with Isolation Forests.
-2. **The Predictive-Prescriptive Divide:** Prior research focuses on predicting effluent quality but leaves operators with no guidance on how to prevent violations. AquaTrust AI bridges this divide by coupling predictions with **Metcalf & Eddy stoichiometric setpoint formulas** (blower DO setpoints and coagulant dosing).
-3. **The Blockchain Storage Bottleneck:** Writing high-frequency industrial telemetry directly to blockchain ledgers is economically and computationally infeasible. AquaTrust AI implements a **hybrid architecture** that preserves full records in PostgreSQL while anchoring compact SHA-256 Merkle roots to the ledger, enabling sub-millisecond client-side verification.
+## 2.3 Literature Review — Part II
+Table 2.2 evaluates low-cost IoT sensor trust validation, lightweight cryptographic mechanisms for resource-constrained edge devices, and automated water management systems.
 
-\newpage
+*Table 2.2: Literature Review — Part II*
+| PAPER / YEAR | APPROACH | KEY CONTRIBUTION | LIMITATION |
+| :--- | :--- | :--- | :--- |
+| **[5] Comp. & Electr. Agri., 2021** | IoT + Blockchain | Low-cost, trustworthy IoT data sources for blockchain water management. | Designed for precision agriculture / irrigation, not wastewater treatment. |
+| **[6] IEEE ICBC, 2020** | Blockchain + Constrained IoT | Trustless blockchain architecture for resource-constrained devices. | Resource constraints and scalability remain open considerations. |
+| **[7] IEEE IoT Magazine, 2020** | Blockchain + Industrial Wastewater Mgmt. | Defines architecture and requirements for blockchain-based wastewater management. | Primarily architectural; limited evaluation of scalable multi-facility deployment. |
+| **[8] 2019** | Blockchain + Automated Water Mgmt. | Automated water-control and management using blockchain. | Focused on irrigation, not wastewater quality assurance and traceability. |
 
-# Chapter 3: Mathematical Formulation and Problem Modeling
+## 2.4 Research Gaps and Identified Scope
+A synthesis of the eight core benchmark studies revealed four critical research deficits:
+1. **Absence of Multi-Facility Decentralized Traceability:** Existing studies focus on individual municipal plants or agricultural irrigation networks. None provide standardized telemetry ingestion across heterogeneous decentralized facilities (ETP, STP, Common Effluent Plants) with unified compliance evaluation.
+2. **Untrusted Sensory Telemetry and Biofouling:** Field sensors in raw wastewater foul rapidly. Existing blockchain frameworks write unvalidated telemetry directly to ledgers, permanently preserving corrupted sensor drift as ground truth.
+3. **The Predictive-Prescriptive Gap:** Most deep learning studies forecast effluent quality but offer zero actionable guidance on closed-loop interventions, stoichiometric aeration control, or chemical dosing optimization.
+4. **DLT Scalability and On-Chain Storage Bloat:** Writing high-frequency industrial timeseries directly to distributed ledgers incurs prohibitive transaction costs and storage bottlenecks.
 
-## 3.1 Mathematical Modeling of Sensor Trust & Anomaly Scoring
+AquaTrust AI addresses these gaps through an end-to-end framework combining calibrated multi-parameter sensor trust scoring, dual-engine predictive and prescriptive modeling, and hybrid Merkle tree cryptographic proof anchoring.
 
-### 3.1.1 Normalized Z-Score and Interquartile Bounds
-Let $X = \{x_1, x_2, \dots, x_N\}$ represent a streaming univariate time-series of sensor telemetry observations collected at uniform discrete sampling intervals $\Delta t$. Over a sliding temporal evaluation window $W$ of length $k$ (where $k = 30$ timesteps), the rolling mean $\mu_W$ and rolling standard deviation $\sigma_W$ are computed as:
 
-$$\mu_W = \frac{1}{k} \sum_{i=t-k+1}^{t} x_i, \quad \sigma_W = \sqrt{\frac{1}{k-1} \sum_{i=t-k+1}^{t} (x_i - \mu_W)^2}$$
+ewpage
+# Chapter 3: System Modeling and Problem Formulation
 
-The standardized instantaneous $Z$-score $Z_t$ is defined as:
+## 3.1 Sensor Trust Engine and Anomaly Detection Modeling
 
-$$Z_t = \frac{x_t - \mu_W}{\sigma_W + \epsilon}$$
+Decentralized wastewater treatment facilities operate in harsh physical environments. Submerged water quality sensors are continuously exposed to bacterial biofilm accumulation, chemical scaling, grease adhesion, and electrical noise. Consequently, incoming sensor telemetry cannot be blindly accepted as ground truth. AquaTrust AI models sensor validation through a multi-stage trust engine that combines real-time statistical boundary checks, multivariate pattern isolation, and a calibrated five-tier operational trust scoring framework.
 
-Where $\epsilon = 10^{-6}$ represents an infinitesimal regularization constant preventing division by zero during stuck-sensor flatline conditions ($\sigma_W \to 0$).
+### 3.1.1 Real-Time Statistical Validation and Dynamic Bounds
+To identify hardware failures and transient disturbances, streaming sensor telemetry is evaluated across a continuous sliding temporal window ($W = 30$ timesteps). For each measured parameter, the system maintains dynamic baseline statistics:
+- **Rolling Mean ($\mu$) and Standard Deviation ($\sigma$):** Represent the expected local operational baseline and natural process fluctuation.
+- **Normalized Z-Score ($Z$):** Measures how many standard deviations the instantaneous reading deviates from the moving baseline:
+  $$Z = (\text{Current Reading} - \text{Rolling Mean}) / (\text{Rolling Standard Deviation} + \epsilon)$$
+  where $\epsilon$ is a small constant ($10^{-6}$) preventing division by zero during sensor flatline conditions.
+- **Interquartile Range (IQR) Gating:** For water parameters exhibiting skewed or non-Gaussian distributions (such as sudden storm surges), non-parametric quartile boundaries ($Q_1$ and $Q_3$) establish robust upper and lower operational envelopes that filter transient spikes without triggering false alarms:
+  $$\text{IQR} = Q_3 - Q_1$$
+  $$\text{Lower Bound} = Q_1 - 1.5 \cdot \text{IQR}, \quad \text{Upper Bound} = Q_3 + 1.5 \cdot \text{IQR}$$
 
-For skewed non-Gaussian parameter distributions, non-parametric Interquartile Range (IQR) gating is applied:
+### 3.1.2 Multivariate Anomaly Detection with Isolation Forests
+While univariate statistical bounds catch single-parameter spikes and freezes, complex process malfunctions often manifest across multiple interacting parameters (for example, a simultaneous drop in pH and dissolved oxygen accompanying an organic shock load).
 
-$$IQR = Q_3(X_W) - Q_1(X_W)$$
-$$\text{Lower Bound} = Q_1 - 1.5 \cdot IQR, \quad \text{Upper Bound} = Q_3 + 1.5 \cdot IQR$$
+AquaTrust AI models multi-parameter behavior using an **Isolation Forest** ensemble ($m = 150$ isolation trees). The underlying intuition is straightforward: normal operational data points require many random partitions to isolate within a decision tree, whereas anomalous readings differ significantly from normal clusters and are isolated near the root of the tree with very short path lengths:
+- **Anomaly Score ($s \rightarrow 1.0$):** Indicates an outlier isolated near the root, confirming a genuine biological shock or multi-probe failure.
+- **Anomaly Score ($s < 0.5$):** Confirms normal operational clustering deep within tree branches.
 
-### 3.1.2 Isolation Forest Path Length and Anomaly Score
-Multivariate observations $\mathbf{x}_t \in \mathbb{R}^d$ across $d$ correlated parameters are evaluated using an ensemble of $t$ randomized binary isolation trees ($iTrees$). Each $iTree$ recursively partitions subsamples of data $X'$ ($|X'| = \psi$) by randomly selecting an attribute $q$ and a split value $p \in [\min(x_q), \max(x_q)]$ until either: (i) the tree reaches a maximum height limit $h_{max} = \lceil \log_2(\psi) \rceil$, (ii) $|X'| \le 1$, or (iii) all data points possess identical values.
-
-The average path length $c(\psi)$ of an unsuccessful search in a binary search tree of size $\psi$ serves as the normalization factor:
-
-$$c(\psi) = 2 \ln(\psi - 1) + 0.5772156649 - \frac{2(\psi - 1)}{\psi}$$
-
-The multivariate anomaly score $s(\mathbf{x}, \psi)$ for an ensemble of $m = 150$ isolation trees is given by:
-
-$$s(\mathbf{x}, \psi) = 2^{-\frac{\mathbb{E}(h(\mathbf{x}))}{c(\psi)}}$$
-
-Where $\mathbb{E}(h(\mathbf{x})) = \frac{1}{m} \sum_{i=1}^{m} h_i(\mathbf{x})$ denotes the mean path length across all trees. Anomaly classification decisions are governed by:
-- $s(\mathbf{x}) \to 1.0$: Confirmed structural anomaly (isolated near root).
-- $s(\mathbf{x}) < 0.5$: Normal operational cluster (deep internal nodes).
-
-### 3.1.3 Five-Tier Calibrated Trust Degradation Formulation
-To convert raw anomaly detections into actionable operational trust scores, AquaTrust AI maps physical parameter violations and Isolation Forest scores into a bounded trust coefficient $T_t \in [0.0, 1.0]$:
-
-$$T_t = 1.0 - \left( w_1 \cdot \mathbb{I}_{\text{stuck}} + w_2 \cdot \min\left(1.0, \frac{|Z_t|}{Z_{\text{crit}}}\right) + w_3 \cdot s(\mathbf{x}_t) + w_4 \cdot \mathbb{I}_{\text{drift}} \right)$$
-
-Where weights $w = [0.35, 0.25, 0.25, 0.15]$ satisfy $\sum w_i = 1.0$. The calibrated trust score determines the operational trust tier:
-- **Tier 1 — TRUSTED ($T_t \ge 0.85$):** Fully verified, pristine sensor reading; fed directly to downstream predictive models.
-- **Tier 2 — SUSPECT ($0.70 \le T_t < 0.85$):** Minor statistical drift; flagged for operator observation.
-- **Tier 3 — DEGRADED ($0.50 \le T_t < 0.70$):** High variance or consistency mismatch; down-weighted in state estimation.
-- **Tier 4 — FAILED ($0.25 \le T_t < 0.50$):** Physical threshold breach or persistent freeze; sensor rejected from control loops.
-- **Tier 5 — CRITICAL ($T_t < 0.25$):** Severe hardware failure or biological shock; triggers immediate audible alarms.
+### 3.1.3 Five-Tier Calibrated Trust Scoring Framework
+Rather than treating anomaly detection as a binary pass/fail flag, the system computes a continuous, bounded trust coefficient ($T \in [0.0, 1.0]$) that balances sensor freeze indicators, deviation magnitudes, and multivariate anomaly scores. The calibrated score translates into five clear operational trust tiers:
+- **Tier 1 — TRUSTED ($T \ge 0.85$):** Fully verified, pristine sensor reading; fed directly to downstream machine learning prediction and control models.
+- **Tier 2 — SUSPECT ($0.70 \le T < 0.85$):** Minor statistical drift; logged and flagged on the dashboard for operator monitoring.
+- **Tier 3 — DEGRADED ($0.50 \le T < 0.70$):** Moderate variance or cross-parameter inconsistency; down-weighted in state estimations.
+- **Tier 4 — FAILED ($0.25 \le T < 0.50$):** Physical envelope breach or persistent float freeze; reading rejected from closed-loop control loops.
+- **Tier 5 — CRITICAL ($T < 0.25$):** Severe probe failure or acute influent biological shock; triggers automated audible alarms and facility containment.
 
 *Table 3.1: 10 Sensor Failure and Process Anomaly Types with Physical Indicators*
-| Anomaly Code | Anomaly Classification | Primary Detection Mechanism |
+| Anomaly Code | Anomaly Classification | Primary Detection Mechanism & Physical Indicator |
 | :--- | :--- | :--- |
-| `STUCK_SENSOR` | Zero Variance / Frozen Float | $\sigma_W < 10^{-5}$ across $> 15$ consecutive cycles |
-| `SENSOR_FAILURE` | Physical Hardware Disconnect / Out of Bounds | Reading exceeds physical sensor envelope (e.g., $pH < 0$ or $> 14$) |
-| `SENSOR_DRIFT` | Chronic Calibration Degradation | Monotonic directional trend with baseline shift $|x_t - x_{t-k}| > 3\sigma$ |
-| `PARAMETER_INCONSISTENCY` | Cross-Parameter Conflict | Biochemical impossibility (e.g., High BOD with Dissolved Oxygen $> 8\text{ mg/L}$) |
-| `SUDDEN_SPIKE` | Single Timestep Transient Jump | First-order difference $|\Delta x_t| > 4 \cdot IQR$ returning to baseline in next step |
-| `MISSING_READING` | Telemetry Packet Loss | Null or missing payload over anticipated transmission window $\Delta t$ |
-| `DUPLICATE_READING` | Replay / Serialization Collision | Duplicate timestamp and sequence number within same facility ID |
-| `SUDDEN_PROCESS_CHANGE` | Biological Shock / Hydraulic Surge | Multi-variable step-function shift persisted across $> 5$ consecutive cycles |
-| `STATISTICAL_ANOMALY` | Multivariate Distribution Outlier | Isolation Forest anomaly score $s(\mathbf{x}) \ge 0.65$ |
-| `NORMAL` | Standard Baseline Operation | Within normal $3\sigma$ boundaries and $s(\mathbf{x}) < 0.50$ |
+| `STUCK_SENSOR` | Zero Variance / Frozen Float | Zero variance across $> 15$ consecutive cycles due to mechanical float seizure. |
+| `SENSOR_FAILURE` | Hardware Disconnect / Out of Bounds | Telemetry exceeds physical envelope (e.g., pH $< 0$ or $> 14$). |
+| `SENSOR_DRIFT` | Calibration Degradation | Steady directional drift exceeding $3\sigma$ from baseline caused by biofilm fouling. |
+| `PARAMETER_INCONSISTENCY` | Cross-Parameter Conflict | Biochemical impossibility (e.g., High BOD paired with Dissolved Oxygen $> 8\text{ mg/L}$). |
+| `SUDDEN_SPIKE` | Single Timestep Transient Jump | First-order transient jump $> 4 \cdot \text{IQR}$ returning to baseline in the subsequent timestep. |
+| `MISSING_READING` | Telemetry Packet Loss | Null or missing payload over expected telemetry transmission window. |
+| `DUPLICATE_READING` | Replay / Transmission Collision | Duplicate timestamp and sequence number within the same facility stream. |
+| `SUDDEN_PROCESS_CHANGE` | Biological Shock / Hydraulic Surge | Multi-variable step change persisting across $> 5$ consecutive cycles. |
+| `STATISTICAL_ANOMALY` | Multivariate Distribution Outlier | Isolation Forest anomaly score $s \ge 0.65$ across correlated water metrics. |
+| `NORMAL` | Standard Baseline Operation | Measured parameters sit securely within normal $3\sigma$ operational boundaries. |
 
-## 3.2 Effluent Water Quality Multi-Target Prediction Formulation
-Effluent parameter prediction is modeled as a multi-output supervised regression task. Given an input vector $\mathbf{u}_t \in \mathbb{R}^p$ comprising influent wastewater characteristics ($Q_{in}, pH_{in}, BOD_{in}, COD_{in}, TSS_{in}, DO_{basin}, \text{Temp}$), the model predicts the output vector $\hat{\mathbf{y}}_t \in \mathbb{R}^4$:
+---
 
-$$\hat{\mathbf{y}}_t = [\widehat{DBO}\text{-}S, \widehat{DQO}\text{-}S, \widehat{SS}\text{-}S, \widehat{PH}\text{-}S]^T$$
+## 3.2 Effluent Water Quality Multi-Target Prediction Modeling
 
-Where:
-- $\widehat{DBO}\text{-}S$: Predicted Effluent Biochemical Oxygen Demand ($mg/L$)
-- $\widehat{DQO}\text{-}S$: Predicted Effluent Chemical Oxygen Demand ($mg/L$)
-- $\widehat{SS}\text{-}S$: Predicted Effluent Total Suspended Solids ($mg/L$)
-- $\widehat{PH}\text{-}S$: Predicted Effluent pH (standard units)
+In conventional wastewater plants, regulatory compliance verification relies on laboratory testing. For example, the 5-day Biochemical Oxygen Demand test ($\text{BOD}_5$) requires 120 hours of incubation, meaning non-compliant effluent is discharged into municipal watercourses days before laboratory results become available.
 
-The objective function minimizes the multi-target Mean Squared Error with $L_2$ regularization:
+AquaTrust AI models effluent quality as a **multi-target predictive regression task**. Using real-time influent characteristics—including plant flow rate ($Q$), influent pH, influent BOD, Chemical Oxygen Demand ($\text{COD}$), Total Suspended Solids ($\text{TSS}$), aeration basin Dissolved Oxygen ($\text{DO}$), and operating temperature—the predictive engine simultaneously forecasts four critical effluent discharge parameters up to 24 hours in advance:
+- **$\hat{y}_{\text{BOD}}$:** Forecasted Effluent Biochemical Oxygen Demand ($\text{mg/L}$)
+- **$\hat{y}_{\text{COD}}$:** Forecasted Effluent Chemical Oxygen Demand ($\text{mg/L}$)
+- **$\hat{y}_{\text{TSS}}$:** Forecasted Effluent Total Suspended Solids ($\text{mg/L}$)
+- **$\hat{y}_{\text{pH}}$:** Forecasted Effluent pH (standard units)
 
-$$\mathcal{L}(\mathbf{W}) = \frac{1}{N} \sum_{i=1}^{N} \sum_{j=1}^{4} \left(y_{i,j} - \hat{y}_{i,j}\right)^2 + \lambda \sum_{l=1}^{M} \|\mathbf{w}_l\|_2^2$$
+By comparing these forward-looking predictions against legal Central Pollution Control Board (CPCB) limits, the system shifts plant operation from reactive post-discharge reporting to **proactive pre-discharge intervention**.
 
-## 3.3 Metcalf & Eddy Stoichiometric Aeration Power & Coagulant Dosing Formulas
+---
 
-### 3.3.1 Aeration Basin Oxygen Transfer and Power Dissipation
-Biological degradation of carbonaceous organic matter in the aerobic activated sludge basin requires continuous oxygen dissolution. According to **Metcalf & Eddy (2014)**, the theoretical clean-water standard oxygen requirement ($SOR$ in $kg\text{ }O_2/\text{hour}$) is derived from the field actual oxygen requirement ($AOR$):
+## 3.3 Process Optimization and Sustainability Modeling
 
-$$AOR = Q \cdot \left[ \frac{S_0 - S}{1000} \right] - 1.42 \cdot P_x$$
+Predictive foresight is only valuable if plant operators know exactly how to adjust physical equipment in response. AquaTrust AI bridges this gap by modeling closed-loop prescriptive recommendations and sustainability indicators.
 
-Where $Q$ is plant flow rate ($m^3/\text{day}$), $S_0$ is influent BOD ($mg/L$), $S$ is target effluent BOD ($mg/L$), and $P_x$ is net biological sludge mass synthesized per day ($kg\text{ VSS/day}$).
+### 3.3.1 Aeration Basin Oxygen Transfer and Power Optimization
+Biological treatment requires blowers to deliver dissolved oxygen to aerobic bacteria. Operating blowers at constant full speed wastes substantial electrical power, while under-aeration leads to biological die-off. 
 
-The conversion from actual field conditions to clean water standard conditions is defined by the gas transfer relationship:
-
-$$SOR = AOR \cdot \left[ \frac{C_{s,20}}{\alpha \cdot (\beta \cdot C_{s,T,H} - C_L) \cdot \theta^{(T - 20)}} \right]$$
-
-Where:
-- $\alpha = 0.82$: Wastewater oxygen transfer correction factor
-- $\beta = 0.95$: Salinity and dissolved solids correction factor
-- $C_{s,20} = 9.09\text{ mg/L}$: Saturation dissolved oxygen in pure water at $20^\circ\text{C}$ and $1\text{ atm}$
-- $C_{s,T,H}$: Saturation DO at operating temperature $T$ ($^\circ\text{C}$) and elevation $H$ ($m$)
-- $C_L$: Operating target DO concentration in the basin ($1.5\text{--}2.5\text{ mg/L}$)
-- $\theta = 1.024$: Temperature activity coefficient
-
-The mechanical blower power consumption $P_{\text{blower}}$ ($kW$) required to deliver this air flow is modeled as:
-
-$$P_{\text{blower}} = \frac{w R T_1}{29.7 n e} \cdot \left[ \left( \frac{p_2}{p_1} \right)^{0.283} - 1 \right]$$
+Following established biochemical engineering principles (Metcalf & Eddy):
+- The **Actual Oxygen Requirement (AOR)** is dynamically computed from incoming organic load (influent BOD) and target discharge standards.
+- The **Standard Oxygen Requirement (SOR)** adjusts field oxygen demand for operating temperature, basin elevation, and wastewater oxygen transfer factors ($\alpha = 0.82$, $\beta = 0.95$).
+- **Blower Power Dissipation ($P_{\text{blower}}$):** Mechanical power required to supply aeration air is proportional to the required air mass flow and operating pressure ratio. AquaTrust AI computes dynamic Dissolved Oxygen setpoints ($1.5\text{ -- }2.5\text{ mg/L}$), reducing blower speeds during off-peak hours and saving up to $18\text{ -- }25\%$ of electrical power consumption.
 
 ### 3.3.2 Chemical Coagulant Optimization
-In tertiary clarifier treatment, polyaluminium chloride (PAC) coagulant dosing $D_{\text{PAC}}$ ($mg/L$) is calculated as an empirical non-linear function of influent Total Suspended Solids ($SS_{in}$) and Chemical Oxygen Demand ($COD_{in}$):
+In secondary and tertiary clarifiers, chemical coagulants such as polyaluminium chloride (PAC) are added to aggregate suspended particles and colloidal organic matter. Overdosing coagulant wastes expensive chemicals and produces excess chemical sludge, while underdosing causes elevated effluent turbidity.
 
-$$D_{\text{PAC}} = k_{\text{coag}} \cdot (SS_{in})^{0.65} \cdot \left( \frac{COD_{in}}{COD_{\text{target}}} \right)^{0.35} \cdot f(pH)$$
+AquaTrust AI models optimal coagulant dosage ($D_{\text{PAC}}$ in $\text{mg/L}$) as a function of incoming solids ($\text{SS}_{\text{in}}$) and organic loading ($\text{COD}_{\text{in}}$), modulated by a pH correction factor:
+$$\text{Optimal PAC Dose} = k_{\text{coag}} \cdot (\text{Influent SS})^{0.65} \cdot (\text{Influent COD} / \text{Target COD})^{0.35} \cdot f(\text{pH})$$
+Where $f(\text{pH})$ penalizes non-optimal coagulation conditions outside the neutral band ($\text{pH} \approx 7.2$):
+$$f(\text{pH}) = 1.0 + 0.15 \cdot (\text{pH} - 7.2)^2$$
 
-Where $f(pH)$ is a parabolic correction factor penalizing non-optimal coagulation pH ($pH_{opt} = 7.2$):
+### 3.3.3 Water Circularity Index and Scope 2 Carbon Avoidance
+To quantify environmental performance for ESG (Environmental, Social, and Governance) compliance, AquaTrust AI formulates two key sustainability metrics:
+1. **Water Circularity Index (WCI):** Represents the percentage of treated effluent safely reclaimed for non-potable reuse (such as toilet flushing, landscape irrigation, and industrial cooling) relative to raw influent volume:
+   $$\text{WCI} = (\text{Volume Recycled} / \text{Volume Treated}) \cdot (1 - \text{Operational Losses} / \text{Volume Influent}) \times 100\%$$
+2. **Scope 2 Indirect Carbon Emissions Avoided ($E_{\text{avoided}}$):** Quantifies greenhouse gas emissions avoided through optimized blower power and localized water recycling:
+   $$E_{\text{avoided}} = (\Delta P_{\text{saved}} \cdot \text{Operating Hours} \cdot EF_{\text{grid}}) + (\text{Volume Recycled} \cdot EF_{\text{municipal}})$$
+   where $EF_{\text{grid}} = 0.82\text{ kg CO}_2\text{e/kWh}$ reflects the Indian national grid emission factor and $EF_{\text{municipal}} = 0.35\text{ kg CO}_2\text{e/kL}$ accounts for avoided municipal long-distance pumping energy.
 
-$$f(pH) = 1.0 + 0.15 \cdot (pH - 7.2)^2$$
-
-### 3.3.3 Water Circularity & Scope 2 Indirect Carbon Avoidance
-The **Water Circularity Index ($WCI$)** is formulated as:
-
-$$WCI = \left( \frac{V_{\text{recycled}}}{V_{\text{treated}}} \right) \cdot \left( 1 - \frac{V_{\text{losses}}}{V_{\text{influent}}} \right) \times 100\%$$
-
-Scope 2 indirect greenhouse gas emissions avoided ($E_{\text{avoided}}$ in $kg\text{ CO}_2e/\text{day}$) through optimized blower setpoints and local water recycling are quantified as:
-
-$$E_{\text{avoided}} = \Delta P_{\text{saved}} \cdot t_{\text{op}} \cdot EF_{\text{grid}} + V_{\text{recycled}} \cdot \left( EF_{\text{municipal}} \right)$$
-
-Where:
-- $\Delta P_{\text{saved}} = P_{\text{unoptimized}} - P_{\text{optimized}}$ ($kW$ energy delta)
-- $EF_{\text{grid}} = 0.82\text{ kg CO}_2e/kWh$ (Central Electricity Authority India grid average)
-- $EF_{\text{municipal}} = 0.35\text{ kg CO}_2e/kL$ (Avoided municipal pumping and distribution energy)
+---
 
 ## 3.4 Cryptographic Data Integrity and Merkle Tree Formulation
 
-### 3.4.1 Canonical Serialization (`atc-v1`) and SHA-256 Hashing
-A treatment cycle record $R$ is transformed into a strictly ordered, whitespace-stripped canonical JSON byte string:
+To prevent retroactive record tampering, regulatory manipulation, or dispute among stakeholders, AquaTrust AI establishes an immutable digital chain of custody across three structural phases.
 
-$$S_{\text{canonical}} = \text{Serialize}_{\text{sorted}}(\{k: R[k] \mid \forall k \in K_{\text{immutable}}\})$$
+### 3.4.1 Canonical Serialization (`atc-v1`) and Tamper-Proof Hashing
+Standard JSON serialization produces non-deterministic byte strings due to arbitrary key orderings, whitespace variations, and floating-point representations across different programming languages. 
 
-The 256-bit cryptographic digest $H(R)$ is computed using double SHA-256:
+AquaTrust AI resolves this through a strict canonical schema (`atc-v1` compliant with RFC 8785):
+- All immutable fields are lexicographically sorted by key name.
+- Extraneous whitespaces and line breaks are eliminated.
+- Floating-point readings are formatted to fixed precision.
+- A 256-bit cryptographic fingerprint is computed using **double SHA-256** hashing:
+  $$\text{Record Digest} = \text{SHA-256}(\text{SHA-256}(\text{Canonical Record Byte String}))$$
 
-$$H(R) = \text{SHA-256}(\text{SHA-256}(S_{\text{canonical}}))$$
-
-### 3.4.2 RFC 6962 Compliant Merkle Tree Audit Proofs
-Leaf node hashes $H_{\text{leaf}}$ are calculated with a `0x00` prefix byte to prevent second-preimage attacks:
-
-$$H_{\text{leaf}}(x) = \text{SHA-256}(\mathtt{0x00} \parallel x)$$
-
-Internal nodes are hashed with a `0x01` prefix byte:
-
-$$H_{\text{parent}} = \text{SHA-256}(\mathtt{0x01} \parallel H_{\text{left}} \parallel H_{\text{right}})$$
-
-For any individual record $x$, a Merkle audit path consisting of $\lceil \log_2(n) \rceil$ sibling hashes provides mathematical proof that record $x$ was included in the batch anchored to Merkle Root $R$ with logarithmic verification complexity $\mathcal{O}(\log n)$.
+### 3.4.2 RFC 6962 Binary Merkle Trees and Compact Audit Proofs
+Writing individual high-frequency telemetry cycles directly to distributed ledgers is cost-prohibitive and causes severe state bloat. Instead, AquaTrust AI batches operational cycles (e.g., 100 cycles per operational shift) into an **RFC 6962 binary Merkle tree**:
+- **Leaf Hashing:** Each cycle record digest is hashed with a `0x00` domain prefix byte:
+  $$\text{Leaf Hash} = \text{SHA-256}(0\text{x}00 \parallel \text{Record Digest})$$
+- **Internal Node Hashing:** Intermediate branch pairs are concatenated and hashed with a `0x01` domain prefix byte to eliminate second-preimage attack vulnerabilities:
+  $$\text{Parent Hash} = \text{SHA-256}(0\text{x}01 \parallel \text{Left Child} \parallel \text{Right Child})$$
+- **Root Anchoring:** Only the resulting single 32-byte **Merkle Root** is anchored on the blockchain ledger.
+- **Logarithmic Inclusion Proofs:** To prove to an environmental auditor that a specific cycle snapshot was genuinely recorded and untampered, the system generates a compact proof consisting of $\lceil\log_2(n)\rceil$ sibling hashes. The auditor can verify the inclusion of any record in under **$0.15\text{ ms}$** without requiring access to the full database or connecting to an external server.
 
 \newpage
+
 
 # Chapter 4: System Architecture and Design
 
@@ -608,14 +610,14 @@ The schema guarantees referential integrity, tenant isolation, and strict append
 | Table Name | Primary Key | Foreign Key References | Purpose & Description |
 | :--- | :--- | :--- | :--- |
 | `facilities` | `id` (UUID) | None | Stores metadata for physical decentralized STP/ETP installations |
-| `sensors` | `id` (UUID) | `facility_id` $\to$ `facilities.id` | Hardware inventory, calibration curves, and probe health status |
+| `sensors` | `id` (UUID) | `facility_id` $→$ `facilities.id` | Hardware inventory, calibration curves, and probe health status |
 | `sensor_readings` | `id` (UUID) | `sensor_id`, `cycle_id` | High-frequency physical & synthetic telemetry time-series |
-| `treatment_cycles`| `id` (UUID) | `facility_id` $\to$ `facilities.id` | Discrete 4-to-8 hour biological treatment cycles |
-| `anomaly_results` | `id` (UUID) | `reading_id` $\to$ `sensor_readings.id` | Output of Isolation Forest and statistical trust classifier |
-| `predictions` | `id` (UUID) | `cycle_id` $\to$ `treatment_cycles.id` | Predicted effluent metrics ($DBO, DQO, SS, pH$) |
-| `recommendations`| `id` (UUID) | `prediction_id` $\to$ `predictions.id` | Prescribed actions (blower DO setpoint, coagulant dosing) |
-| `dlt_anchors` | `id` (UUID) | `cycle_id` $\to$ `treatment_cycles.id` | SHA-256 Merkle root hashes, transaction IDs, block heights |
-| `audit_timeline` | `id` (UUID) | `facility_id` $\to$ `facilities.id` | Immutable append-only audit log with SHA-256 lineage hash |
+| `treatment_cycles`| `id` (UUID) | `facility_id` $→$ `facilities.id` | Discrete 4-to-8 hour biological treatment cycles |
+| `anomaly_results` | `id` (UUID) | `reading_id` $→$ `sensor_readings.id` | Output of Isolation Forest and statistical trust classifier |
+| `predictions` | `id` (UUID) | `cycle_id` $→$ `treatment_cycles.id` | Predicted effluent metrics ($DBO, DQO, SS, pH$) |
+| `recommendations`| `id` (UUID) | `prediction_id` $→$ `predictions.id` | Prescribed actions (blower DO setpoint, coagulant dosing) |
+| `dlt_anchors` | `id` (UUID) | `cycle_id` $→$ `treatment_cycles.id` | SHA-256 Merkle root hashes, transaction IDs, block heights |
+| `audit_timeline` | `id` (UUID) | `facility_id` $→$ `facilities.id` | Immutable append-only audit log with SHA-256 lineage hash |
 
 ## 4.5 Input and Output Design
 - **Input Design:** High-frequency JSON telemetry payloads over HTTP POST/WebSocket containing multi-parameter readings ($DO, pH, BOD, COD, TSS, Temp$) alongside cryptographic signatures for operator setpoint adjustments.
@@ -652,7 +654,7 @@ The schema guarantees referential integrity, tenant isolation, and strict append
 | **Automated Testing** | Pytest / Jest | 8.0.0 | Pure unit, concurrency, integration, and E2E QA |
 
 ## 5.2 Sensor Data Simulation and Synthetic Anomaly Injection Pipeline
-The simulation harness replays 527 days of operational data from the UCI Urban Wastewater Treatment Plant dataset, applying cubic spline interpolation and Gaussian white noise ($\sigma = 0.02$) to generate high-frequency synthetic telemetry streams ($1\text{ Hz}$). Ten distinct anomaly injection algorithms emulate probe flatlines, extreme spikes, calibration drift, and chemical shock events.
+The simulation harness replays 527 days of operational data from the UCI Urban Wastewater Treatment Plant dataset, applying cubic spline interpolation and Gaussian white noise ($σ = 0.02$) to generate high-frequency synthetic telemetry streams ($1 Hz$). Ten distinct anomaly injection algorithms emulate probe flatlines, extreme spikes, calibration drift, and chemical shock events.
 
 ## 5.3 Machine Learning Pipeline Implementation
 - Trained multi-output tree ensembles on 527 UCI ETP records.
@@ -660,7 +662,7 @@ The simulation harness replays 527 days of operational data from the UCI Urban W
 - Optimized hyperparameters via 5-fold cross-validation, achieving $R^2 > 0.88$ across all effluent targets.
 
 *Table 5.2: Hyperparameter Configurations for Gradient Boosted and Random Forest Models*
-| Hyperparameter | Effluent BOD ($DBO\text{-}S$) | Effluent COD ($DQO\text{-}S$) | Effluent TSS ($SS\text{-}S$) | Effluent pH ($PH\text{-}S$) |
+| Hyperparameter | Effluent BOD ($DBO-S$) | Effluent COD ($DQO-S$) | Effluent TSS ($SS-S$) | Effluent pH ($PH-S$) |
 | :--- | :--- | :--- | :--- | :--- |
 | **Estimator Type** | GradientBoostingRegressor | RandomForestRegressor | GradientBoostingRegressor | RandomForestRegressor |
 | **Number of Trees ($n$)**| 250 | 300 | 200 | 150 |
@@ -685,9 +687,50 @@ The simulation harness replays 527 days of operational data from the UCI Urban W
 | `POST` | `/api/v1/audit/anchor` | DLT Gateway | Serializes cycle snapshot, builds Merkle root, anchors to DLT |
 | `POST` | `/api/v1/audit/verify` | Verification Engine | Executes offline SHA-256 Merkle proof verification |
 
-## 5.5 Blockchain Smart Contract Implementation
-- Developed `AquaTrustRecords.sol` smart contract storing 32-byte Merkle roots, metadata hashes, and compliance booleans.
-- Implemented client-side offline verification tools recalculating double-SHA-256 hashes and validating Merkle paths without connecting to external nodes.
+## 5.5 Blockchain Smart Contract Implementation & Cryptographic DLT Gateway
+
+The AquaTrust AI blockchain tier is architected to guarantee mathematical non-repudiation, tamper-evidence, and regulatory accountability for high-frequency wastewater telemetry without incurring prohibitive on-chain storage costs. The platform implements a **dual-ledger architecture** supporting both Ethereum Virtual Machine (EVM) Solidity smart contracts on a local development testbed (Ganache) and production-grade permissioned chaincode deployed on Hyperledger Fabric 2.5.
+
+### 5.5.1 Dual-Ledger Deployment & Smart Contract Architecture
+To satisfy enterprise governance while supporting agile local development, the smart contract layer operates across two synchronized implementations:
+1. **Solidity Smart Contract (`AquaTrustRecords.sol` / `AquaTrustComplianceLedger.sol`):** Compiled via Solidity compiler `0.8.20`, this contract implements EVM-compatible state mappings, cryptographic inclusion checks, and role-based access modifiers (`onlyOperator`, `onlyAuditor`, `onlyRegulator`). It is deployed on the local **Ganache** testbed to simulate public/consortium EVM gas economics, test MetaMask wallet integrations, and execute benchmark evaluations for Objective 9.
+2. **Hyperledger Fabric Chaincode (`AquaTrustRecordContract`):** Implemented in TypeScript using `fabric-contract-api` (deployed under Node.js runtime on Fabric channel `aquatrust-channel`), this contract enforces multi-organization transaction endorsement policies requiring endorsements from both plant operators (`FacilityMSP`) and independent certifiers (`AuditorMSP`).
+
+### 5.5.2 On-Chain Data Structures & State Schemas
+Rather than storing multi-kilobyte raw sensor telemetry on-chain (which causes severe state bloat), the smart contracts store compact, fixed-size 32-byte cryptographic digests and provenance metadata:
+
+*Table 5.4: Smart Contract Core State Schema & Struct Definitions*
+| Entity / Struct | Key Fields & Data Types | Storage Location | Technical Function & Integrity Role |
+| :--- | :--- | :--- | :--- |
+| **`RecordAnchor`** | `recordId` (string), `recordHash` (bytes32 / hex), `hashAlgorithm` (string), `anchorType` (enum), `timestamp` (uint256 / ISO), `organizationId` (string), `clientIdentity` (string) | On-Chain State Store | Immutably anchors a single finalized treatment cycle snapshot digest generated via `atc-v1` canonical serialization. |
+| **`BatchAnchor`** | `batchId` (string), `merkleRoot` (bytes32 / hex), `leafCount` (uint256), `leafHashes` (string[]), `timestamp` (uint256), `transactionId` (string) | On-Chain State Store | Anchors the 32-byte Merkle root representing an entire operational shift (100–500 cycles), enabling logarithmic $O(log₂ n)$ verification. |
+| **`CorrectionLink`**| `originalRecordId` (string), `originalHash` (bytes32), `correctionRecordId` (string), `correctionHash` (bytes32), `correctionReason` (string), `timestamp` (uint256) | Append-Only State Index | Implements Objective 8 by cryptographically linking corrected measurements to prior records without overwriting or deleting historical state. |
+
+### 5.5.3 Smart Contract Method Interfaces & Transaction Flow
+The contracts expose deterministic transactional functions that validate input schemas, check cryptographic formats (enforcing 64-character lowercase hexadecimal SHA-256 digests), and emit events for real-time SCADA synchronization:
+
+*Table 5.5: Smart Contract Functional Method Specification*
+| Method Signature | Invocation Type | Authorization Policy | Core Functional Logic |
+| :--- | :--- | :--- | :--- |
+| `CreateAnchor(inputJson)` / `logTreatmentEvent(...)` | State Write (Mutating) | `FacilityMSP` / `onlyOperator` | Validates hash uniqueness, checks idempotency, creates composite key `record~id`, anchors the 256-bit digest, and emits event `AnchorCreated`. |
+| `AnchorBatch(batchJson)` / `anchorMerkleRoot(...)` | State Write (Mutating) | `FacilityMSP` / `onlyOperator` | Computes RFC 6962 tree root from supplied leaf digests, anchors the root hash, maps cycle IDs to batch index, and emits `BatchAnchored`. |
+| `VerifyAnchorReference(recordId, hash)` | State Read (Query) | Public / Any Stakeholder | Queries on-chain composite state for `recordId`, executes bitwise comparison against `hash`, and returns proof metadata (`HASH_MATCH` vs `HASH_MISMATCH`). |
+| `VerifyBatchInclusion(batchId, recordId, proof[])` | State Read (Query) | Public / Any Stakeholder | Traverses submitted sibling hashes along the Merkle audit path to mathematically prove record inclusion against the stored 32-byte root hash. |
+| `RecordCorrectionLink(inputJson)` / `logCorrection(...)`| State Write (Mutating) | `FacilityMSP` + `AuditorMSP` | Confirms existence of both original and corrected snapshots, binds them via immutable relation key `correctionFor~orig~corr`, and emits `CorrectionLinked`. |
+
+### 5.5.4 Append-Only Audit Trail & Correction Linking Pattern
+To satisfy environmental regulatory standards, treatment records must never be deleted, updated, or purged. When laboratory re-testing or sensor recalibration reveals an erroneous record, AquaTrust AI executes an **append-only correction workflow**:
+1. The original erroneous record remains permanently sealed in PostgreSQL and on the blockchain ledger under its immutable hash $H_{orig}$.
+2. A new, calibrated record is generated with a unique identifier and sealed under its distinct hash $H_{corr}$.
+3. The amending officer invokes `RecordCorrectionLink`, recording the pair $(H_{orig}, H_{corr})$ along with the authorized rationale and cryptographic signature.
+4. When auditors inspect the compliance ledger, the verification engine displays the complete audit lineage: the original state, the correction timestamp, the reason for amendment, and the cryptographically linked successor record.
+
+### 5.5.5 Client-Side Offline Verification Engine
+To eliminate dependency on live blockchain nodes during external audits, AquaTrust AI incorporates a standalone client-side verification engine implemented in Python and JavaScript/TypeScript:
+- **Canonical Serialization Verification:** Independent auditors can feed raw exported JSON records into the `atc-v1` serializer, which recursively strips whitespace and sorts all keys lexicographically (RFC 8785).
+- **Double SHA-256 Digest Recalculation:** The engine recalculates $H(R) = SHA-256(SHA-256(S_{canonical}))$ entirely in local client memory.
+- **RFC 6962 Proof Traversal:** Given an exported 32-byte Merkle root and the sibling audit trail, the client engine recalculates internal node hashes using RFC 6962 domain separation prefixes (`0x00` for leaves, `0x01` for parents) in $O(log₂ n)$ operations, mathematically verifying proof validity in under **$0.15 ms$** without requiring network access.
+
 
 ## 5.6 Core Algorithmic Implementations and Pseudocode
 
@@ -779,14 +822,14 @@ The effluent quality prediction models were evaluated on a held-out test split (
 *Table 6.2: Empirical Performance Metrics of Effluent Water Quality Prediction Models*
 | Effluent Target Parameter | Optimal ML Estimator | RMSE | MAE | $R^2$ Score | CPCB Compliance Accuracy |
 | :--- | :--- | :---: | :---: | :---: | :---: |
-| **Effluent BOD ($DBO\text{-}S$)** | Gradient Boosting Regressor | **6.16 mg/L** | 4.32 mg/L | **0.884** | **96.8%** |
-| **Effluent COD ($DQO\text{-}S$)** | Random Forest Regressor | **27.05 mg/L** | 18.40 mg/L | **0.892** | **95.4%** |
-| **Effluent TSS ($SS\text{-}S$)** | Gradient Boosting Regressor | **7.30 mg/L** | 5.10 mg/L | **0.879** | **97.1%** |
-| **Effluent pH ($PH\text{-}S$)** | Random Forest Regressor | **0.166 pH** | 0.112 pH | **0.915** | **99.2%** |
+| **Effluent BOD ($DBO-S$)** | Gradient Boosting Regressor | **6.16 mg/L** | 4.32 mg/L | **0.884** | **96.8%** |
+| **Effluent COD ($DQO-S$)** | Random Forest Regressor | **27.05 mg/L** | 18.40 mg/L | **0.892** | **95.4%** |
+| **Effluent TSS ($SS-S$)** | Gradient Boosting Regressor | **7.30 mg/L** | 5.10 mg/L | **0.879** | **97.1%** |
+| **Effluent pH ($PH-S$)** | Random Forest Regressor | **0.166 pH** | 0.112 pH | **0.915** | **99.2%** |
 
 ![Figure 6.1: Actual vs. Predicted Effluent Concentrations across CPCB Target Parameters](images/fig6_1_effluent_regression.png)
 
-As demonstrated in Figure 6.1, predicted effluent values closely track the actual laboratory test values along the ideal 45-degree ($y = x$) regression line. For Effluent BOD (Figure 6.1a), the model reliably classifies cycles approaching the CPCB permissible discharge limit of $30.0\text{ mg/L}$, triggering proactive aeration adjustments before breaches occur. Similarly, for Effluent COD (Figure 6.1b) and TSS (Figure 6.1c), the models maintain high fidelity even during non-linear peak organic loading spikes. Effluent pH (Figure 6.1d) demonstrates the highest precision ($R^2 = 0.915$, $\text{RMSE} = 0.166$), accurately predicting shifts toward acidic or alkaline boundaries.
+As demonstrated in Figure 6.1, predicted effluent values closely track the actual laboratory test values along the ideal 45-degree ($y = x$) regression line. For Effluent BOD (Figure 6.1a), the model reliably classifies cycles approaching the CPCB permissible discharge limit of $30.0 mg/L$, triggering proactive aeration adjustments before breaches occur. Similarly, for Effluent COD (Figure 6.1b) and TSS (Figure 6.1c), the models maintain high fidelity even during non-linear peak organic loading spikes. Effluent pH (Figure 6.1d) demonstrates the highest precision ($R^2 = 0.915$, $RMSE = 0.166$), accurately predicting shifts toward acidic or alkaline boundaries.
 
 ### 6.3.2 Anomaly Classification Confusion Matrix and Trust Performance
 The 10-class sensor trust engine was evaluated against 1,200 synthetic telemetry cycles containing labeled anomaly injections across all 10 operational fault archetypes.
@@ -795,15 +838,15 @@ The 10-class sensor trust engine was evaluated against 1,200 synthetic telemetry
 | Anomaly Archetype | Precision | Recall | F1-Score | Mean Detection Latency |
 | :--- | :---: | :---: | :---: | :---: |
 | `NORMAL` | 0.99 | 0.98 | **0.98** | Baseline (< 1 cycle) |
-| `STUCK_SENSOR` | 0.98 | 1.00 | **0.99** | $\le 15\text{ cycles}$ |
+| `STUCK_SENSOR` | 0.98 | 1.00 | **0.99** | $≤ 15 cycles$ |
 | `SENSOR_FAILURE` | 1.00 | 0.99 | **0.99** | Instantaneous (< 1 cycle) |
-| `SENSOR_DRIFT` | 0.92 | 0.89 | **0.90** | $5\text{--}8\text{ cycles}$ |
-| `PARAMETER_INCONSISTENCY` | 0.94 | 0.91 | **0.92** | $< 2\text{ cycles}$ |
+| `SENSOR_DRIFT` | 0.92 | 0.89 | **0.90** | $5–8 cycles$ |
+| `PARAMETER_INCONSISTENCY` | 0.94 | 0.91 | **0.92** | $< 2 cycles$ |
 | `SUDDEN_SPIKE` | 0.97 | 0.98 | **0.97** | Instantaneous (< 1 cycle) |
 | `MISSING_READING` | 1.00 | 1.00 | **1.00** | Instantaneous (< 1 cycle) |
 | `DUPLICATE_READING` | 1.00 | 1.00 | **1.00** | Instantaneous (< 1 cycle) |
-| `SUDDEN_PROCESS_CHANGE` | 0.91 | 0.93 | **0.92** | $3\text{--}5\text{ cycles}$ |
-| `STATISTICAL_ANOMALY` | 0.88 | 0.86 | **0.87** | $< 1\text{ cycle}$ |
+| `SUDDEN_PROCESS_CHANGE` | 0.91 | 0.93 | **0.92** | $3–5 cycles$ |
+| `STATISTICAL_ANOMALY` | 0.88 | 0.86 | **0.87** | $< 1 cycle$ |
 
 ![Figure 6.2: Normalized Confusion Matrix for 10-Class Sensor Trust & Anomaly Inference](images/fig6_2_anomaly_confusion_matrix.png)
 
@@ -825,9 +868,9 @@ To empirically justify the selection of the tree-based ensemble architecture, a 
 ![Figure 6.3: Machine Learning Model Benchmarking and Computational Complexity Comparison](images/fig6_3_model_benchmarks.png)
 
 As illustrated in Figure 6.3:
-1. **RMSE Comparison (Figure 6.3a):** Standard Linear Regression fails to capture non-linear microbial digestion dynamics ($\text{RMSE} = 14.80\text{ mg/L}$). The AquaTrust AI ensemble achieves the lowest error ($\text{RMSE} = 6.16\text{ mg/L}$), representing a 58.4% error reduction over linear baselines.
+1. **RMSE Comparison (Figure 6.3a):** Standard Linear Regression fails to capture non-linear microbial digestion dynamics ($RMSE = 14.80 mg/L$). The AquaTrust AI ensemble achieves the lowest error ($RMSE = 6.16 mg/L$), representing a 58.4% error reduction over linear baselines.
 2. **Coefficient of Determination ($R^2$, Figure 6.3b):** The ensemble achieves a mean $R^2 = 0.892$, significantly outperforming SVR ($R^2 = 0.785$) and deep LSTM ($R^2 = 0.834$).
-3. **Inference Latency & Edge Feasibility (Figure 6.3c):** While deep LSTM architectures require $84.6\text{ ms}$ per cycle and over $140\text{ MB}$ RAM, our ensemble executes in **$18.2\text{ ms}$** on standard commodity hardware. This ultra-low computational latency allows the entire predictive pipeline to run comfortably on low-cost edge gateways (such as a Raspberry Pi 4).
+3. **Inference Latency & Edge Feasibility (Figure 6.3c):** While deep LSTM architectures require $84.6 ms$ per cycle and over $140 MB$ RAM, our ensemble executes in **$18.2 ms$** on standard commodity hardware. This ultra-low computational latency allows the entire predictive pipeline to run comfortably on low-cost edge gateways (such as a Raspberry Pi 4).
 
 ## 6.4 Blockchain Performance and Tamper Detection Experimental Analysis
 To evaluate the cryptographic integrity and scaling capabilities of the off-chain/on-chain hybrid architecture, a systematic series of cryptographic stress tests and tamper-injection experiments were conducted.
@@ -837,33 +880,33 @@ To evaluate the cryptographic integrity and scaling capabilities of the off-chai
 | :--- | :--- | :---: | :---: | :--- |
 | **Pristine Unmodified Record** | None | **YES** | **YES** | **VERIFIED (Valid)** |
 | **Subtle Value Alteration** | `predicted_bod: 34.2 -> 18.5` | **NO** | **NO** | **TAMPER DETECTED (Rejected)** |
-| **Timestamp Alteration Attack**| Shifted by $+1\text{ second}$ | **NO** | **NO** | **TAMPER DETECTED (Rejected)** |
+| **Timestamp Alteration Attack**| Shifted by $+1 second$ | **NO** | **NO** | **TAMPER DETECTED (Rejected)** |
 | **JSON Key Reordering Attack** | Keys sorted alphabetically | **YES (`atc-v1`)** | **YES** | **VERIFIED (Order Invariant)** |
 | **Bit-Flip in Merkle Proof** | 1 bit flipped in sibling hash | **YES** | **NO** | **TAMPER DETECTED (Rejected)** |
 
 ![Figure 6.4: Cryptographic Scaling Benchmarks and Tamper Detection Experimental Analysis](images/fig6_4_crypto_tamper_benchmark.png)
 
 Figure 6.4 illustrates the experimental findings:
-- **Scaling Complexity (Figure 6.4a):** Double SHA-256 canonical hashing (`atc-v1`) and Merkle tree generation scale linearly $\mathcal{O}(n)$ with batch size. For a 100-cycle operational batch, root generation completes in just **$1.10\text{ ms}$**. Most importantly, single-record inclusion proof verification executes in logarithmic time $\mathcal{O}(\log_2 n)$, requiring only **$0.12\text{ ms}$** to mathematically prove the integrity of an arbitrary cycle snapshot.
+- **Scaling Complexity (Figure 6.4a):** Double SHA-256 canonical hashing (`atc-v1`) and Merkle tree generation scale linearly $O(n)$ with batch size. For a 100-cycle operational batch, root generation completes in just **$1.10 ms$**. Most importantly, single-record inclusion proof verification executes in logarithmic time $O(\log_2 n)$, requiring only **$0.12 ms$** to mathematically prove the integrity of an arbitrary cycle snapshot.
 - **Tamper Detection Efficacy (Figure 6.4b):** Single-bit modifications, timestamp alterations, and numerical falsifications are detected with **100.0% accuracy**. Conversely, benign JSON serialization reordering attacks are safely neutralized by the canonical `atc-v1` standard, guaranteeing zero false alarms.
 
 ## 6.5 Sustainability, Energy Conservation, and Circularity Impact Results
-To assess the practical ecological and economic benefits, the closed-loop stoichiometric optimizer was benchmarked over a simulated 30-day operating period for a decentralized residential STP treating $500\text{ kL/day}$ ($500,000\text{ L/day}$).
+To assess the practical ecological and economic benefits, the closed-loop stoichiometric optimizer was benchmarked over a simulated 30-day operating period for a decentralized residential STP treating $500 kL/day$ ($500,000 L/day$).
 
 *Table 6.6: Monthly Resource Optimization & Carbon Avoidance in 500 kL/day Facility*
 | Sustainability Metric | Baseline (Unoptimized) | AquaTrust AI Optimized | Net Monthly Savings / Impact |
 | :--- | :---: | :---: | :---: |
-| **Aeration Blower Electricity**| $8,640\text{ kWh}$ | $6,739\text{ kWh}$ | **$1,901\text{ kWh}$ saved (22.0% reduction)** |
-| **Coagulant Chemical (PAC)** | $450\text{ kg}$ | $369\text{ kg}$ | **$81\text{ kg}$ saved (18.0% reduction)** |
-| **Freshwater Reused via Recycling**| $0\text{ kL}$ | $12,750\text{ kL}$ | **$12.75\text{ Million Liters}$ Conserved** |
-| **Water Circularity Index ($WCI$)** | $12.5\%$ | **$85.0\%$** | **$+72.5\%$ Circularity Gain** |
-| **Scope 2 Indirect Carbon Avoided** | $0\text{ kg CO}_2e$ | **$6,021\text{ kg CO}_2e$** | **$6.02\text{ Metric Tons CO}_2e$ Avoided** |
+| **Aeration Blower Electricity**| $8,640 kWh$ | $6,739 kWh$ | **$1,901 kWh$ saved (22.0% reduction)** |
+| **Coagulant Chemical (PAC)** | $450 kg$ | $369 kg$ | **$81 kg$ saved (18.0% reduction)** |
+| **Freshwater Reused via Recycling**| $0 kL$ | $12,750 kL$ | **$12.75 Million Liters$ Conserved** |
+| **Water Circularity Index (WCI$)** | $12.5%$ | **$85.0%$** | **$+72.5%$ Circularity Gain** |
+| **Scope 2 Indirect Carbon Avoided** | $0 kg CO_2e$ | **$6,021 kg CO_2e$** | **$6.02 Metric Tons CO_2e$ Avoided** |
 
 ![Figure 6.5: 30-Day Cumulative Sustainability Impact in a 500 kL/day Treatment Facility](images/fig6_5_sustainability_impact.png)
 
 Figure 6.5 plots the cumulative 30-day progression:
-- **Aeration Energy Conservation (Figure 6.5a):** By dynamically tuning dissolved oxygen setpoints between $1.5\text{--}2.5\text{ mg/L}$ rather than running blowers continuously at full load, the plant accumulated **$1,901\text{ kWh}$** in electrical energy savings (a 22.0% reduction).
-- **Scope 2 Indirect Carbon Avoided (Figure 6.5b):** Combining electrical grid emission offsets ($0.82\text{ kg CO}_2e/kWh$) with avoided municipal water conveyance pumping ($0.35\text{ kg CO}_2e/kL$), the facility averted **$6,021\text{ kg CO}_2e$** ($6.02\text{ metric tons}$) of greenhouse gas emissions within a single month of automated closed-loop operation.
+- **Aeration Energy Conservation (Figure 6.5a):** By dynamically tuning dissolved oxygen setpoints between $1.5–2.5 mg/L$ rather than running blowers continuously at full load, the plant accumulated **$1,901 kWh$** in electrical energy savings (a 22.0% reduction).
+- **Scope 2 Indirect Carbon Avoided (Figure 6.5b):** Combining electrical grid emission offsets ($0.82 kg CO_2e/kWh$) with avoided municipal water conveyance pumping ($0.35 kg CO_2e/kL$), the facility averted **$6,021 kg CO_2e$** ($6.02 metric tons$) of greenhouse gas emissions within a single month of automated closed-loop operation.
 
 \newpage
 
@@ -894,23 +937,19 @@ Future work will advance the platform along the following directions:
 
 # References
 
-1. N. Rane, S. Choudhary, and J. Rane, "Leading-edge Artificial Intelligence (AI), Machine Learning (ML), Blockchain, and Internet of Things (IoT) Technologies for Enhanced Wastewater Treatment Systems," *SSRN Electronic Journal*, 2023. DOI: 10.2139/ssrn.4632014.
-2. Metcalf & Eddy, Inc., G. Tchobanoglous, H. D. Stensel, R. Tsuchihashi, and F. L. Burton, *Wastewater Engineering: Treatment and Resource Recovery*, 5th ed. New York, NY, USA: McGraw-Hill Education, 2014.
-3. F. Liu, K. M. Ting, and Z.-H. Zhou, "Isolation Forest," in *Proc. 2008 Eighth IEEE International Conference on Data Mining (ICDM)*, Pisa, Italy, 2008, pp. 413–422. DOI: 10.1109/ICDM.2008.17.
-4. V. Chandola, A. Banerjee, and V. Kumar, "Anomaly detection: A survey," *ACM Computing Surveys*, vol. 41, no. 3, pp. 1–58, 2009. DOI: 10.1145/1541880.1541882.
-5. P. Granata, F. Gargano, and G. de Marinis, "Support vector regression for wastewater treatment plant effluent parameter prediction," *Journal of Hydrologic Engineering*, vol. 22, no. 6, p. 04017012, 2017.
-6. A. M. Melesse et al., "Machine learning applications in water quality parameter monitoring: A comprehensive review," *Water Research*, vol. 184, p. 116132, 2020.
-7. L. Corominas et al., "Digital twins for water resource recovery facilities: A review of opportunities, challenges and principles," *Water Research*, vol. 195, p. 116962, 2021.
-8. E. Androulaki et al., "Hyperledger Fabric: A distributed operating system for permissioned blockchains," in *Proc. Thirteenth EuroSys Conference (EuroSys '18)*, Porto, Portugal, 2018, Art. no. 30.
-9. B. A. Crosby and D. S. Wallach, "Certificate Transparency," *IETF RFC 6962*, Jun. 2013. [Online]. Available: https://rfc-editor.org/rfc/rfc6962.txt
-10. Central Pollution Control Board (CPCB), "General Standards for Discharge of Environmental Pollutants: Effluents," *Environment (Protection) Rules, 1986*, Schedule VI, Ministry of Environment, Forest and Climate Change, Govt. of India, New Delhi.
-11. S. Mylrea and S. N. G. Gourisetti, "Blockchain for smart grid resilience, cyber security, and water infrastructure," in *Proc. IEEE Resilience Week (RWS)*, Wilmington, DE, USA, 2017, pp. 132–138.
-12. T. Chen and C. Guestrin, "XGBoost: A scalable tree boosting system," in *Proc. 22nd ACM SIGKDD International Conference on Knowledge Discovery and Data Mining*, San Francisco, CA, USA, 2016, pp. 785–794.
-13. M. Ahmed et al., "Unsupervised anomaly detection in IoT-based wastewater monitoring systems," *IEEE Internet of Things Journal*, vol. 7, no. 9, pp. 8120–8132, 2020.
-14. F. Pedregosa et al., "Scikit-learn: Machine learning in Python," *Journal of Machine Learning Research*, vol. 12, pp. 2825–2830, 2011.
-15. S. Nakamoto, "Bitcoin: A peer-to-peer electronic cash system," *Decentralized Business Review*, p. 21260, 2008.
-
-\newpage
+1. D. S. Thakkar, A. Thakker, R. Gupta, N. K. Jadav, S. Tanwar, G. Pau, G. Sharma, F. Alqahtani, and A. Tolba, "Blockchain-Orchestrated Intelligent Water Treatment Plant Profiling Framework to Enhance Human Life Expectancy," *IEEE Access*, vol. 12, pp. 49151–49166, 2024. DOI: [10.1109/ACCESS.2024.3384607](https://doi.org/10.1109/ACCESS.2024.3384607)
+2. M. A. Mohammed, A. Lakhan, K. H. Abdulkareem, M. K. Abd Ghani, H. A. Marhoon, S. Kadry, J. Nedoma, R. Martinek, and B. G. Zapirain, "Industrial Internet of Water Things architecture for data standardization based on blockchain and digital twin technology," *Journal of Advanced Research*, vol. 66, pp. 1–14, 2024. DOI: [10.1016/j.jare.2023.10.005](https://doi.org/10.1016/j.jare.2023.10.005)
+3. Q. Abbas, R. Almakki, M. Albathan, W. J. Obidallah, and Z. Alshaikh, "Secure Water Quality Monitoring using Blockchain-Smart Contract and IoT in 6G Smart Cities," *Water Resources Management*, vol. 40, 2026. DOI: [10.1007/s11269-026-04630-2](https://doi.org/10.1007/s11269-026-04630-2)
+4. P. Mukherjee, S. Sengupta, and P. K. Sadhu, "Blockchain-IoT and optioneering driven framework for smart water management in emerging urban areas," *iScience*, Cell Press, vol. 28, no. 1, p. 113927, 2025. DOI: [10.1016/j.isci.2025.113927](https://doi.org/10.1016/j.isci.2025.113927)
+5. M. Pincheira, M. Vecchio, R. Giaffreda, and S. S. Kanhere, "Cost-effective IoT devices as trustworthy data sources for a blockchain-based water management system in precision agriculture," *Computers and Electronics in Agriculture*, vol. 180, p. 105889, 2021. DOI: [10.1016/j.compag.2020.105889](https://doi.org/10.1016/j.compag.2020.105889)
+6. M. Pincheira, M. Vecchio, and S. S. Kanhere, "Exploiting Constrained IoT Devices in a Trustless Blockchain-based Water Management System," in *Proc. 2020 IEEE International Conference on Blockchain and Cryptocurrency (ICBC)*, Toronto, ON, Canada, 2020, pp. 1–3. DOI: [10.1109/ICBC48266.2020.9169404](https://doi.org/10.1109/ICBC48266.2020.9169404)
+7. S. Hakak, W. Z. Khan, G. A. Gilkar, N. Haider, M. Imran, and S. Alkatheiri, "Industrial Wastewater Management using Blockchain Technology: Architecture, Requirements, and Future Directions," *IEEE Internet of Things Magazine*, vol. 3, no. 2, pp. 38–43, 2020. DOI: [10.1109/IOTM.0001.1900092](https://doi.org/10.1109/IOTM.0001.1900092)
+8. B. Bordel, D. Martín, R. Alcarria, and T. Robles, "A Blockchain-based Water Control System for the Automatic Management of Irrigation Communities," in *Proc. 2019 IEEE International Conference on Consumer Electronics (ICCE)*, Las Vegas, NV, USA, 2019, pp. 1–4. DOI: [10.1109/ICCE.2019.8662058](https://doi.org/10.1109/ICCE.2019.8662058)
+9. Metcalf & Eddy, Inc., G. Tchobanoglous, H. D. Stensel, R. Tsuchihashi, and F. L. Burton, *Wastewater Engineering: Treatment and Resource Recovery*, 5th ed. New York, NY, USA: McGraw-Hill Education, 2014. Link: [https://books.google.com/books?isbn=9780073401188](https://books.google.com/books?isbn=9780073401188)
+10. Central Pollution Control Board (CPCB), Ministry of Environment, Forest and Climate Change, Government of India, "General Standards for Discharge of Environmental Pollutants: Effluents," *Environment (Protection) Rules*, Schedule VI, 1986. Link: [https://moef.gov.in/](https://moef.gov.in/)
+11. S. A. Crosby and D. S. Wallach, "Certificate Transparency," RFC 6962, Internet Engineering Task Force (IETF), 2013. Link: [https://datatracker.ietf.org/doc/html/rfc6962](https://datatracker.ietf.org/doc/html/rfc6962)
+12. F. T. Liu, K. M. Ting, and Z.-H. Zhou, "Isolation Forest," in *Proc. 2008 Eighth IEEE International Conference on Data Mining (ICDM)*, Pisa, Italy, 2008, pp. 413–422. DOI: [10.1109/ICDM.2008.17](https://doi.org/10.1109/ICDM.2008.17)
+13. UCI Machine Learning Repository, "Water Treatment Plant Data Set," School of Information and Computer Science, University of California, Irvine, 1993. Link: [https://archive.ics.uci.edu/dataset/120/water+treatment+plant](https://archive.ics.uci.edu/dataset/120/water+treatment+plant)
 
 # Appendix A: Key Code Listings and Smart Contract Definitions
 
