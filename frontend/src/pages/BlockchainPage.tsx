@@ -97,12 +97,9 @@ export const BlockchainPage: React.FC = () => {
               <Blocks className="w-4 h-4" />
             </div>
             <h1 className="text-xl font-bold tracking-tight text-white flex items-center gap-2">
-              Distributed Ledger (DLT) & Anchor Verification
+              Distributed Ledger (DLT) &amp; Anchor Verification
             </h1>
           </div>
-          <p className="text-xs text-slate-400 mt-1">
-            Immutable anchoring boundary connecting certified wastewater digests to Hyperledger Fabric or local simulation.
-          </p>
         </div>
         <div className="flex items-center gap-2">
           <Link
@@ -161,54 +158,6 @@ export const BlockchainPage: React.FC = () => {
             </span>
           </div>
         </div>
-
-        {/* Operational Truth Notice */}
-        <div className="mt-4 p-3.5 rounded-lg text-xs font-mono bg-[#0B0F17] border border-[#1F293D] text-slate-300">
-          {dltStatus?.mode === 'FABRIC' ? (
-            <div>
-              <strong className="text-emerald-400">PRODUCTION HYPERLEDGER FABRIC CONNECTED:</strong>{' '}
-              Transaction commitments are endorsed across consensus peers and recorded in immutable ledger blocks.
-            </div>
-          ) : (
-            <div>
-              <strong className="text-amber-400">LOCAL CRYPTOGRAPHIC SIMULATION ACTIVE:</strong>{' '}
-              Transactions are validated locally in-memory. State is not committed to a distributed blockchain network.
-              Pending anchors intentionally remain in pending status upon reconciliation.
-            </div>
-          )}
-        </div>
-
-        {dltStatus && (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4 text-xs font-mono">
-            <div className="p-3 bg-[#161F30]/60 rounded-lg border border-[#1F293D]">
-              <span className="text-slate-400 block text-[11px]">Peer Endpoint</span>
-              <span className="text-white font-medium">{dltStatus.peer_endpoint || 'Local Simulator'}</span>
-            </div>
-
-            <div className="p-3 bg-[#161F30]/60 rounded-lg border border-[#1F293D]">
-              <span className="text-slate-400 block text-[11px]">Simulation Sequence</span>
-              <span className="text-white font-medium">
-                {dltStatus.simulation_sequence !== undefined && dltStatus.simulation_sequence !== null
-                  ? dltStatus.simulation_sequence
-                  : 'N/A (Fabric Active)'}
-              </span>
-            </div>
-
-            <div className="p-3 bg-[#161F30]/60 rounded-lg border border-[#1F293D]">
-              <span className="text-slate-400 block text-[11px]">Simulated Entries</span>
-              <span className="text-white font-medium">
-                {dltStatus.simulated_entries_count !== undefined && dltStatus.simulated_entries_count !== null
-                  ? dltStatus.simulated_entries_count
-                  : 'N/A'}
-              </span>
-            </div>
-
-            <div className="p-3 bg-[#161F30]/60 rounded-lg border border-[#1F293D]">
-              <span className="text-slate-400 block text-[11px]">Last Error</span>
-              <span className="text-slate-400">{dltStatus.last_error || 'None'}</span>
-            </div>
-          </div>
-        )}
       </div>
 
       {/* Reconcile mutation notification */}

@@ -67,17 +67,9 @@ export const MerkleBatchPage: React.FC = () => {
               <Layers className="w-4 h-4" />
             </div>
             <h1 className="text-xl font-bold tracking-tight text-white flex items-center gap-2">
-              RFC 6962 Merkle Tree Batch Commitment & Audit Verification
+              RFC 6962 Merkle Tree Batch Commitment &amp; Audit Verification
             </h1>
           </div>
-          <p className="text-xs text-slate-400 mt-1">
-            High-throughput telemetry batch anchoring. Generates Merkle roots with inclusion audit path proofs.
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <span className="px-3 py-1 rounded-full bg-[#111827] border border-[#1F293D] text-[10px] font-mono uppercase tracking-widest text-[#0EA5E9]">
-            RFC 6962 STANDARD
-          </span>
         </div>
       </div>
 
@@ -204,12 +196,7 @@ export const MerkleBatchPage: React.FC = () => {
               <ShieldCheck className="w-3.5 h-3.5 text-[#10B981]" />
               2. Verify Leaf Hash Inclusion in Merkle Batch
             </h2>
-            <span className="text-[10px] font-mono text-slate-500">AUDIT PROOF</span>
           </div>
-
-          <p className="text-xs text-slate-400">
-            Verifies cryptographic membership proof against the batch commitment without requiring retrieval of the entire dataset.
-          </p>
 
           <form
             onSubmit={(e) => {

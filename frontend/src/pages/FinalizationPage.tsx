@@ -6,7 +6,7 @@ import { listFacilitiesApi } from '../api/facilities';
 import { useAuth } from '../context/AuthContext';
 import { ApiClientError } from '../api/client';
 import { ErrorState } from '../components/common/States';
-import { Stamp, Shield, AlertTriangle, ArrowRight, CheckCircle2, Clock, Calendar } from 'lucide-react';
+import { Stamp, AlertTriangle, ArrowRight, CheckCircle2, Clock, Calendar } from 'lucide-react';
 
 export const FinalizationPage: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -68,35 +68,10 @@ export const FinalizationPage: React.FC = () => {
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       <div className="pb-4 border-b border-[#1F293D]">
-        <div className="flex items-center gap-2 mb-1">
-          <span className="text-[10px] font-mono uppercase tracking-widest text-cyan-400 font-semibold bg-cyan-950/60 border border-cyan-800/80 px-2 py-0.5 rounded">
-            Cryptographic Authority
-          </span>
-        </div>
         <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white font-mono flex items-center gap-2.5">
           <Stamp className="w-5 h-5 text-cyan-400" />
           Aggregate &amp; Finalize Treatment Window
         </h1>
-        <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-          Backend authority boundary: aggregates telemetry window, computes atc-v1 canonical SHA-256 hash, issues ES256 digital signature, and triggers DLT anchor.
-        </p>
-      </div>
-
-      {/* Backend Policy Requirements Notice */}
-      <div className="scada-card p-5 text-xs space-y-2">
-        <div className="flex items-center gap-2 text-cyan-400 font-semibold uppercase tracking-wide font-mono">
-          <Shield className="w-4 h-4" />
-          Backend Deterministic Finalization Invariants
-        </div>
-        <p className="text-slate-400 leading-relaxed">
-          The backend enforces strict state transitions. Finalization is processed exclusively on the server and will be rejected with HTTP 422 if:
-        </p>
-        <ul className="list-disc pl-5 space-y-1.5 text-slate-300 font-mono text-[11px]">
-          <li>Quality status != valid (telemetry must pass deterministic validation)</li>
-          <li>Anomaly status == insufficient_data (AI inference engine must have sufficient window steps)</li>
-          <li>Compliance status not evaluable</li>
-          <li>Time window contains zero ingested observations</li>
-        </ul>
       </div>
 
       {/* Finalization Request Form */}

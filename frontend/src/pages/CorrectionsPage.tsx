@@ -33,15 +33,6 @@ export const CorrectionsPage: React.FC = () => {
               Append-Only Correction Lineage Portal
             </h1>
           </div>
-          <p className="text-xs text-slate-400 mt-1">
-            Audit immutable treatment record lineage, inspect version DAG trees, or propose regulatory corrections.
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#111827] border border-[#1F293D] text-[10px] font-mono uppercase tracking-widest text-slate-300">
-            <ShieldCheck className="w-3 h-3 text-[#10B981]" />
-            IMMUTABLE LEDGER LINEAGE
-          </span>
         </div>
       </div>
 
@@ -52,7 +43,6 @@ export const CorrectionsPage: React.FC = () => {
             <Search className="w-3.5 h-3.5 text-[#0EA5E9]" />
             Lookup Lineage Graph by Record UUID
           </h2>
-          <span className="text-[10px] font-mono text-slate-500">RFC 4122 Canonical UUID</span>
         </div>
         <form onSubmit={handleGo} className="flex flex-col sm:flex-row gap-3">
           <input

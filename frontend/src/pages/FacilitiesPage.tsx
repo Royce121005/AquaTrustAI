@@ -27,9 +27,6 @@ export const FacilitiesPage: React.FC = () => {
               Registered Treatment Facilities
             </h1>
           </div>
-          <p className="text-xs text-slate-400 mt-1">
-            Wastewater treatment plants, monitoring stations, and municipal discharge infrastructure.
-          </p>
         </div>
         {user?.role === 'admin' && (
           <Link

@@ -65,18 +65,10 @@ export const CertificatesPage: React.FC = () => {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#1F293D]">
         <div>
-          <div className="flex items-center gap-2 mb-1">
-            <span className="text-[10px] font-mono uppercase tracking-widest text-cyan-400 font-semibold bg-cyan-950/60 border border-cyan-800/80 px-2 py-0.5 rounded">
-              Cryptographic Credentials
-            </span>
-          </div>
           <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white font-mono flex items-center gap-2.5">
             <Award className="w-5 h-5 text-cyan-400" />
             Digital Compliance Certificates
           </h1>
-          <p className="text-xs text-slate-400 mt-1 max-w-3xl leading-relaxed">
-            Cryptographically signed treatment certificates backed by SHA-256 canonical digests and DLT ledger anchors.
-          </p>
         </div>
         <div className="flex items-center gap-2 shrink-0">
           <button

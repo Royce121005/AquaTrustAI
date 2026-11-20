@@ -64,18 +64,10 @@ export const TelemetryPage: React.FC = () => {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#1F293D]">
         <div>
-          <div className="flex items-center gap-2 mb-1">
-            <span className="text-[10px] font-mono uppercase tracking-widest text-cyan-400 font-semibold bg-cyan-950/60 border border-cyan-800/80 px-2 py-0.5 rounded">
-              Raw Instrumentation Bus
-            </span>
-          </div>
           <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white font-mono flex items-center gap-2.5">
             <Activity className="w-5 h-5 text-cyan-400" />
             SCADA Telemetry Observations
           </h1>
-          <p className="text-xs text-slate-400 mt-1 max-w-3xl leading-relaxed">
-            Deterministic sensor telemetry ingestion stream. Direct observation boundary before validation and finalization.
-          </p>
         </div>
         <div className="flex items-center gap-2">
           <button

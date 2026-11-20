@@ -86,9 +86,6 @@ export const AuditPage: React.FC = () => {
               Immutable Forensic Audit Trail
             </h1>
           </div>
-          <p className="text-xs text-slate-400 mt-1">
-            Cryptographically sealed system audit events, operator actions, and consensus finalization state mutations.
-          </p>
         </div>
         <div className="flex items-center gap-2">
           <div className="flex items-center bg-[#0B0F17] p-1 rounded-lg border border-[#1F293D] text-xs">

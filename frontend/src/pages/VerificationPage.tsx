@@ -48,18 +48,10 @@ export const VerificationPage: React.FC = () => {
   return (
     <div className="space-y-6">
       <div className="pb-4 border-b border-[#1F293D]">
-        <div className="flex items-center gap-2 mb-1">
-          <span className="text-[10px] font-mono uppercase tracking-widest text-cyan-400 font-semibold bg-cyan-950/60 border border-cyan-800/80 px-2 py-0.5 rounded">
-            Independent Audit Gateway
-          </span>
-        </div>
         <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white font-mono flex items-center gap-2.5">
           <ShieldCheck className="w-5 h-5 text-cyan-400" />
           Independent Cryptographic Trust Verification
         </h1>
-        <p className="text-xs text-slate-400 mt-1 max-w-3xl leading-relaxed">
-          Auditor &amp; Regulator tool: re-computes atc-v1 canonical digest, validates ECDSA P-256 signature against authority key, checks certificate consistency, and queries DLT ledger anchors.
-        </p>
       </div>
 
       {/* Target Record Selector */}
