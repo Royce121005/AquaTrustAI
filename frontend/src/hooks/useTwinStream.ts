@@ -51,6 +51,13 @@ export function useTwinStream(
   const isMountedRef = useRef<boolean>(true);
   const currentVersionRef = useRef<number>(0);
 
+  const onSnapshotRef = useRef(onSnapshot);
+  const onDeltaRef = useRef(onDelta);
+  const onErrorRef = useRef(onError);
+  onSnapshotRef.current = onSnapshot;
+  onDeltaRef.current = onDelta;
+  onErrorRef.current = onError;
+
   // Keep current version ref in sync
   currentVersionRef.current = stateVersion;
 
@@ -152,7 +159,7 @@ export function useTwinStream(
               setEngineStatus(message.engine_status);
             }
             setConnectionState('connected');
-            if (onSnapshot) onSnapshot(message);
+            if (onSnapshotRef.current) onSnapshotRef.current(message);
           } else if (message.type === 'TWIN_STATE_DELTA') {
             const curVer = currentVersionRef.current;
             // Gap detection: incoming version jumped more than 1 ahead
@@ -174,7 +181,7 @@ export function useTwinStream(
               if (message.engine_status) {
                 setEngineStatus(message.engine_status);
               }
-              if (onDelta) onDelta(message);
+              if (onDeltaRef.current) onDeltaRef.current(message);
             }
           } else if (message.type === 'TWIN_ALARM_ACKNOWLEDGED') {
             setActiveAlarms((prev) =>
@@ -195,7 +202,7 @@ export function useTwinStream(
       ws.onerror = (err) => {
         if (!isMountedRef.current) return;
         setError('SCADA WebSocket stream connection error.');
-        if (onError) onError(err);
+        if (onErrorRef.current) onErrorRef.current(err);
       };
 
       ws.onclose = () => {
@@ -216,7 +223,7 @@ export function useTwinStream(
       setError(initErr.message || 'Unable to initialize WebSocket connection');
       setConnectionState('disconnected');
     }
-  }, [facilityId, enabled, buildTwinStateFromMessage, onSnapshot, onDelta, onError]);
+  }, [facilityId, enabled, buildTwinStateFromMessage]);
 
   const reconnect = useCallback(() => {
     backoffRef.current = 1000;

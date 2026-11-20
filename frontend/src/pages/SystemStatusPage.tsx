@@ -34,32 +34,37 @@ export const SystemStatusPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#1F293D]">
         <div>
-          <h1 className="text-xl font-bold tracking-tight text-slate-900 flex items-center gap-2">
-            <Server className="w-5 h-5 text-brand-600" />
-            Infrastructure & System Status
-          </h1>
-          <p className="text-xs text-slate-500 mt-0.5">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg bg-[#0EA5E9]/10 border border-[#0EA5E9]/30 flex items-center justify-center text-[#0EA5E9]">
+              <Server className="w-4 h-4" />
+            </div>
+            <h1 className="text-xl font-bold tracking-tight text-white flex items-center gap-2">
+              Infrastructure & System Status
+            </h1>
+          </div>
+          <p className="text-xs text-slate-400 mt-1">
             Operational service telemetry, database readiness boundaries, and ledger gateway transport connectivity.
           </p>
         </div>
         <button
           onClick={handleRefresh}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 rounded-md text-xs font-medium shadow-sm transition-colors"
+          className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-[#111827] border border-[#1F293D] hover:bg-[#161F30] text-slate-300 rounded-lg text-xs font-semibold shadow-sm transition-colors"
         >
-          <RefreshCw className="w-3.5 h-3.5" />
+          <RefreshCw className="w-3.5 h-3.5 text-[#0EA5E9]" />
           Refresh Status
         </button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Backend Application & Database Health */}
-        <div className="bg-white border border-slate-200 rounded-lg p-6 shadow-sm space-y-4">
-          <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+        <div className="bg-[#111827] border border-[#1F293D] rounded-xl p-6 shadow-xl space-y-4">
+          <div className="flex items-center justify-between pb-3 border-b border-[#1F293D]">
             <div className="flex items-center gap-2">
-              <Activity className="w-4 h-4 text-emerald-600" />
-              <h2 className="text-sm font-semibold text-slate-800 uppercase tracking-wide">
+              <Activity className="w-4 h-4 text-[#10B981]" />
+              <h2 className="text-xs font-mono uppercase tracking-wider text-slate-300">
                 FastAPI Backend Service
               </h2>
             </div>
@@ -75,56 +80,52 @@ export const SystemStatusPage: React.FC = () => {
             <ErrorState error={healthQuery.error} />
           ) : healthQuery.data ? (
             <div className="space-y-3 text-xs font-mono">
-              <div className="flex justify-between py-1 border-b border-slate-100">
-                <span className="text-slate-500">Service Status:</span>
-                <span className="font-bold text-slate-800 uppercase">
+              <div className="flex justify-between py-1.5 border-b border-[#1F293D]">
+                <span className="text-slate-400">Service Status:</span>
+                <span className="font-bold text-emerald-400 uppercase">
                   {healthQuery.data.status}
                 </span>
               </div>
-              <div className="flex justify-between py-1 border-b border-slate-100">
-                <span className="text-slate-500">Application Name:</span>
-                <span className="text-slate-800">{healthQuery.data.app_name}</span>
+              <div className="flex justify-between py-1.5 border-b border-[#1F293D]">
+                <span className="text-slate-400">Application Name:</span>
+                <span className="text-white">{healthQuery.data.app_name}</span>
               </div>
-              <div className="flex justify-between py-1 border-b border-slate-100">
-                <span className="text-slate-500">Environment:</span>
-                <span className="text-slate-800 uppercase">{healthQuery.data.environment}</span>
+              <div className="flex justify-between py-1.5 border-b border-[#1F293D]">
+                <span className="text-slate-400">Environment:</span>
+                <span className="text-white uppercase">{healthQuery.data.environment}</span>
               </div>
-              <div className="flex justify-between py-1 border-b border-slate-100">
-                <span className="text-slate-500">API Version:</span>
-                <span className="text-slate-800">{healthQuery.data.version}</span>
+              <div className="flex justify-between py-1.5 border-b border-[#1F293D]">
+                <span className="text-slate-400">API Version:</span>
+                <span className="text-[#0EA5E9]">{healthQuery.data.version}</span>
               </div>
-              <div className="flex justify-between py-1 border-b border-slate-100">
-                <span className="text-slate-500">Database Connection:</span>
+              <div className="flex justify-between py-1.5 border-b border-[#1F293D]">
+                <span className="text-slate-400">Database Connection:</span>
                 <span
                   className={`font-bold ${
                     healthQuery.data.database === 'connected'
-                      ? 'text-emerald-600'
-                      : 'text-rose-600'
+                      ? 'text-emerald-400'
+                      : 'text-rose-400'
                   }`}
                 >
                   {healthQuery.data.database.toUpperCase()}
                 </span>
               </div>
-              <div className="flex justify-between py-1">
-                <span className="text-slate-500">Health Timestamp:</span>
-                <span className="text-slate-700">
+              <div className="flex justify-between py-1.5">
+                <span className="text-slate-400">Health Timestamp:</span>
+                <span className="text-slate-300">
                   {new Date(healthQuery.data.timestamp).toLocaleString()}
                 </span>
               </div>
             </div>
           ) : null}
-
-          <div className="text-[10px] text-slate-400 font-mono pt-2 border-t border-slate-100">
-            Source: GET /health (Unauthenticated readiness probe)
-          </div>
         </div>
 
         {/* DLT Gateway Status */}
-        <div className="bg-white border border-slate-200 rounded-lg p-6 shadow-sm space-y-4">
-          <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+        <div className="bg-[#111827] border border-[#1F293D] rounded-xl p-6 shadow-xl space-y-4">
+          <div className="flex items-center justify-between pb-3 border-b border-[#1F293D]">
             <div className="flex items-center gap-2">
-              <Database className="w-4 h-4 text-purple-600" />
-              <h2 className="text-sm font-semibold text-slate-800 uppercase tracking-wide">
+              <Database className="w-4 h-4 text-purple-400" />
+              <h2 className="text-xs font-mono uppercase tracking-wider text-slate-300">
                 DLT Gateway Ledger Mode
               </h2>
             </div>
@@ -140,29 +141,29 @@ export const SystemStatusPage: React.FC = () => {
             <ErrorState error={dltQuery.error} />
           ) : dltQuery.data ? (
             <div className="space-y-3 text-xs font-mono">
-              <div className="flex justify-between py-1 border-b border-slate-100">
-                <span className="text-slate-500">Active Mode:</span>
-                <span className="font-bold text-slate-800">{dltQuery.data.mode}</span>
+              <div className="flex justify-between py-1.5 border-b border-[#1F293D]">
+                <span className="text-slate-400">Active Mode:</span>
+                <span className="font-bold text-white">{dltQuery.data.mode}</span>
               </div>
-              <div className="flex justify-between py-1 border-b border-slate-100">
-                <span className="text-slate-500">Distributed Ledger:</span>
-                <span className="text-slate-800">
+              <div className="flex justify-between py-1.5 border-b border-[#1F293D]">
+                <span className="text-slate-400">Distributed Ledger:</span>
+                <span className="text-white">
                   {String(dltQuery.data.distributed_ledger)}
                 </span>
               </div>
-              <div className="flex justify-between py-1 border-b border-slate-100">
-                <span className="text-slate-500">Channel / Network:</span>
-                <span className="text-slate-800">{dltQuery.data.channel || 'None (Sim)'}</span>
+              <div className="flex justify-between py-1.5 border-b border-[#1F293D]">
+                <span className="text-slate-400">Channel / Network:</span>
+                <span className="text-white">{dltQuery.data.channel || 'None (Sim)'}</span>
               </div>
-              <div className="flex justify-between py-1 border-b border-slate-100">
-                <span className="text-slate-500">Chaincode ID:</span>
-                <span className="text-slate-800">
+              <div className="flex justify-between py-1.5 border-b border-[#1F293D]">
+                <span className="text-slate-400">Chaincode ID:</span>
+                <span className="text-[#0EA5E9]">
                   {dltQuery.data.chaincode || 'aquatrust-records'}
                 </span>
               </div>
-              <div className="flex justify-between py-1">
-                <span className="text-slate-500">Simulation Counter:</span>
-                <span className="text-slate-700">
+              <div className="flex justify-between py-1.5">
+                <span className="text-slate-400">Simulation Counter:</span>
+                <span className="text-slate-300">
                   {dltQuery.data.simulated_entries_count !== undefined
                     ? `${dltQuery.data.simulated_entries_count} records`
                     : 'N/A'}
@@ -170,42 +171,38 @@ export const SystemStatusPage: React.FC = () => {
               </div>
             </div>
           ) : null}
-
-          <div className="text-[10px] text-slate-400 font-mono pt-2 border-t border-slate-100">
-            Source: GET /dlt/status
-          </div>
         </div>
       </div>
 
       {/* ML Pipeline Status (Truthfully extracted from Anomaly API response) */}
-      <div className="bg-white border border-slate-200 rounded-lg p-6 shadow-sm space-y-4">
-        <div className="flex items-center gap-2 pb-3 border-b border-slate-100">
-          <Cpu className="w-4 h-4 text-purple-600" />
-          <h2 className="text-sm font-semibold text-slate-800 uppercase tracking-wide">
+      <div className="bg-[#111827] border border-[#1F293D] rounded-xl p-6 shadow-xl space-y-4">
+        <div className="flex items-center gap-2 pb-3 border-b border-[#1F293D]">
+          <Cpu className="w-4 h-4 text-purple-400" />
+          <h2 className="text-xs font-mono uppercase tracking-wider text-slate-300">
             Machine Learning Inference Pipeline Information
           </h2>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs font-mono">
-          <div>
-            <span className="text-slate-500 block text-[11px]">Model Architecture:</span>
-            <span className="font-bold text-slate-800">Scikit-learn Isolation Forest</span>
+          <div className="p-3 bg-[#161F30]/60 rounded-lg border border-[#1F293D]">
+            <span className="text-slate-400 block text-[11px]">Model Architecture:</span>
+            <span className="font-bold text-white">Scikit-learn Isolation Forest</span>
           </div>
 
-          <div>
-            <span className="text-slate-500 block text-[11px]">Model Version:</span>
-            <span className="text-slate-800">
+          <div className="p-3 bg-[#161F30]/60 rounded-lg border border-[#1F293D]">
+            <span className="text-slate-400 block text-[11px]">Model Version:</span>
+            <span className="text-[#0EA5E9] font-medium">
               {anomalyQuery.data?.model_version || 'Loading...'}
             </span>
           </div>
 
-          <div>
-            <span className="text-slate-500 block text-[11px]">Feature Set Version:</span>
-            <span className="text-slate-800">atc-if-v1</span>
+          <div className="p-3 bg-[#161F30]/60 rounded-lg border border-[#1F293D]">
+            <span className="text-slate-400 block text-[11px]">Feature Set Version:</span>
+            <span className="text-emerald-400 font-medium">atc-if-v1</span>
           </div>
         </div>
 
-        <div className="pt-2 text-[11px] text-slate-500">
+        <div className="pt-2 text-[11px] text-slate-500 font-mono">
           Notice: The backend does not expose a discrete &quot;ML health&quot; probe endpoint. Model metadata is retrieved authentically from anomaly inference responses.
         </div>
       </div>
@@ -214,7 +211,7 @@ export const SystemStatusPage: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <BackendSupportRequiredState
           feature="User Directory / Suspension API"
-          description="Backend does not currently expose GET /users or user status modification endpoints."
+          description="Backend does not currently expose user directory or user status modification endpoints."
         />
         <BackendSupportRequiredState
           feature="Signing Key Rotation"

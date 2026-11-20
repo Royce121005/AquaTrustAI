@@ -52,7 +52,14 @@ export const App: React.FC = () => {
           <Routes>
             {/* Public Unauthenticated Routes */}
             <Route path="/login" element={<LoginPage />} />
+            <Route path="/verify" element={<PublicVerificationPage mode="record" />} />
+            <Route path="/verify/public" element={<PublicVerificationPage mode="record" />} />
+            <Route path="/public/verify" element={<Navigate to="/verify" replace />} />
             <Route path="/verify/:recordId" element={<PublicVerificationPage mode="record" />} />
+            <Route
+              path="/public/verify/certificate"
+              element={<PublicVerificationPage mode="certificate" />}
+            />
             <Route
               path="/public/verify/certificate/:certificateId"
               element={<PublicVerificationPage mode="certificate" />}
@@ -78,6 +85,7 @@ export const App: React.FC = () => {
               <Route path="/facilities/:facilityId/twin" element={<DigitalTwinPage />} />
 
               {/* Telemetry & Validation */}
+              <Route path="/telemetry" element={<Navigate to="/readings" replace />} />
               <Route
                 path="/readings"
                 element={

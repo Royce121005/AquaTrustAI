@@ -53,62 +53,76 @@ export const MerkleBatchPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-2 text-xs text-slate-500">
-        <Link to="/blockchain" className="hover:text-brand-600 inline-flex items-center gap-1 font-medium">
+      <div className="flex items-center gap-2 text-xs text-slate-400">
+        <Link to="/blockchain" className="hover:text-[#0EA5E9] inline-flex items-center gap-1.5 font-medium transition-colors">
           <ArrowLeft className="w-3.5 h-3.5" />
           Back to DLT Ledger
         </Link>
       </div>
 
-      <div className="pb-4 border-b border-slate-200">
-        <h1 className="text-xl font-bold tracking-tight text-slate-900 flex items-center gap-2">
-          <Layers className="w-5 h-5 text-brand-600" />
-          RFC 6962 Merkle Tree Batch Commitment & Audit Verification
-        </h1>
-        <p className="text-xs text-slate-500 mt-0.5">
-          High-throughput telemetry batch anchoring. Generates Merkle roots with inclusion audit path proofs.
-        </p>
+      <div className="pb-4 border-b border-[#1F293D] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div>
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg bg-[#0EA5E9]/10 border border-[#0EA5E9]/30 flex items-center justify-center text-[#0EA5E9]">
+              <Layers className="w-4 h-4" />
+            </div>
+            <h1 className="text-xl font-bold tracking-tight text-white flex items-center gap-2">
+              RFC 6962 Merkle Tree Batch Commitment & Audit Verification
+            </h1>
+          </div>
+          <p className="text-xs text-slate-400 mt-1">
+            High-throughput telemetry batch anchoring. Generates Merkle roots with inclusion audit path proofs.
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="px-3 py-1 rounded-full bg-[#111827] border border-[#1F293D] text-[10px] font-mono uppercase tracking-widest text-[#0EA5E9]">
+            RFC 6962 STANDARD
+          </span>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Panel 1: Anchor Telemetry Batch */}
-        <div className="bg-white border border-slate-200 rounded-lg p-6 shadow-sm space-y-4">
-          <h2 className="text-sm font-semibold text-slate-800 uppercase tracking-wide flex items-center gap-2">
-            <Hash className="w-4 h-4 text-brand-600" />
-            1. Anchor Batch of Telemetry Hashes
-          </h2>
+        <div className="bg-[#111827] border border-[#1F293D] rounded-xl p-6 shadow-xl space-y-4">
+          <div className="flex items-center justify-between pb-3 border-b border-[#1F293D]">
+            <h2 className="text-xs font-mono uppercase tracking-wider text-slate-300 flex items-center gap-2">
+              <Hash className="w-3.5 h-3.5 text-[#0EA5E9]" />
+              1. Anchor Batch of Telemetry Hashes
+            </h2>
+            <span className="text-[10px] font-mono text-slate-500">ROOT COMMITMENT</span>
+          </div>
 
           <form
             onSubmit={(e) => {
               e.preventDefault();
               anchorMutation.mutate();
             }}
-            className="space-y-3 text-xs"
+            className="space-y-3.5 text-xs"
           >
             <div>
-              <label className="block text-slate-600 font-semibold mb-1">Batch Identifier</label>
+              <label className="block text-slate-300 font-semibold mb-1">Batch Identifier</label>
               <input
                 type="text"
                 required
                 value={batchId}
                 onChange={(e) => setBatchId(e.target.value)}
-                className="w-full bg-white border border-slate-300 rounded px-3 py-1.5 font-mono text-slate-800"
+                className="w-full bg-[#0B0F17] border border-[#1F293D] rounded-lg px-3 py-2 font-mono text-white focus:outline-none focus:border-[#0EA5E9]"
               />
             </div>
 
             <div>
-              <label className="block text-slate-600 font-semibold mb-1">Facility ID (UUID or code)</label>
+              <label className="block text-slate-300 font-semibold mb-1">Facility ID (UUID or code)</label>
               <input
                 type="text"
                 required
                 value={facilityId}
                 onChange={(e) => setFacilityId(e.target.value)}
-                className="w-full bg-white border border-slate-300 rounded px-3 py-1.5 font-mono text-slate-800"
+                className="w-full bg-[#0B0F17] border border-[#1F293D] rounded-lg px-3 py-2 font-mono text-white focus:outline-none focus:border-[#0EA5E9]"
               />
             </div>
 
             <div>
-              <label className="block text-slate-600 font-semibold mb-1">
+              <label className="block text-slate-300 font-semibold mb-1">
                 Record Hashes (One SHA-256 Hex per line)
               </label>
               <textarea
@@ -116,26 +130,26 @@ export const MerkleBatchPage: React.FC = () => {
                 required
                 value={hashesInput}
                 onChange={(e) => setHashesInput(e.target.value)}
-                className="w-full bg-white border border-slate-300 rounded p-2 font-mono text-slate-800 text-[11px]"
+                className="w-full bg-[#0B0F17] border border-[#1F293D] rounded-lg p-2.5 font-mono text-white text-[11px] focus:outline-none focus:border-[#0EA5E9]"
               />
             </div>
 
             <div>
-              <label className="block text-slate-600 font-semibold mb-1">
+              <label className="block text-slate-300 font-semibold mb-1">
                 Corresponding Record IDs (Optional, One per line)
               </label>
               <textarea
                 rows={2}
                 value={recordIdsInput}
                 onChange={(e) => setRecordIdsInput(e.target.value)}
-                className="w-full bg-white border border-slate-300 rounded p-2 font-mono text-slate-800 text-[11px]"
+                className="w-full bg-[#0B0F17] border border-[#1F293D] rounded-lg p-2.5 font-mono text-white text-[11px] focus:outline-none focus:border-[#0EA5E9]"
               />
             </div>
 
             <button
               type="submit"
               disabled={anchorMutation.isPending}
-              className="w-full py-2 bg-brand-600 hover:bg-brand-500 text-white rounded font-semibold transition-colors disabled:opacity-50 flex items-center justify-center gap-1.5 mt-2"
+              className="w-full py-2.5 bg-[#0EA5E9] hover:bg-[#0284C7] text-white rounded-lg font-bold uppercase tracking-wider text-xs shadow-[0_0_15px_rgba(14,165,233,0.3)] transition-all disabled:opacity-50 flex items-center justify-center gap-2 mt-2"
             >
               <Play className="w-3.5 h-3.5" />
               {anchorMutation.isPending ? 'Anchoring Batch...' : 'Compute Merkle Root & Anchor'}
@@ -145,9 +159,12 @@ export const MerkleBatchPage: React.FC = () => {
           {anchorMutation.isError && <ErrorState error={anchorMutation.error} />}
 
           {anchorMutation.data && (
-            <div className="mt-4 p-4 bg-slate-900 text-slate-200 rounded-lg space-y-3 font-mono text-xs">
+            <div className="mt-4 p-4 bg-[#0B0F17] border border-[#1F293D] text-slate-200 rounded-xl space-y-3 font-mono text-xs">
               <div className="flex items-center justify-between text-emerald-400 font-bold">
-                <span>Batch Anchored</span>
+                <span className="flex items-center gap-1.5">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                  Batch Anchored
+                </span>
                 <DltModeBadge
                   mode={anchorMutation.data.mode}
                   distributedLedger={anchorMutation.data.distributed_ledger}
@@ -156,23 +173,23 @@ export const MerkleBatchPage: React.FC = () => {
 
               <div>
                 <span className="text-slate-400 text-[11px] block">Merkle Root:</span>
-                <div className="select-all break-all text-emerald-300 font-bold">
+                <div className="select-all break-all text-emerald-400 font-bold bg-[#111827] p-2 rounded border border-[#1F293D] mt-1">
                   {anchorMutation.data.merkle_root}
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-2 text-[11px]">
-                <div>Leaves: {anchorMutation.data.leaf_count}</div>
-                <div>Status: {anchorMutation.data.status}</div>
-                <div>Channel: {anchorMutation.data.channel_id}</div>
-                <div>
-                  Tx ID: {anchorMutation.data.tx_id || anchorMutation.data.simulation_reference || 'Simulated'}
+              <div className="grid grid-cols-2 gap-2 text-[11px] text-slate-300">
+                <div>Leaves: <strong className="text-white">{anchorMutation.data.leaf_count}</strong></div>
+                <div>Status: <strong className="text-white">{anchorMutation.data.status}</strong></div>
+                <div>Channel: <strong className="text-white">{anchorMutation.data.channel_id}</strong></div>
+                <div className="truncate">
+                  Tx ID: <strong className="text-white">{anchorMutation.data.tx_id || anchorMutation.data.simulation_reference || 'Simulated'}</strong>
                 </div>
               </div>
 
               <div>
                 <span className="text-slate-400 text-[11px] block">Inclusion Proofs Object:</span>
-                <pre className="overflow-auto max-h-32 text-[10px] text-slate-300 mt-1">
+                <pre className="overflow-auto max-h-32 text-[10px] text-slate-300 mt-1 bg-[#111827] p-2 rounded border border-[#1F293D]">
                   {JSON.stringify(anchorMutation.data.proofs, null, 2)}
                 </pre>
               </div>
@@ -181,13 +198,16 @@ export const MerkleBatchPage: React.FC = () => {
         </div>
 
         {/* Panel 2: Verify Leaf Inclusion Proof */}
-        <div className="bg-white border border-slate-200 rounded-lg p-6 shadow-sm space-y-4">
-          <h2 className="text-sm font-semibold text-slate-800 uppercase tracking-wide flex items-center gap-2">
-            <ShieldCheck className="w-4 h-4 text-emerald-600" />
-            2. Verify Leaf Hash Inclusion in Merkle Batch
-          </h2>
+        <div className="bg-[#111827] border border-[#1F293D] rounded-xl p-6 shadow-xl space-y-4">
+          <div className="flex items-center justify-between pb-3 border-b border-[#1F293D]">
+            <h2 className="text-xs font-mono uppercase tracking-wider text-slate-300 flex items-center gap-2">
+              <ShieldCheck className="w-3.5 h-3.5 text-[#10B981]" />
+              2. Verify Leaf Hash Inclusion in Merkle Batch
+            </h2>
+            <span className="text-[10px] font-mono text-slate-500">AUDIT PROOF</span>
+          </div>
 
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-slate-400">
             Verifies cryptographic membership proof against the batch commitment without requiring retrieval of the entire dataset.
           </p>
 
@@ -196,22 +216,22 @@ export const MerkleBatchPage: React.FC = () => {
               e.preventDefault();
               verifyMutation.mutate();
             }}
-            className="space-y-3 text-xs"
+            className="space-y-3.5 text-xs"
           >
             <div>
-              <label className="block text-slate-600 font-semibold mb-1">Batch ID</label>
+              <label className="block text-slate-300 font-semibold mb-1">Batch ID</label>
               <input
                 type="text"
                 required
                 value={verifyBatchId}
                 onChange={(e) => setVerifyBatchId(e.target.value)}
                 placeholder="e.g. batch-12345"
-                className="w-full bg-white border border-slate-300 rounded px-3 py-1.5 font-mono text-slate-800"
+                className="w-full bg-[#0B0F17] border border-[#1F293D] rounded-lg px-3 py-2 font-mono text-white placeholder-slate-500 focus:outline-none focus:border-[#10B981]"
               />
             </div>
 
             <div>
-              <label className="block text-slate-600 font-semibold mb-1">
+              <label className="block text-slate-300 font-semibold mb-1">
                 Candidate Leaf Hash (SHA-256)
               </label>
               <input
@@ -220,14 +240,14 @@ export const MerkleBatchPage: React.FC = () => {
                 value={verifyLeafHash}
                 onChange={(e) => setVerifyLeafHash(e.target.value)}
                 placeholder="e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
-                className="w-full bg-white border border-slate-300 rounded px-3 py-1.5 font-mono text-slate-800"
+                className="w-full bg-[#0B0F17] border border-[#1F293D] rounded-lg px-3 py-2 font-mono text-white placeholder-slate-500 focus:outline-none focus:border-[#10B981]"
               />
             </div>
 
             <button
               type="submit"
               disabled={verifyMutation.isPending}
-              className="w-full py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded font-semibold transition-colors disabled:opacity-50 flex items-center justify-center gap-1.5 mt-2"
+              className="w-full py-2.5 bg-[#10B981] hover:bg-[#059669] text-white rounded-lg font-bold uppercase tracking-wider text-xs shadow-[0_0_15px_rgba(16,185,129,0.3)] transition-all disabled:opacity-50 flex items-center justify-center gap-2 mt-2"
             >
               <ShieldCheck className="w-3.5 h-3.5" />
               {verifyMutation.isPending ? 'Verifying Inclusion...' : 'Verify Merkle Inclusion Proof'}
@@ -238,10 +258,10 @@ export const MerkleBatchPage: React.FC = () => {
 
           {verifyMutation.data && (
             <div
-              className={`mt-4 p-4 rounded-lg font-mono text-xs border ${
+              className={`mt-4 p-4 rounded-xl font-mono text-xs border ${
                 verifyMutation.data.verified
-                  ? 'bg-emerald-950 text-emerald-200 border-emerald-800'
-                  : 'bg-rose-950 text-rose-200 border-rose-800'
+                  ? 'bg-[#10B981]/10 text-emerald-200 border-[#10B981]/40'
+                  : 'bg-[#EF4444]/10 text-rose-200 border-[#EF4444]/40'
               }`}
             >
               <div className="flex items-center gap-2 font-bold text-sm mb-2">
@@ -258,13 +278,13 @@ export const MerkleBatchPage: React.FC = () => {
                 )}
               </div>
 
-              <div className="space-y-1 text-[11px]">
-                <div>Message: {verifyMutation.data.message}</div>
-                <div>Batch: {verifyMutation.data.batch_id}</div>
+              <div className="space-y-1.5 text-[11px]">
+                <div>Message: <span className="text-white">{verifyMutation.data.message}</span></div>
+                <div>Batch: <span className="text-white">{verifyMutation.data.batch_id}</span></div>
                 <div className="select-all break-all">
-                  Merkle Root: {verifyMutation.data.merkle_root || 'N/A'}
+                  Merkle Root: <span className="text-emerald-400">{verifyMutation.data.merkle_root || 'N/A'}</span>
                 </div>
-                <div>Ledger Mode: {verifyMutation.data.mode}</div>
+                <div>Ledger Mode: <span className="text-white">{verifyMutation.data.mode}</span></div>
               </div>
             </div>
           )}

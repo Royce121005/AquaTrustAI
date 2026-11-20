@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   Cpu,
@@ -41,6 +41,7 @@ import {
   getFacilityRecommendationsApi,
   getFacilitySustainabilityApi,
   runScenarioApi,
+  getScenarioApi,
   startTwinEngineApi,
   stopTwinEngineApi,
   pauseTwinEngineApi,
@@ -48,6 +49,7 @@ import {
   getTwinEngineStatusApi,
 } from '../api/digitalTwin';
 import { useTwinStream } from '../hooks/useTwinStream';
+import { useAuth } from '../context/AuthContext';
 import { SynopticProcessFlow } from '../components/digitalTwin/SynopticProcessFlow';
 import { IntegratedStageInspector } from '../components/digitalTwin/IntegratedStageInspector';
 import { KeyPlantParameters } from '../components/digitalTwin/KeyPlantParameters';
@@ -84,6 +86,11 @@ export const DigitalTwinPage: React.FC = () => {
   const defaultFacilityId = routeFacilityId || (facilities.length > 0 ? facilities[0].facility_id : '');
   const [selectedFacilityId, setSelectedFacilityId] = useState<string>(defaultFacilityId);
 
+  // URL search params for state recovery across browser refreshes
+  const [searchParams, setSearchParams] = useSearchParams();
+  const urlScenarioId = searchParams.get('scenarioId');
+  const initialTab = (searchParams.get('tab') as TabType) || 'process_flow';
+
   // Sync state if facilities finish loading
   useEffect(() => {
     if (!selectedFacilityId && facilities.length > 0) {
@@ -92,10 +99,23 @@ export const DigitalTwinPage: React.FC = () => {
   }, [facilities, selectedFacilityId]);
 
   // Tab navigation matching the reference architecture
-  const [activeTab, setActiveTab] = useState<TabType>('process_flow');
+  const [activeTab, setActiveTab] = useState<TabType>(initialTab);
 
-  // Selected stage for inspection
-  const [selectedStageId, setSelectedStageId] = useState<string | null>('biological_aeration');
+  // Selected stage for inspection (defaults to null: clean SCADA overview without drawer covering the canvas)
+  const [selectedStageId, setSelectedStageId] = useState<string | null>(null);
+
+  // User auth and role-based SCADA action permissions
+  let authContext: ReturnType<typeof useAuth> | null = null;
+  try {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    authContext = useAuth();
+  } catch {
+    // Safe fallback for isolated test environments
+    authContext = null;
+  }
+  const user = authContext?.user || null;
+  const [actionError, setActionError] = useState<string | null>(null);
+  const canControlEngine = !user || user.role === 'admin' || user.role === 'operator';
 
   // Inspector layout placement mode: 'drawer' (slide-over overlay) | 'below' (docked underneath canvas)
   const [inspectorPlacement, setInspectorPlacement] = useState<'drawer' | 'below'>('drawer');
@@ -118,6 +138,35 @@ export const DigitalTwinPage: React.FC = () => {
   const [doDrop, setDoDrop] = useState<number>(75);
   const [durationMinutes, setDurationMinutes] = useState<number>(120);
   const [scenarioResult, setScenarioResult] = useState<ScenarioResponse | null>(null);
+
+  // Scenario recovery after browser refresh / deep link
+  const scenarioRecoveryQuery = useQuery({
+    queryKey: ['twin-scenario-recovered', urlScenarioId],
+    queryFn: () => getScenarioApi(urlScenarioId!),
+    enabled: !!urlScenarioId,
+  });
+
+  useEffect(() => {
+    if (scenarioRecoveryQuery.data) {
+      setScenarioResult(scenarioRecoveryQuery.data);
+      if (scenarioRecoveryQuery.data.scenario_name) {
+        setScenarioName(scenarioRecoveryQuery.data.scenario_name);
+      }
+      if (scenarioRecoveryQuery.data.scenario_type) {
+        setScenarioType(scenarioRecoveryQuery.data.scenario_type as ScenarioCreateRequest['scenario_type']);
+      }
+      const params = (scenarioRecoveryQuery.data.parameters || {}) as Record<string, unknown>;
+      if (typeof params.bod_change_percent === 'number') {
+        setBodChange(params.bod_change_percent);
+      }
+      if (typeof params.do_reduction_percent === 'number') {
+        setDoDrop(params.do_reduction_percent);
+      }
+      if (scenarioRecoveryQuery.data.duration_minutes) {
+        setDurationMinutes(scenarioRecoveryQuery.data.duration_minutes);
+      }
+    }
+  }, [scenarioRecoveryQuery.data]);
 
   // Acknowledged recommendations state (local UI)
   const [acknowledgedRecs, setAcknowledgedRecs] = useState<Record<string, boolean>>({});
@@ -144,19 +193,19 @@ export const DigitalTwinPage: React.FC = () => {
     enabled: !!selectedFacilityId,
   });
 
-  // REST Fallback Digital Twin queries
+  // REST Fallback Digital Twin queries (only enabled when WebSocket is completely disconnected to prevent database lock contention)
   const stateQuery = useQuery({
     queryKey: ['twin-state', selectedFacilityId],
     queryFn: () => getFacilityTwinStateApi(selectedFacilityId),
-    enabled: !!selectedFacilityId && !streamTwinState,
-    refetchInterval: 30000,
+    enabled: !!selectedFacilityId && connectionState === 'disconnected' && !streamTwinState,
+    refetchInterval: false,
   });
 
   const engineStatusQuery = useQuery({
     queryKey: ['twin-engine-status', selectedFacilityId],
     queryFn: () => getTwinEngineStatusApi(selectedFacilityId),
-    enabled: !!selectedFacilityId && !streamEngineStatus,
-    refetchInterval: 10000,
+    enabled: !!selectedFacilityId,
+    refetchInterval: connectionState === 'connected' ? false : 5000,
   });
 
   const predictionsQuery = useQuery({
@@ -179,34 +228,67 @@ export const DigitalTwinPage: React.FC = () => {
 
   // Engine Lifecycle Mutations
   const startEngineMutation = useMutation({
-    mutationFn: () => startTwinEngineApi(selectedFacilityId, { interval_seconds: 1.0, operating_mode: 'simulation' }),
-    onSuccess: () => {
+    mutationFn: () => {
+      if (!selectedFacilityId) {
+        throw new Error('Please select or register a facility before starting the twin engine.');
+      }
+      return startTwinEngineApi(selectedFacilityId, { interval_seconds: 1.0, operating_mode: 'simulation' });
+    },
+    onSuccess: (data) => {
+      setActionError(null);
+      if (data?.worker) {
+        queryClient.setQueryData(['twin-engine-status', selectedFacilityId], data.worker);
+      }
       queryClient.invalidateQueries({ queryKey: ['twin-engine-status', selectedFacilityId] });
       resync();
+    },
+    onError: (err: any) => {
+      setActionError(err?.message || 'Failed to start SCADA twin engine');
     },
   });
 
   const stopEngineMutation = useMutation({
     mutationFn: () => stopTwinEngineApi(selectedFacilityId),
-    onSuccess: () => {
+    onSuccess: (data) => {
+      setActionError(null);
+      if (data?.worker) {
+        queryClient.setQueryData(['twin-engine-status', selectedFacilityId], data.worker);
+      }
       queryClient.invalidateQueries({ queryKey: ['twin-engine-status', selectedFacilityId] });
       resync();
+    },
+    onError: (err: any) => {
+      setActionError(err?.message || 'Failed to stop SCADA twin engine');
     },
   });
 
   const pauseEngineMutation = useMutation({
     mutationFn: () => pauseTwinEngineApi(selectedFacilityId),
-    onSuccess: () => {
+    onSuccess: (data) => {
+      setActionError(null);
+      if (data?.worker) {
+        queryClient.setQueryData(['twin-engine-status', selectedFacilityId], data.worker);
+      }
       queryClient.invalidateQueries({ queryKey: ['twin-engine-status', selectedFacilityId] });
       resync();
+    },
+    onError: (err: any) => {
+      setActionError(err?.message || 'Failed to pause SCADA twin engine');
     },
   });
 
   const resumeEngineMutation = useMutation({
     mutationFn: () => resumeTwinEngineApi(selectedFacilityId),
-    onSuccess: () => {
+    onSuccess: (data) => {
+      setActionError(null);
+      if (data?.worker) {
+        queryClient.setQueryData(['twin-engine-status', selectedFacilityId], data.worker);
+      }
       queryClient.invalidateQueries({ queryKey: ['twin-engine-status', selectedFacilityId] });
       resync();
+    },
+    onError: (err: any) => {
+      setActionError(err?.message || 'Failed to resume SCADA twin engine');
     },
   });
 
@@ -215,6 +297,12 @@ export const DigitalTwinPage: React.FC = () => {
     mutationFn: (payload: ScenarioCreateRequest) => runScenarioApi(selectedFacilityId, payload),
     onSuccess: (data) => {
       setScenarioResult(data);
+      setSearchParams((prev) => {
+        const next = new URLSearchParams(prev);
+        next.set('scenarioId', data.scenario_id);
+        next.set('tab', 'scenarios');
+        return next;
+      });
       queryClient.invalidateQueries({ queryKey: ['twin-scenarios', selectedFacilityId] });
     },
   });
@@ -234,7 +322,8 @@ export const DigitalTwinPage: React.FC = () => {
     const newId = e.target.value;
     setSelectedFacilityId(newId);
     setScenarioResult(null);
-    setSelectedStageId('biological_aeration');
+    setSelectedStageId(null);
+    setActionError(null);
     if (routeFacilityId) {
       navigate(`/facilities/${newId}/twin`);
     }
@@ -289,16 +378,14 @@ export const DigitalTwinPage: React.FC = () => {
     : '18 Oct 2026 14:32:18';
 
   // Transform scenario results for Recharts
-  const chartData = scenarioResult
-    ? scenarioResult.results
-        .filter((r) => r.parameter === 'bod' && r.treatment_stage === 'final_effluent')
-        .map((r) => ({
-          time: new Date(r.simulation_timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          baseline: r.baseline_value,
-          scenario: r.scenario_value,
-          cpcb_limit: 30.0,
-        }))
-    : [];
+  const chartData = (scenarioResult?.results || [])
+    .filter((r) => r.parameter === 'bod' && r.treatment_stage === 'final_effluent')
+    .map((r) => ({
+      time: new Date(r.simulation_timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      baseline: r.baseline_value,
+      scenario: r.scenario_value,
+      cpcb_limit: 30.0,
+    }));
 
   const navTabs: { id: TabType; label: string; icon: React.FC<{ className?: string }> }[] = [
     { id: 'process_flow', label: 'Process Flow', icon: Layers },
@@ -401,7 +488,7 @@ export const DigitalTwinPage: React.FC = () => {
           </div>
 
           {/* Engine Lifecycle Controls */}
-          <div className="flex items-center gap-1.5 bg-slate-950 border border-slate-800 p-1 rounded-lg shadow-sm">
+          <div className="flex items-center gap-1.5 bg-slate-950 border border-slate-800 p-1.5 rounded-lg shadow-sm">
             {currentLifecycle !== 'running' ? (
               <button
                 onClick={() => {
@@ -411,30 +498,47 @@ export const DigitalTwinPage: React.FC = () => {
                     startEngineMutation.mutate();
                   }
                 }}
-                disabled={startEngineMutation.isPending || resumeEngineMutation.isPending}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded bg-emerald-600 hover:bg-emerald-500 text-white font-mono text-xs font-semibold shadow-sm transition-colors"
-                title={currentLifecycle === 'paused' ? 'Resume Engine' : 'Start Engine (1Hz)'}
+                disabled={!canControlEngine || !selectedFacilityId || startEngineMutation.isPending || resumeEngineMutation.isPending}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 disabled:cursor-not-allowed text-white font-mono text-xs font-semibold shadow-sm transition-colors"
+                title={
+                  !selectedFacilityId
+                    ? 'Select or register a facility before starting the twin engine'
+                    : !canControlEngine
+                    ? `Engine control requires Operator or Admin role (Logged in as ${user?.role || 'Guest'})`
+                    : currentLifecycle === 'paused'
+                    ? 'Resume Twin Engine (1Hz execution)'
+                    : 'Start Twin Engine (1Hz real-time simulation)'
+                }
               >
                 <Play className="w-3.5 h-3.5 fill-current" />
-                <span>{currentLifecycle === 'paused' ? 'Resume' : 'Start'}</span>
+                <span>
+                  {startEngineMutation.isPending || resumeEngineMutation.isPending
+                    ? 'Starting...'
+                    : currentLifecycle === 'paused'
+                    ? 'Resume Engine'
+                    : 'Start Engine'}
+                </span>
               </button>
             ) : (
               <button
                 onClick={() => pauseEngineMutation.mutate()}
-                disabled={pauseEngineMutation.isPending}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded bg-emerald-600/90 hover:bg-emerald-500 text-white font-mono text-xs font-semibold shadow-sm transition-colors"
-                title="Twin Engine Running (Click to Pause)"
+                disabled={!canControlEngine || pauseEngineMutation.isPending}
+                className="flex items-center gap-2 px-3 py-1.5 rounded bg-emerald-950/80 border border-emerald-500/80 text-emerald-400 font-mono text-xs font-semibold shadow-sm hover:bg-emerald-900/60 transition-colors"
+                title="Engine running at 1Hz. Click to Pause."
               >
-                <Play className="w-3.5 h-3.5 fill-current text-white" />
-                <span>Running</span>
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                </span>
+                <span>Running (1Hz)</span>
               </button>
             )}
 
             {currentLifecycle === 'running' && (
               <button
                 onClick={() => pauseEngineMutation.mutate()}
-                disabled={pauseEngineMutation.isPending}
-                className="flex items-center gap-1 px-2.5 py-1.5 rounded bg-amber-600 hover:bg-amber-500 text-white font-mono text-xs font-semibold shadow-sm transition-colors"
+                disabled={!canControlEngine || pauseEngineMutation.isPending}
+                className="flex items-center gap-1 px-2.5 py-1.5 rounded bg-amber-600 hover:bg-amber-500 disabled:opacity-40 text-white font-mono text-xs font-semibold shadow-sm transition-colors"
                 title="Pause Engine"
               >
                 <Pause className="w-3.5 h-3.5 fill-current" />
@@ -444,9 +548,9 @@ export const DigitalTwinPage: React.FC = () => {
 
             <button
               onClick={() => stopEngineMutation.mutate()}
-              disabled={stopEngineMutation.isPending || currentLifecycle === 'stopped'}
-              className="flex items-center gap-1 px-2.5 py-1.5 rounded hover:bg-slate-800 text-slate-300 disabled:opacity-40 font-mono text-xs font-semibold transition-colors"
-              title="Stop Engine"
+              disabled={!canControlEngine || stopEngineMutation.isPending || currentLifecycle === 'stopped'}
+              className="flex items-center gap-1 px-2.5 py-1.5 rounded hover:bg-slate-800 text-slate-300 disabled:opacity-30 font-mono text-xs font-semibold transition-colors"
+              title={!canControlEngine ? "Requires Operator or Admin role" : "Stop Engine"}
             >
               <Square className="w-3.5 h-3.5 fill-current text-rose-400" />
               <span>Stop</span>
@@ -465,6 +569,25 @@ export const DigitalTwinPage: React.FC = () => {
           </div>
         </div>
       </header>
+
+      {/* SCADA Action Error / Notification Banner */}
+      {actionError && (
+        <div className="bg-rose-950/90 border border-rose-800 text-rose-200 px-4 py-3 rounded-xl flex items-center justify-between gap-3 text-xs font-mono shadow-xl animate-in fade-in duration-200">
+          <div className="flex items-center gap-2.5">
+            <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0" />
+            <span>
+              <strong className="text-rose-300">SCADA Action Notice:</strong> {actionError}
+            </span>
+          </div>
+          <button
+            onClick={() => setActionError(null)}
+            className="text-rose-400 hover:text-white transition-colors p-1 text-sm leading-none"
+            title="Dismiss notice"
+          >
+            ✕
+          </button>
+        </div>
+      )}
 
       {/* ========================================================= */}
       {/* 2. SUB-NAVIGATION BAR (6 PROCESS TABS)                    */}
@@ -753,7 +876,11 @@ export const DigitalTwinPage: React.FC = () => {
                     Baseline accepted state vs. Simulated what-if perturbation across forward timeline.
                   </p>
                 </div>
-                {scenarioResult.comparison_summary && (
+                {scenarioResult.status !== 'completed' ? (
+                  <span className="px-3 py-1 text-xs font-bold rounded-full bg-amber-950 text-amber-300 border border-amber-800 animate-pulse">
+                    Simulation {scenarioResult.status ? scenarioResult.status.toUpperCase() : 'PENDING'} (Incomplete - In Progress)
+                  </span>
+                ) : scenarioResult.comparison_summary ? (
                   <span
                     className={`px-3 py-1 text-xs font-bold rounded-full ${
                       scenarioResult.comparison_summary.compliance_risk_detected
@@ -765,7 +892,7 @@ export const DigitalTwinPage: React.FC = () => {
                       ? 'Compliance Risk Detected (Effluent > 30 mg/L)'
                       : 'Compliant with Discharge Norms'}
                   </span>
-                )}
+                ) : null}
               </div>
 
               <div className="h-72 w-full">
@@ -1031,3 +1158,5 @@ export const DigitalTwinPage: React.FC = () => {
     </div>
   );
 };
+
+export default DigitalTwinPage;

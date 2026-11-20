@@ -80,49 +80,55 @@ export const TreatmentRecordsPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#1F293D]">
         <div>
-          <h1 className="text-xl font-bold tracking-tight text-slate-900">
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-[10px] font-mono uppercase tracking-widest text-cyan-400 font-semibold bg-cyan-950/60 border border-cyan-800/80 px-2 py-0.5 rounded">
+              Cryptographic Records
+            </span>
+          </div>
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white font-mono flex items-center gap-2.5">
+            <FileText className="w-5 h-5 text-cyan-400" />
             Immutable Treatment Records
           </h1>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Aggregated time windows, CPCB evaluation results, SHA-256 hashes, and DLT anchor references.
+          <p className="text-xs text-slate-400 mt-1 max-w-3xl leading-relaxed">
+            Aggregated time windows, CPCB evaluation results, SHA-256 canonical hashes, and DLT anchor references.
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0">
           {isOperatorOrAdmin && (
             <Link
               to="/finalization"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-brand-600 hover:bg-brand-500 text-white rounded-md text-xs font-semibold shadow-sm transition-colors"
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-cyan-600 hover:bg-cyan-500 text-white rounded-lg text-xs font-semibold shadow-sm transition-colors font-mono"
             >
-              <Stamp className="w-4 h-4" />
+              <Stamp className="w-3.5 h-3.5" />
               Finalize Time Window
             </Link>
           )}
           <button
             onClick={() => recordsQuery.refetch()}
             disabled={recordsQuery.isFetching}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 rounded-md text-xs font-medium shadow-sm transition-colors disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#1E293B] border border-[#334155] hover:bg-slate-700 text-slate-200 rounded-lg text-xs font-mono font-medium shadow-sm transition-colors disabled:opacity-50"
           >
-            <RefreshCw className={`w-3.5 h-3.5 ${recordsQuery.isFetching ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`w-3.5 h-3.5 ${recordsQuery.isFetching ? 'animate-spin text-cyan-400' : ''}`} />
             Refresh
           </button>
         </div>
       </div>
 
       {/* Filter Bar */}
-      <div className="bg-white border border-slate-200 rounded-lg p-3.5 shadow-sm flex flex-wrap items-center gap-4 text-xs">
-        <div className="flex items-center gap-1.5 text-slate-500 font-medium">
-          <Filter className="w-3.5 h-3.5" />
+      <div className="scada-filter-bar">
+        <div className="flex items-center gap-1.5 text-slate-400 font-medium font-mono text-[11px]">
+          <Filter className="w-3.5 h-3.5 text-cyan-400" />
           <span>Filters:</span>
         </div>
 
         <div className="flex items-center gap-1.5">
-          <label className="text-slate-500 font-mono text-[11px]">Facility:</label>
+          <label className="text-slate-400 font-mono text-[11px]">Facility:</label>
           <select
             value={facilityId}
             onChange={(e) => updateParam('facility_id', e.target.value)}
-            className="bg-slate-50 border border-slate-300 rounded px-2.5 py-1 text-slate-800 font-mono focus:ring-1 focus:ring-brand-500"
+            className="scada-select"
           >
             <option value="">All Facilities</option>
             {facilities?.map((f) => (
@@ -134,11 +140,11 @@ export const TreatmentRecordsPage: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-1.5">
-          <label className="text-slate-500 font-mono text-[11px]">State:</label>
+          <label className="text-slate-400 font-mono text-[11px]">State:</label>
           <select
             value={recordState}
             onChange={(e) => updateParam('record_state', e.target.value)}
-            className="bg-slate-50 border border-slate-300 rounded px-2.5 py-1 text-slate-800 font-mono focus:ring-1 focus:ring-brand-500"
+            className="scada-select"
           >
             <option value="">All States</option>
             <option value="finalized">finalized</option>
@@ -148,11 +154,11 @@ export const TreatmentRecordsPage: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-1.5">
-          <label className="text-slate-500 font-mono text-[11px]">Compliance:</label>
+          <label className="text-slate-400 font-mono text-[11px]">Compliance:</label>
           <select
             value={complianceStatus}
             onChange={(e) => updateParam('compliance_status', e.target.value)}
-            className="bg-slate-50 border border-slate-300 rounded px-2.5 py-1 text-slate-800 font-mono focus:ring-1 focus:ring-brand-500"
+            className="scada-select"
           >
             <option value="">All Compliance Outcomes</option>
             <option value="compliant">compliant</option>
@@ -160,10 +166,22 @@ export const TreatmentRecordsPage: React.FC = () => {
             <option value="pending">pending</option>
           </select>
         </div>
+
+        {(facilityId || recordState || complianceStatus) && (
+          <button
+            onClick={() => {
+              const next = new URLSearchParams();
+              setSearchParams(next);
+            }}
+            className="text-[11px] font-mono text-cyan-400 hover:text-cyan-300 ml-auto"
+          >
+            Clear Filters
+          </button>
+        )}
       </div>
 
       {/* Treatment Records Table */}
-      <div className="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden">
+      <div className="scada-table-container">
         {recordsQuery.isLoading ? (
           <LoadingState message="Loading treatment records..." />
         ) : recordsQuery.isError ? (
@@ -179,8 +197,8 @@ export const TreatmentRecordsPage: React.FC = () => {
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse text-xs">
               <thead>
-                <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 font-mono uppercase text-[11px]">
-                  <th className="py-2.5 px-4">Record ID & Version</th>
+                <tr className="scada-table-header">
+                  <th className="py-2.5 px-4">Record ID &amp; Version</th>
                   <th className="py-2.5 px-4">Facility ID</th>
                   <th className="py-2.5 px-4">Window Range</th>
                   <th className="py-2.5 px-4">State</th>
@@ -192,16 +210,16 @@ export const TreatmentRecordsPage: React.FC = () => {
                   <th className="py-2.5 px-4 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 font-mono">
+              <tbody className="divide-y divide-[#1F293D]/60 font-mono">
                 {recordsQuery.data.map((r) => (
-                  <tr key={r.record_id} className="hover:bg-slate-50/80 transition-colors">
-                    <td className="py-2.5 px-4 font-semibold text-brand-700">
+                  <tr key={r.record_id} className="scada-table-row">
+                    <td className="py-2.5 px-4 font-semibold text-cyan-400">
                       <Link to={`/treatment-records/${r.record_id}`} className="hover:underline">
                         {r.record_id.slice(0, 8)}... (v{r.record_version})
                       </Link>
                     </td>
-                    <td className="py-2.5 px-4 text-slate-600">{r.facility_id.slice(0, 8)}...</td>
-                    <td className="py-2.5 px-4 text-slate-500 text-[11px] whitespace-nowrap">
+                    <td className="py-2.5 px-4 text-slate-400">{r.facility_id.slice(0, 8)}...</td>
+                    <td className="py-2.5 px-4 text-slate-400 text-[11px] whitespace-nowrap">
                       {new Date(r.period_start).toLocaleDateString()} -{' '}
                       {new Date(r.period_end).toLocaleDateString()}
                     </td>
@@ -220,20 +238,20 @@ export const TreatmentRecordsPage: React.FC = () => {
                     <td className="py-2.5 px-4">
                       <StatusBadge status={r.anchor_status} />
                     </td>
-                    <td className="py-2.5 px-4 text-slate-500 text-[11px] select-all max-w-[120px] truncate">
+                    <td className="py-2.5 px-4 text-slate-400 text-[11px] select-all max-w-[120px] truncate">
                       {r.canonical_hash || 'Pending Finalization'}
                     </td>
                     <td className="py-2.5 px-4 text-right font-sans whitespace-nowrap">
-                      <div className="flex items-center justify-end gap-2">
+                      <div className="flex items-center justify-end gap-2.5 font-mono text-xs">
                         <Link
                           to={`/treatment-records/${r.record_id}`}
-                          className="text-brand-600 hover:text-brand-800 font-medium"
+                          className="text-cyan-400 hover:text-cyan-300 font-medium"
                         >
                           Detail
                         </Link>
                         <Link
                           to={`/verification?recordId=${r.record_id}`}
-                          className="inline-flex items-center gap-1 text-slate-600 hover:text-brand-600 font-medium"
+                          className="inline-flex items-center gap-1 text-slate-400 hover:text-cyan-400 font-medium"
                           title="Run 4-Stage Cryptographic Verification"
                         >
                           <Shield className="w-3.5 h-3.5" />
@@ -249,21 +267,21 @@ export const TreatmentRecordsPage: React.FC = () => {
         )}
 
         {/* Pagination Footer */}
-        <div className="p-3 bg-slate-50 border-t border-slate-200 flex items-center justify-between text-xs font-mono text-slate-500">
+        <div className="p-3 bg-[#161F30] border-t border-[#1F293D] flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs font-mono text-slate-400">
           <div>
-            Offset: <span className="font-semibold text-slate-700">{page * PAGE_SIZE}</span> |
-            Limit: <span className="font-semibold text-slate-700">{PAGE_SIZE}</span>
+            Offset: <span className="font-semibold text-slate-200">{page * PAGE_SIZE}</span> |
+            Limit: <span className="font-semibold text-slate-200">{PAGE_SIZE}</span>
           </div>
           <div className="flex items-center gap-2">
             <button
               onClick={handlePrevPage}
               disabled={page === 0 || recordsQuery.isLoading}
-              className="px-2.5 py-1 bg-white border border-slate-300 rounded hover:bg-slate-100 disabled:opacity-40 transition-colors inline-flex items-center gap-1"
+              className="px-2.5 py-1 bg-[#1E293B] border border-[#334155] rounded hover:bg-slate-700 disabled:opacity-40 transition-colors inline-flex items-center gap-1 text-slate-200"
             >
               <ChevronLeft className="w-3.5 h-3.5" />
               Previous
             </button>
-            <span className="px-2 font-semibold text-slate-700">Page {page + 1}</span>
+            <span className="px-2 font-semibold text-slate-200">Page {page + 1}</span>
             <button
               onClick={handleNextPage}
               disabled={
@@ -271,7 +289,7 @@ export const TreatmentRecordsPage: React.FC = () => {
                 !recordsQuery.data ||
                 recordsQuery.data.length < PAGE_SIZE
               }
-              className="px-2.5 py-1 bg-white border border-slate-300 rounded hover:bg-slate-100 disabled:opacity-40 transition-colors inline-flex items-center gap-1"
+              className="px-2.5 py-1 bg-[#1E293B] border border-[#334155] rounded hover:bg-slate-700 disabled:opacity-40 transition-colors inline-flex items-center gap-1 text-slate-200"
             >
               Next
               <ChevronRight className="w-3.5 h-3.5" />
@@ -282,3 +300,4 @@ export const TreatmentRecordsPage: React.FC = () => {
     </div>
   );
 };
+export default TreatmentRecordsPage;

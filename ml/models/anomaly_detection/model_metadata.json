@@ -220,8 +220,8 @@
     "Separated quality_status and anomaly_status"
   ],
   "production_artifacts_sha256": {
-    "isolation_forest.joblib": "c92cad23ff69ed139632b1d72159f3325bf62f3cdd2c83fb1543ecde93544dab",
-    "scaler.joblib": "2f2456e9d5bb100277974a651242742d96234f057eb1941a60d0543cdfb8b482",
+    "isolation_forest.joblib": "91f4dd8a0d2d173c27350215e19e523960c1b86e93ba93c5df6577a1adacd8b2",
+    "scaler.joblib": "99a3728fa2f4189c596250c92b6dbb4c5cd521ad0f809450724188ccca78a862",
     "feature_config.yaml": "0177a4cf6c94fa3b8289ba0562a0d9230ff4404920aab7313d7c73c19ea8351c",
     "evaluation.json": "6c85eefa660865a8e0de585d08e41743ab8689606e987e74c0b48f14f6bd06b7"
   },

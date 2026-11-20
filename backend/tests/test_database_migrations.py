@@ -20,7 +20,7 @@ def test_alembic_configuration_and_revisions():
     script_dir = ScriptDirectory.from_config(alembic_cfg)
     heads = script_dir.get_heads()
     assert len(heads) == 1, f"Expected exactly 1 head revision, got {heads}"
-    assert heads[0] == "003_member2_intelligence_schema"
+    assert heads[0] == "004_readings_natural_key_lineage"
 
 
 def test_alembic_offline_sql_generation():

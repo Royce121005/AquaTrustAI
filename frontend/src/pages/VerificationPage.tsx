@@ -47,19 +47,24 @@ export const VerificationPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="pb-4 border-b border-slate-200">
-        <h1 className="text-xl font-bold tracking-tight text-slate-900 flex items-center gap-2">
-          <ShieldCheck className="w-5 h-5 text-brand-600" />
+      <div className="pb-4 border-b border-[#1F293D]">
+        <div className="flex items-center gap-2 mb-1">
+          <span className="text-[10px] font-mono uppercase tracking-widest text-cyan-400 font-semibold bg-cyan-950/60 border border-cyan-800/80 px-2 py-0.5 rounded">
+            Independent Audit Gateway
+          </span>
+        </div>
+        <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white font-mono flex items-center gap-2.5">
+          <ShieldCheck className="w-5 h-5 text-cyan-400" />
           Independent Cryptographic Trust Verification
         </h1>
-        <p className="text-xs text-slate-500 mt-0.5">
-          Auditor & Regulator tool: re-computes atc-v1 canonical digest, validates ECDSA P-256 signature against authority key, checks certificate consistency, and queries DLT ledger anchors.
+        <p className="text-xs text-slate-400 mt-1 max-w-3xl leading-relaxed">
+          Auditor &amp; Regulator tool: re-computes atc-v1 canonical digest, validates ECDSA P-256 signature against authority key, checks certificate consistency, and queries DLT ledger anchors.
         </p>
       </div>
 
       {/* Target Record Selector */}
-      <div className="bg-white border border-slate-200 rounded-lg p-6 shadow-sm space-y-4">
-        <h2 className="text-sm font-semibold text-slate-800 uppercase tracking-wide">
+      <div className="scada-card p-6 space-y-4">
+        <h2 className="text-sm font-semibold text-white uppercase tracking-wide font-mono">
           Select Treatment Record to Audit
         </h2>
 
@@ -77,14 +82,14 @@ export const VerificationPage: React.FC = () => {
               value={inputRecordId}
               onChange={(e) => setInputRecordId(e.target.value)}
               placeholder="Paste Treatment Record UUID..."
-              className="w-full bg-white border border-slate-300 rounded-lg px-3.5 py-2 text-xs font-mono text-slate-800 focus:ring-1 focus:ring-brand-500"
+              className="w-full scada-input py-2.5 text-xs font-mono"
             />
           </div>
 
           <button
             type="submit"
             disabled={!inputRecordId.trim() || verifyMutation.isPending}
-            className="px-4 py-2 bg-brand-600 hover:bg-brand-500 text-white rounded-lg text-xs font-semibold shadow-sm transition-colors flex items-center gap-1.5 disabled:opacity-50 shrink-0 w-full sm:w-auto justify-center"
+            className="px-5 py-2.5 bg-cyan-600 hover:bg-cyan-500 text-white rounded-lg text-xs font-semibold shadow-sm transition-colors flex items-center gap-1.5 disabled:opacity-50 shrink-0 w-full sm:w-auto justify-center font-mono"
           >
             <Play className="w-3.5 h-3.5" />
             {verifyMutation.isPending ? 'Verifying Proof...' : 'Execute 4-Stage Verification'}
@@ -93,7 +98,7 @@ export const VerificationPage: React.FC = () => {
 
         {/* Quick select dropdown if available */}
         {treatmentRecords && treatmentRecords.length > 0 && (
-          <div className="pt-2 flex items-center gap-2 text-xs text-slate-500">
+          <div className="pt-2 flex flex-col sm:flex-row sm:items-center gap-2 text-xs text-slate-400 font-mono">
             <span className="shrink-0 font-medium">Or pick from recent records:</span>
             <select
               value={activeRecordId}
@@ -103,7 +108,7 @@ export const VerificationPage: React.FC = () => {
                   handleVerify(e.target.value);
                 }
               }}
-              className="bg-slate-50 border border-slate-200 rounded px-2.5 py-1 text-slate-700 font-mono text-xs focus:ring-1 focus:ring-brand-500 max-w-md truncate"
+              className="scada-select max-w-xl truncate"
             >
               <option value="">Choose a finalized record...</option>
               {treatmentRecords.map((r) => (
@@ -137,9 +142,10 @@ export const VerificationPage: React.FC = () => {
         <EmptyState
           title="Ready to Verify"
           message="Select a treatment record or enter its UUID above to execute independent verification."
-          icon={<ShieldCheck className="w-8 h-8 text-brand-600" />}
+          icon={<ShieldCheck className="w-8 h-8 text-cyan-400" />}
         />
       )}
     </div>
   );
 };
+export default VerificationPage;

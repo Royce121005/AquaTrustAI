@@ -3,7 +3,18 @@ import sys
 from logging.config import fileConfig
 
 from sqlalchemy import engine_from_config, pool
+from sqlalchemy.ext.compiler import compiles
+from sqlalchemy.dialects.postgresql import JSONB, UUID
 from alembic import context
+
+# Enable portable cross-dialect DDL for SQLite in test/embedded execution
+@compiles(JSONB, "sqlite")
+def compile_jsonb_sqlite(type_, compiler, **kw):
+    return "JSON"
+
+@compiles(UUID, "sqlite")
+def compile_uuid_sqlite(type_, compiler, **kw):
+    return "TEXT"
 
 # Add backend root to sys.path
 backend_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
@@ -22,8 +33,8 @@ if config.config_file_name is not None:
 target_metadata = Base.metadata
 
 settings = get_settings()
-db_url = settings.DATABASE_URL
-# Alembic config override with application settings
+# Use config override if explicitly provided, otherwise default to application settings
+db_url = config.get_main_option("sqlalchemy.url") or settings.DATABASE_URL
 config.set_main_option("sqlalchemy.url", db_url)
 
 

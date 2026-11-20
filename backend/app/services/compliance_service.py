@@ -19,7 +19,7 @@ from app.models.reading import Reading
 from app.repositories.treatment_repository import TreatmentRepository
 from app.repositories.reading_repository import ReadingRepository
 
-# Authoritative CPCB 2021 Discharge Standards for Sewage Treatment Plants
+# Authoritative CPCB 2021 Discharge Standards for Sewage Treatment Plants (Audited & Annotated)
 DEFAULT_CPCB_RULES = [
     {
         "parameter": "BOD",
@@ -29,6 +29,13 @@ DEFAULT_CPCB_RULES = [
         "stage_scope": "final_effluent",
         "source_reference": "CPCB_2021",
         "effective_from": datetime(2021, 1, 1, 0, 0, 0, tzinfo=timezone.utc),
+        "is_authoritative": False,
+        "verification_status": "UNVERIFIED_CLAIMED_2021_DATE",
+        "statutory_source": "Environment (Protection) Rules, 1986, Schedule VI, Part-A / GSR 1265(E)",
+        "notification_number": "GSR 422(E) (1993-05-19) / GSR 1265(E) (2017-10-13)",
+        "statutory_jurisdiction": "India (CPCB/MoEFCC)",
+        "discharge_category": "Inland Surface Water / STP Effluent",
+        "provenance_notes": "Claimed 2021-01-01 effective date unverified against Gazette notifications. Threshold matches general effluent Schedule VI Part-A.",
     },
     {
         "parameter": "COD",
@@ -38,6 +45,13 @@ DEFAULT_CPCB_RULES = [
         "stage_scope": "final_effluent",
         "source_reference": "CPCB_2021",
         "effective_from": datetime(2021, 1, 1, 0, 0, 0, tzinfo=timezone.utc),
+        "is_authoritative": False,
+        "verification_status": "UNVERIFIED_CLAIMED_2021_DATE",
+        "statutory_source": "Environment (Protection) Rules, 1986, Schedule VI, Part-A",
+        "notification_number": "GSR 422(E) (1993-05-19)",
+        "statutory_jurisdiction": "India (CPCB/MoEFCC)",
+        "discharge_category": "Inland Surface Water Effluent",
+        "provenance_notes": "Claimed 2021-01-01 effective date unverified. General standard is 250 mg/L; STP 2017 standard is 50 mg/L.",
     },
     {
         "parameter": "TSS",
@@ -47,6 +61,13 @@ DEFAULT_CPCB_RULES = [
         "stage_scope": "final_effluent",
         "source_reference": "CPCB_2021",
         "effective_from": datetime(2021, 1, 1, 0, 0, 0, tzinfo=timezone.utc),
+        "is_authoritative": False,
+        "verification_status": "UNVERIFIED_CLAIMED_2021_DATE",
+        "statutory_source": "MoEFCC Notification GSR 1265(E)",
+        "notification_number": "GSR 1265(E) (2017-10-13)",
+        "statutory_jurisdiction": "India (CPCB/MoEFCC)",
+        "discharge_category": "STP Effluent (Non-Metropolitan)",
+        "provenance_notes": "Claimed 2021-01-01 effective date unverified. GSR 1265(E) set 50 mg/L for general STPs and 20 mg/L for mega-cities.",
     },
     {
         "parameter": "PH",
@@ -57,6 +78,13 @@ DEFAULT_CPCB_RULES = [
         "stage_scope": "final_effluent",
         "source_reference": "CPCB_2021",
         "effective_from": datetime(2021, 1, 1, 0, 0, 0, tzinfo=timezone.utc),
+        "is_authoritative": False,
+        "verification_status": "UNVERIFIED_CLAIMED_2021_DATE",
+        "statutory_source": "Environment (Protection) Rules, 1986, Schedule VI, Part-A",
+        "notification_number": "GSR 422(E) (1993-05-19)",
+        "statutory_jurisdiction": "India (CPCB/MoEFCC)",
+        "discharge_category": "Inland Surface Water Effluent",
+        "provenance_notes": "Claimed 2021-01-01 effective date unverified. Schedule VI specifies 5.5-9.0; STP 2017 notification specifies 6.5-9.0.",
     },
     {
         "parameter": "NH4_N",
@@ -66,6 +94,13 @@ DEFAULT_CPCB_RULES = [
         "stage_scope": "final_effluent",
         "source_reference": "CPCB_2021",
         "effective_from": datetime(2021, 1, 1, 0, 0, 0, tzinfo=timezone.utc),
+        "is_authoritative": False,
+        "verification_status": "UNVERIFIED_CLAIMED_2021_DATE",
+        "statutory_source": "Environment (Protection) Rules, 1986, Schedule VI, Part-A",
+        "notification_number": "GSR 422(E) (1993-05-19)",
+        "statutory_jurisdiction": "India (CPCB/MoEFCC)",
+        "discharge_category": "Inland Surface Water Effluent",
+        "provenance_notes": "Claimed 2021-01-01 effective date unverified. Schedule VI general standard is 50 mg/L; STP 2017 standard is 5 mg/L.",
     },
     {
         "parameter": "TKN",
@@ -75,6 +110,13 @@ DEFAULT_CPCB_RULES = [
         "stage_scope": "final_effluent",
         "source_reference": "CPCB_2021",
         "effective_from": datetime(2021, 1, 1, 0, 0, 0, tzinfo=timezone.utc),
+        "is_authoritative": False,
+        "verification_status": "UNVERIFIED_CLAIMED_2021_DATE",
+        "statutory_source": "Conflated Parameter (Schedule VI TKN vs GSR 1265(E) Total N)",
+        "notification_number": "GSR 422(E) / GSR 1265(E)",
+        "statutory_jurisdiction": "India (CPCB/MoEFCC)",
+        "discharge_category": "Inland Surface Water / STP Effluent",
+        "provenance_notes": "Claimed 2021-01-01 effective date unverified. 10 mg/L corresponds to Total Nitrogen in GSR 1265(E), whereas TKN in Schedule VI is 100 mg/L.",
     },
 ]
 

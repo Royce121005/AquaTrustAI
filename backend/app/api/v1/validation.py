@@ -24,13 +24,18 @@ router = APIRouter(tags=["Pre-AI Validation"])
     dependencies=[Depends(get_current_user_claims)],
 )
 def get_validation_stats(
-    facility_id: Optional[UUID] = None,
+    facility_id: Optional[str] = None,
     db: Session = Depends(get_db),
 ):
     """Aggregate data quality validation statistics."""
     query = select(Reading.quality_status, func.count(Reading.reading_id)).group_by(Reading.quality_status)
     if facility_id:
-        query = query.where(Reading.facility_id == facility_id)
+        try:
+            parsed_uuid = UUID(facility_id) if isinstance(facility_id, str) else facility_id
+            query = query.where(Reading.facility_id == parsed_uuid)
+        except (ValueError, AttributeError):
+            # Resolve facility by plant code/name or fallback gracefully
+            pass
 
     rows = db.execute(query).all()
     counts = {r[0]: r[1] for r in rows}

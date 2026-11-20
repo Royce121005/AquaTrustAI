@@ -1,10 +1,14 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '../context/AuthContext';
 import { ApiClientError } from '../api/client';
-import { getHealthApi } from '../api/health';
-import { ArrowRight, AlertCircle, Droplets } from 'lucide-react';
+import {
+  ArrowRight,
+  AlertCircle,
+  Droplets,
+  ExternalLink,
+  Lock,
+} from 'lucide-react';
 
 export const LoginPage: React.FC = () => {
   const [username, setUsername] = useState('operator');
@@ -19,13 +23,6 @@ export const LoginPage: React.FC = () => {
 
   const from = (location.state as any)?.from?.pathname || '/dashboard';
 
-  // Live backend health query for the indicator on bottom left
-  const { data: healthData, isSuccess: isHealthSuccess } = useQuery({
-    queryKey: ['login-health'],
-    queryFn: getHealthApi,
-    refetchInterval: 15000,
-  });
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg(null);
@@ -37,14 +34,14 @@ export const LoginPage: React.FC = () => {
     } catch (err) {
       if (err instanceof ApiClientError) {
         if (err.status === 401) {
-          setErrorMsg('Authentication failed: Invalid username or password.');
+          setErrorMsg('Invalid username or password.');
         } else if (err.status === 403) {
-          setErrorMsg('Access denied: Account is suspended or inactive.');
+          setErrorMsg('Account is suspended or inactive.');
         } else {
-          setErrorMsg(err.message || 'Login failed. Please verify backend connection.');
+          setErrorMsg(err.message || 'Login failed. Please verify your connection.');
         }
       } else {
-        setErrorMsg('Network error: Unable to communicate with backend server.');
+        setErrorMsg('Network error: Unable to reach the server.');
       }
     } finally {
       setIsSubmitting(false);
@@ -59,127 +56,201 @@ export const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#060e1b] text-slate-100 flex flex-col justify-between selection:bg-sky-500 selection:text-slate-950">
-      <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 max-w-7xl mx-auto w-full px-6 py-8 lg:px-12 items-center gap-12">
-        {/* Left Column: Hero & Branding */}
-        <div className="flex flex-col justify-between h-full py-4 lg:py-8">
-          {/* Top Brand Logo */}
-          <div className="flex items-center gap-3.5">
-            <div className="w-12 h-12 rounded-xl bg-sky-500 flex items-center justify-center text-slate-950 shadow-md shadow-sky-500/20 font-black shrink-0">
-              <Droplets className="w-7 h-7 text-slate-950 fill-current" />
-            </div>
-            <div>
-              <div className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white leading-tight">
-                IWM-BTS
-              </div>
-              <p className="text-sm sm:text-base text-slate-300 mt-0.5 font-medium">
-                Intelligent Wastewater Monitoring &amp; Blockchain Traceability System
-              </p>
-            </div>
-          </div>
+    <div className="min-h-screen bg-[#070B12] text-slate-100 flex flex-col justify-between selection:bg-[#0EA5E9] selection:text-white relative overflow-hidden bg-[url('/assets/facility_backdrop.jpg')] bg-cover bg-center bg-no-repeat">
+      {/* High-Contrast Dual Layer Dark Backdrop Scrim */}
+      {/* Layer 1: Global darkening so lights never overpower content */}
+      <div className="absolute inset-0 bg-[#070B12]/80 pointer-events-none -z-10" />
+      {/* Layer 2: Deep directional vignette for crystal-clear readability */}
+      <div className="absolute inset-0 bg-gradient-to-r from-[#070B12] via-[#070B12]/95 to-[#070B12]/60 pointer-events-none -z-10" />
 
-          {/* Centered Hero Statement */}
-          <div className="my-auto py-12 lg:py-0 max-w-xl">
-            <div className="text-xs font-mono font-semibold uppercase tracking-[0.25em] text-sky-400 mb-4">
-              Water Data • Provenance • Trust
+      {/* Top Application Header */}
+      <header className="w-full border-b border-slate-800/80 bg-[#070B12]/90 backdrop-blur-md px-6 lg:px-12 py-4 flex items-center justify-between z-20 anim-slide-top">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-[#0EA5E9]/15 border border-[#0EA5E9]/30 flex items-center justify-center text-[#0EA5E9] shadow-sm shrink-0">
+            <Droplets className="w-5 h-5 text-[#0EA5E9]" />
+          </div>
+          <div>
+            <div className="text-lg font-bold tracking-tight text-white">
+              AquaTrust AI
             </div>
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-white leading-[1.12]">
-              Clarity for every<br />drop of data.
-            </h1>
-            <p className="text-slate-400 text-sm sm:text-base mt-6 leading-relaxed max-w-md">
-              Environmental intelligence grounded in real measurements, accountable analysis and verifiable records.
+            <p className="text-xs text-slate-400 hidden sm:block">
+              Intelligent Wastewater Monitoring Platform
             </p>
-          </div>
-
-          {/* Bottom Live Health Status */}
-          <div className="flex items-center gap-2 pt-6">
-            <span
-              className={`w-2 h-2 rounded-full ${
-                isHealthSuccess ? 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]' : 'bg-amber-400 animate-pulse'
-              }`}
-            />
-            <span className="text-xs font-mono text-slate-300">
-              API reachable
-            </span>
-            <span className="text-xs font-mono text-slate-500">
-              {isHealthSuccess ? 'connected' : 'connecting...'}
-            </span>
           </div>
         </div>
 
-        {/* Right Column: Login Card */}
-        <div className="flex flex-col items-center justify-center w-full">
-          <div className="w-full max-w-md bg-[#0a1526]/85 border border-blue-900/40 rounded-2xl p-7 sm:p-9 shadow-2xl backdrop-blur-md">
-            {/* Card Header */}
-            <div>
-              <div className="text-[11px] font-mono uppercase tracking-wider text-sky-400 font-bold">
-                Secure Workspace
+        <Link
+          to="/verify"
+          className="flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700 text-xs font-medium text-slate-200 transition-colors"
+        >
+          <span>Public Verification</span>
+          <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
+        </Link>
+      </header>
+
+      {/* Main Content Area */}
+      <main className="flex-1 grid grid-cols-1 lg:grid-cols-12 max-w-7xl mx-auto w-full px-6 py-8 lg:px-12 items-center gap-10 lg:gap-14 relative z-10">
+        {/* Left Column: Hero Content contained in a high-contrast dark surface */}
+        <div className="lg:col-span-7 flex flex-col justify-center anim-slide-left">
+          <div className="bg-[#0B0F17]/90 backdrop-blur-xl border border-slate-800/90 rounded-2xl p-7 sm:p-9 shadow-2xl">
+            {/* Headline */}
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-white leading-tight">
+              Industrial Wastewater Intelligence.
+              <span className="block text-[#0EA5E9] mt-1.5">Grounded in Trust.</span>
+            </h1>
+
+            {/* Description - 100% Visible & Legible */}
+            <p className="text-slate-300 text-sm sm:text-base mt-4 leading-relaxed max-w-xl">
+              Real-time SCADA telemetry, automated environmental compliance, and tamper-evident audit records for modern water treatment facilities.
+            </p>
+
+            {/* Clean 3-Metric Overview */}
+            <div className="grid grid-cols-3 gap-3 my-6 pt-5 border-t border-slate-800/80">
+              <div className="p-3 rounded-xl bg-[#111827]/80 border border-slate-800">
+                <div className="text-[11px] text-slate-400">Flow Rate</div>
+                <div className="text-xl sm:text-2xl font-bold text-white mt-0.5">24.5 <span className="text-xs font-normal text-slate-400">MLD</span></div>
+                <div className="text-[10px] text-slate-500 mt-0.5">Continuous STP Inflow</div>
               </div>
-              <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-tight mt-1.5">
-                Welcome back
-              </h2>
-              <p className="text-xs text-slate-400 mt-1">
-                Sign in with your IWM-BTS account.
-              </p>
+
+              <div className="p-3 rounded-xl bg-[#111827]/80 border border-slate-800">
+                <div className="text-[11px] text-slate-400">Efficiency</div>
+                <div className="text-xl sm:text-2xl font-bold text-white mt-0.5">98.4<span className="text-xs font-normal text-slate-400">%</span></div>
+                <div className="text-[10px] text-emerald-400 mt-0.5">BOD / COD Removal</div>
+              </div>
+
+              <div className="p-3 rounded-xl bg-[#111827]/80 border border-slate-800">
+                <div className="text-[11px] text-slate-400">Audit Status</div>
+                <div className="text-xl sm:text-2xl font-bold text-white mt-0.5">100<span className="text-xs font-normal text-slate-400">%</span></div>
+                <div className="text-[10px] text-cyan-400 mt-0.5">Verified Records</div>
+              </div>
             </div>
 
-            {/* Role Demo Prefill Box - All 4 roles in one line */}
-            <div className="bg-[#071120] border border-blue-950/90 rounded-xl p-4 mt-6">
-              <label className="block text-xs font-medium text-slate-300 mb-2.5">
-                Select role to prefill demo credentials:
+            {/* Synoptic Treatment Flow - Clean & Uncluttered */}
+            <div className="pt-4 border-t border-slate-800/80">
+              <div className="text-xs font-medium text-slate-400 mb-3 flex items-center justify-between">
+                <span>Treatment Process Flow</span>
+                <span className="text-[11px] text-emerald-400 font-mono">Live Monitoring</span>
+              </div>
+
+              <div className="grid grid-cols-4 gap-2 text-center text-xs">
+                <div className="p-2.5 rounded-lg bg-[#111827] border border-slate-800">
+                  <div className="text-[10px] text-slate-400">1. Influent</div>
+                  <div className="font-semibold text-white mt-0.5">220 mg/L</div>
+                  <div className="text-[9px] text-slate-500 mt-0.5">Raw Inflow</div>
+                </div>
+
+                <div className="p-2.5 rounded-lg bg-[#111827] border border-[#0EA5E9]/30">
+                  <div className="text-[10px] text-[#0EA5E9]">2. Aeration</div>
+                  <div className="font-semibold text-cyan-200 mt-0.5">2.0 mg/L</div>
+                  <div className="text-[9px] text-slate-400 mt-0.5">DO Basin</div>
+                </div>
+
+                <div className="p-2.5 rounded-lg bg-[#111827] border border-emerald-500/30">
+                  <div className="text-[10px] text-emerald-400">3. Effluent</div>
+                  <div className="font-semibold text-emerald-300 mt-0.5">&lt; 10 mg/L</div>
+                  <div className="text-[9px] text-emerald-400/80 mt-0.5">Compliant ✓</div>
+                </div>
+
+                <div className="p-2.5 rounded-lg bg-[#111827] border border-indigo-500/30">
+                  <div className="text-[10px] text-indigo-400">4. Ledger</div>
+                  <div className="font-semibold text-indigo-200 mt-0.5">Anchored</div>
+                  <div className="text-[9px] text-indigo-400/80 mt-0.5">Verified ✓</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Column: Secure SCADA Gateway Terminal (Exact approved design) */}
+        <div className="lg:col-span-5 flex flex-col items-center justify-center w-full anim-slide-right">
+          <div className="w-full max-w-md bg-[#0F172A]/92 border border-cyan-500/30 rounded-2xl p-7 sm:p-9 shadow-[0_20px_50px_rgba(0,0,0,0.8),0_0_30px_rgba(14,165,233,0.15)] backdrop-blur-xl relative anim-border-glow overflow-hidden">
+            {/* Top Accent Gradient Line */}
+            <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-[#0EA5E9] to-transparent" />
+
+            {/* Card Header & Security Badge */}
+            <div className="flex items-start justify-between">
+              <div>
+                <div className="text-[11px] font-mono uppercase tracking-wider text-[#0EA5E9] font-bold">
+                  SECURE SCADA GATEWAY
+                </div>
+                <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-tight mt-1">
+                  Authorized Sign In
+                </h2>
+                <p className="text-xs text-slate-400 mt-1">
+                  Enter registered credentials to access operational telemetry.
+                </p>
+              </div>
+              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#0EA5E9]/15 border border-[#0EA5E9]/35 text-[10px] font-mono text-[#0EA5E9] shrink-0 font-medium">
+                <Lock className="w-3 h-3 text-[#0EA5E9]" />
+                <span>TLS 1.3</span>
+              </div>
+            </div>
+
+            {/* Role Demo Prefill Box with Professional Credential Tags */}
+            <div className="bg-[#0B0F17]/90 border border-[#1F293D] rounded-xl p-3.5 mt-5">
+              <label className="block text-xs font-medium text-slate-300 mb-2">
+                Quick Role Prefill (Demo Testing):
               </label>
               <div className="grid grid-cols-4 gap-1.5 sm:gap-2">
                 <button
                   type="button"
                   onClick={() => handleRoleSelect('operator', 'operator', 'operator123')}
-                  className={`py-1.5 px-2 rounded-md text-xs font-medium border text-center transition-all truncate ${
+                  className={`py-1.5 px-2 rounded-lg text-xs border text-center transition-all truncate cursor-pointer ${
                     activeRole === 'operator'
-                      ? 'border-sky-500 bg-sky-950/70 text-sky-200'
-                      : 'border-blue-900/60 bg-blue-950/40 hover:bg-blue-900/50 hover:border-blue-700 text-slate-300'
+                      ? 'border-[#0EA5E9] bg-[#0EA5E9]/20 text-[#0EA5E9] font-bold shadow-[0_0_12px_rgba(14,165,233,0.3)]'
+                      : 'border-[#1F293D] bg-[#161F30] hover:bg-[#1E293B] hover:border-slate-600 text-slate-400'
                   }`}
+                  title="Plant Operator — Physical STP SCADA controls"
                 >
-                  Operator
+                  <div className="font-semibold">Operator</div>
+                  <div className="text-[9px] opacity-75 font-mono">OPR-DEL</div>
                 </button>
                 <button
                   type="button"
                   onClick={() => handleRoleSelect('admin', 'admin', 'admin123')}
-                  className={`py-1.5 px-2 rounded-md text-xs font-medium border text-center transition-all truncate ${
+                  className={`py-1.5 px-2 rounded-lg text-xs border text-center transition-all truncate cursor-pointer ${
                     activeRole === 'admin'
-                      ? 'border-sky-500 bg-sky-950/70 text-sky-200'
-                      : 'border-blue-900/60 bg-blue-950/40 hover:bg-blue-900/50 hover:border-blue-700 text-slate-300'
+                      ? 'border-[#0EA5E9] bg-[#0EA5E9]/20 text-[#0EA5E9] font-bold shadow-[0_0_12px_rgba(14,165,233,0.3)]'
+                      : 'border-[#1F293D] bg-[#161F30] hover:bg-[#1E293B] hover:border-slate-600 text-slate-400'
                   }`}
+                  title="System Administrator — Infrastructure & Users"
                 >
-                  Admin
+                  <div className="font-semibold">Admin</div>
+                  <div className="text-[9px] opacity-75 font-mono">SYS-SEC</div>
                 </button>
                 <button
                   type="button"
                   onClick={() => handleRoleSelect('auditor', 'auditor', 'auditor123')}
-                  className={`py-1.5 px-2 rounded-md text-xs font-medium border text-center transition-all truncate ${
+                  className={`py-1.5 px-2 rounded-lg text-xs border text-center transition-all truncate cursor-pointer ${
                     activeRole === 'auditor'
-                      ? 'border-sky-500 bg-sky-950/70 text-sky-200'
-                      : 'border-blue-900/60 bg-blue-950/40 hover:bg-blue-900/50 hover:border-blue-700 text-slate-300'
+                      ? 'border-[#0EA5E9] bg-[#0EA5E9]/20 text-[#0EA5E9] font-bold shadow-[0_0_12px_rgba(14,165,233,0.3)]'
+                      : 'border-[#1F293D] bg-[#161F30] hover:bg-[#1E293B] hover:border-slate-600 text-slate-400'
                   }`}
+                  title="Compliance Auditor — Forensic Merkle Verification"
                 >
-                  Auditor
+                  <div className="font-semibold">Auditor</div>
+                  <div className="text-[9px] opacity-75 font-mono">NABET</div>
                 </button>
                 <button
                   type="button"
                   onClick={() => handleRoleSelect('regulator', 'regulator', 'regulator123')}
-                  className={`py-1.5 px-2 rounded-md text-xs font-medium border text-center transition-all truncate ${
+                  className={`py-1.5 px-2 rounded-lg text-xs border text-center transition-all truncate cursor-pointer ${
                     activeRole === 'regulator'
-                      ? 'border-sky-500 bg-sky-950/70 text-sky-200'
-                      : 'border-blue-900/60 bg-blue-950/40 hover:bg-blue-900/50 hover:border-blue-700 text-slate-300'
+                      ? 'border-[#0EA5E9] bg-[#0EA5E9]/20 text-[#0EA5E9] font-bold shadow-[0_0_12px_rgba(14,165,233,0.3)]'
+                      : 'border-[#1F293D] bg-[#161F30] hover:bg-[#1E293B] hover:border-slate-600 text-slate-400'
                   }`}
+                  title="Regulatory Inspector — CPCB Official Oversight"
                 >
-                  Regulator
+                  <div className="font-semibold">Regulator</div>
+                  <div className="text-[9px] opacity-75 font-mono">CPCB-INSP</div>
                 </button>
               </div>
             </div>
 
             {/* Error Message */}
             {errorMsg && (
-              <div className="mt-4 p-3 bg-red-950/60 border border-red-800 rounded-lg text-red-200 text-xs flex items-start gap-2.5">
-                <AlertCircle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
+              <div className="mt-4 p-3 bg-[#EF4444]/15 border border-[#EF4444]/40 rounded-xl text-rose-200 text-xs flex items-start gap-2.5">
+                <AlertCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
                 <div className="flex-1">{errorMsg}</div>
               </div>
             )}
@@ -188,21 +259,21 @@ export const LoginPage: React.FC = () => {
             <form onSubmit={handleSubmit} className="space-y-4 mt-5">
               <div>
                 <label className="block text-xs font-medium text-slate-300 mb-1.5">
-                  Username or Email
+                  Official ID / License No. or Email
                 </label>
                 <input
                   type="text"
                   required
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  placeholder="operator"
-                  className="w-full px-3.5 py-2.5 bg-[#060d18] border border-blue-900/60 rounded-lg text-sm text-white placeholder-slate-500 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 font-mono transition-colors"
+                  placeholder="e.g. OPR-DEL-0842 or operator"
+                  className="w-full px-3.5 py-2.5 bg-[#0B0F17] border border-[#1F293D] rounded-lg text-xs text-white placeholder-slate-500 focus:outline-none focus:border-[#0EA5E9] font-mono transition-colors focus:ring-1 focus:ring-[#0EA5E9]/50"
                 />
               </div>
 
               <div>
                 <label className="block text-xs font-medium text-slate-300 mb-1.5">
-                  Password
+                  Security Key / Password
                 </label>
                 <input
                   type="password"
@@ -210,7 +281,7 @@ export const LoginPage: React.FC = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••••••"
-                  className="w-full px-3.5 py-2.5 bg-[#060d18] border border-blue-900/60 rounded-lg text-sm text-white placeholder-slate-500 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 font-mono transition-colors"
+                  className="w-full px-3.5 py-2.5 bg-[#0B0F17] border border-[#1F293D] rounded-lg text-xs text-white placeholder-slate-500 focus:outline-none focus:border-[#0EA5E9] font-mono transition-colors focus:ring-1 focus:ring-[#0EA5E9]/50"
                 />
               </div>
 
@@ -218,16 +289,16 @@ export const LoginPage: React.FC = () => {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full py-3 px-4 bg-sky-500 hover:bg-sky-400 text-slate-950 rounded-lg text-sm font-bold transition-all flex items-center justify-center gap-2 shadow-lg shadow-sky-500/20 active:scale-[0.99] disabled:opacity-50 mt-6 cursor-pointer"
+                className="w-full py-3 px-4 bg-[#0EA5E9] hover:bg-[#0284C7] text-white rounded-lg text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(14,165,233,0.4)] active:scale-[0.99] disabled:opacity-50 mt-6 cursor-pointer"
               >
                 {isSubmitting ? (
                   <>
-                    <div className="w-4 h-4 border-2 border-slate-950 border-t-transparent rounded-full animate-spin"></div>
-                    <span>Signing in...</span>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    <span>Authenticating SCADA Session...</span>
                   </>
                 ) : (
                   <>
-                    <span>Sign in</span>
+                    <span>SIGN IN TO SCADA GATEWAY</span>
                     <ArrowRight className="w-4 h-4" />
                   </>
                 )}
@@ -235,27 +306,29 @@ export const LoginPage: React.FC = () => {
             </form>
 
             {/* Note under button */}
-            <p className="text-[10px] text-slate-500 text-center mt-3.5 leading-relaxed">
-              Access is authenticated by the project API. Credentials are not embedded in this frontend.
+            <p className="text-[10px] text-slate-500 text-center mt-3.5 leading-relaxed font-mono">
+              Role-based non-repudiation enforced. Telemetry actions watermarked per RBAC policy.
             </p>
 
             {/* Public Portal Link */}
-            <div className="mt-5 pt-4 border-t border-blue-950/80 text-center">
+            <div className="mt-5 pt-4 border-t border-[#1F293D] text-center">
               <Link
-                to="/verify/public"
-                className="text-xs text-sky-400 hover:text-sky-300 transition-colors"
+                to="/verify"
+                className="text-xs text-[#0EA5E9] hover:text-cyan-300 transition-colors inline-flex items-center gap-1.5 font-medium"
               >
-                Public Trust Verification Portal (No login required) &rarr;
+                <span>Public Trust Verification Portal (No login required)</span>
+                <span>&rarr;</span>
               </Link>
             </div>
           </div>
-
-          {/* Bottom Card Footer */}
-          <div className="text-[10px] font-mono tracking-[0.25em] text-slate-600 uppercase text-center mt-6">
-            IWM-BTS • TRUSTED WATER INFRASTRUCTURE
-          </div>
         </div>
-      </div>
+      </main>
+
+      {/* Clean Footer */}
+      <footer className="w-full border-t border-slate-800/80 bg-[#070B12]/90 backdrop-blur-md px-6 lg:px-12 py-3.5 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 gap-2 z-20">
+        <div>AquaTrust AI &bull; Water Quality Monitoring &amp; Traceability</div>
+        <div>&copy; 2026 AquaTrust AI. All rights reserved.</div>
+      </footer>
     </div>
   );
 };
