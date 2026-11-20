@@ -99,7 +99,7 @@ const ROLE_CREDENTIALS: Record<string, RoleCredentialInfo> = {
 
 export const DashboardPage: React.FC = () => {
   const { user, selectedFacilityId } = useAuth();
-  const [activePerspective, setActivePerspective] = useState<string>(user?.role || 'operator');
+  const userRole = user?.role || 'operator';
   const [currentTime, setCurrentTime] = useState<string>(new Date().toISOString().replace('T', ' ').slice(0, 19));
 
   // Update SCADA clock every second
@@ -109,13 +109,6 @@ export const DashboardPage: React.FC = () => {
     }, 1000);
     return () => clearInterval(timer);
   }, []);
-
-  // Update active perspective when user changes
-  useEffect(() => {
-    if (user?.role) {
-      setActivePerspective(user.role);
-    }
-  }, [user?.role]);
 
   // Facilities fleet query
   const facilitiesQuery = useQuery({
@@ -188,7 +181,7 @@ export const DashboardPage: React.FC = () => {
     dltQuery.refetch();
   };
 
-  const currentCred = ROLE_CREDENTIALS[activePerspective] || ROLE_CREDENTIALS.operator;
+  const currentCred = ROLE_CREDENTIALS[userRole] || ROLE_CREDENTIALS.operator;
 
   return (
     <div className="space-y-6 pb-12 anim-slide-top">
@@ -246,7 +239,7 @@ export const DashboardPage: React.FC = () => {
           </div>
         </div>
 
-        {/* 2. Cryptographic Role Identity Strip & Perspective Selector */}
+        {/* 2. Cryptographic Role Identity Strip */}
         <div className="mt-5 pt-4 border-t border-[#1F293D] flex flex-col md:flex-row md:items-center justify-between gap-4">
           {/* Active Verified Credential */}
           <div className="flex items-center gap-3">
@@ -271,29 +264,13 @@ export const DashboardPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Perspective View Selector (Allows all users to preview role-tailored dashboards) */}
-          <div className="flex items-center gap-1.5 bg-[#0B0F17] p-1 rounded-xl border border-[#1F293D] text-[11px] font-mono self-start md:self-auto">
-            <span className="text-[10px] text-slate-400 px-2 uppercase font-semibold hidden lg:inline">
-              Perspective:
+          {/* Authenticated Active Role Display */}
+          <div className="flex items-center gap-2 bg-[#0B0F17] px-3 py-1.5 rounded-xl border border-[#1F293D] text-[11px] font-mono self-start md:self-auto">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="text-[10px] text-slate-400 uppercase font-semibold">Active Session Role:</span>
+            <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border ${currentCred.badgeBg}`}>
+              {userRole.replace('_', ' ')}
             </span>
-            {[
-              { id: 'operator', label: 'Operator' },
-              { id: 'regulatory_stakeholder', label: 'Regulator' },
-              { id: 'auditor', label: 'Auditor' },
-              { id: 'admin', label: 'Admin' },
-            ].map((p) => (
-              <button
-                key={p.id}
-                onClick={() => setActivePerspective(p.id)}
-                className={`px-3 py-1.5 rounded-lg font-medium transition-all ${
-                  activePerspective === p.id
-                    ? 'bg-cyan-950/90 text-cyan-300 border border-cyan-700/80 font-bold shadow-sm'
-                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
-                }`}
-              >
-                {p.label}
-              </button>
-            ))}
           </div>
         </div>
       </div>
@@ -473,13 +450,13 @@ export const DashboardPage: React.FC = () => {
             </div>
             <div>
               <h2 className="text-sm font-bold text-white uppercase tracking-wider font-mono">
-                {activePerspective === 'operator' && 'Plant Operator Operational Action Deck'}
-                {activePerspective === 'regulatory_stakeholder' && 'CPCB Regulatory Inspector Oversight Deck'}
-                {activePerspective === 'auditor' && 'Compliance Auditor Forensic Trust Deck'}
-                {activePerspective === 'admin' && 'Enterprise System Administration Deck'}
+                {userRole === 'operator' && 'Plant Operator Operational Action Deck'}
+                {userRole === 'regulatory_stakeholder' && 'CPCB Regulatory Inspector Oversight Deck'}
+                {userRole === 'auditor' && 'Compliance Auditor Forensic Trust Deck'}
+                {userRole === 'admin' && 'Enterprise System Administration Deck'}
               </h2>
               <p className="text-[11px] text-slate-400 font-mono">
-                Direct SCADA control circuits and cryptographic inspection routes for {activePerspective.toUpperCase()}
+                Direct SCADA control circuits and cryptographic inspection routes for {userRole.toUpperCase()}
               </p>
             </div>
           </div>
@@ -492,7 +469,7 @@ export const DashboardPage: React.FC = () => {
 
         {/* Operational Quick Actions Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 pt-4">
-          {activePerspective === 'operator' && (
+          {userRole === 'operator' && (
             <>
               <Link
                 to="/digital-twin"
@@ -572,7 +549,7 @@ export const DashboardPage: React.FC = () => {
             </>
           )}
 
-          {activePerspective === 'regulatory_stakeholder' && (
+          {userRole === 'regulatory_stakeholder' && (
             <>
               <Link
                 to="/compliance"
@@ -652,7 +629,7 @@ export const DashboardPage: React.FC = () => {
             </>
           )}
 
-          {activePerspective === 'auditor' && (
+          {userRole === 'auditor' && (
             <>
               <Link
                 to="/blockchain"
@@ -732,7 +709,7 @@ export const DashboardPage: React.FC = () => {
             </>
           )}
 
-          {activePerspective === 'admin' && (
+          {userRole === 'admin' && (
             <>
               <Link
                 to="/facilities"
