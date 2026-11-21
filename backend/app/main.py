@@ -72,6 +72,44 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
                         logger.info(f"Auto-seeded {records_count} finalized treatment records across STPs.")
                 except Exception as e:
                     logger.warning(f"Treatment records auto-seeding notice: {e}")
+
+                try:
+                    from app.models.dlt_anchor import DLTAnchor
+                    from app.models.certificate import Certificate
+                    anchors = session.query(DLTAnchor).filter(DLTAnchor.certificate_id.isnot(None)).all()
+                    for a in anchors:
+                        session.query(Certificate).filter(
+                            Certificate.certificate_id == a.certificate_id,
+                            Certificate.dlt_anchor_id.is_(None),
+                        ).update({Certificate.dlt_anchor_id: a.anchor_id}, synchronize_session=False)
+                    session.commit()
+                except Exception as e:
+                    logger.warning(f"Certificate anchor linking notice: {e}")
+
+                try:
+                    from app.models.correction import Correction
+                    from app.services.correction_service import CorrectionService
+                    corr_count = session.query(Correction).count()
+                    if corr_count == 0:
+                        from app.models.treatment_record import TreatmentRecord
+                        rec = session.query(TreatmentRecord).filter(TreatmentRecord.record_state == "finalized").first()
+                        if rec:
+                            c = CorrectionService.propose_correction(
+                                db=session,
+                                original_record_id=rec.record_id,
+                                reason="Online optical sensor recalibration applied following periodic CPCB calibration audit",
+                                justification_code="SENSOR_RECALIBRATION",
+                                corrected_parameters={"COD": 235.0, "BOD": 28.0},
+                            )
+                            CorrectionService.authorize_correction(
+                                db=session,
+                                correction_id=c.correction_id,
+                                key_id="key-ecdsa-p256-01",
+                            )
+                            session.commit()
+                            logger.info("Auto-seeded authoritative demonstration correction lineage chain.")
+                except Exception as e:
+                    logger.warning(f"Correction chain auto-seeding notice: {e}")
             logger.info("Database schema and core authentication accounts verified successfully.")
         except Exception as exc:
             logger.warning(f"Database schema initialization notice: {exc}")

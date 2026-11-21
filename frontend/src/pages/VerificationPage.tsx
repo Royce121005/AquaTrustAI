@@ -42,8 +42,13 @@ export const VerificationPage: React.FC = () => {
   useEffect(() => {
     if (activeRecordId && !verifyMutation.data && !verifyMutation.isPending) {
       verifyMutation.mutate(activeRecordId);
+    } else if (!activeRecordId && treatmentRecords && treatmentRecords.length > 0) {
+      const defaultId = treatmentRecords[0].record_id;
+      setInputRecordId(defaultId);
+      setActiveRecordId(defaultId);
+      verifyMutation.mutate(defaultId);
     }
-  }, [activeRecordId]);
+  }, [activeRecordId, treatmentRecords]);
 
   return (
     <div className="space-y-6">

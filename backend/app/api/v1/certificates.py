@@ -28,15 +28,22 @@ def list_certificates(
 ):
     """List digital treatment certificates with optional facility and status filtering."""
     treatment_repo = TreatmentRepository(db)
+    effective_status = "valid" if status and status.lower() == "active" else status
     certs = treatment_repo.list_certificates(
         facility_id=facility_id,
-        status=status,
+        status=effective_status,
         skip=skip,
         limit=limit,
     )
+    from app.models.dlt_anchor import DLTAnchor
     results = []
     for cert in certs:
         record = treatment_repo.get_by_id(cert.record_id)
+        anchor_id = cert.dlt_anchor_id
+        if not anchor_id:
+            anchor = db.query(DLTAnchor).filter(DLTAnchor.certificate_id == cert.certificate_id).first()
+            if anchor:
+                anchor_id = anchor.anchor_id
         results.append(
             CertificateResponse(
                 certificate_id=cert.certificate_id,
@@ -47,7 +54,7 @@ def list_certificates(
                 compliance_summary=cert.compliance_summary,
                 canonical_hash=cert.canonical_hash,
                 signature_id=cert.signature_id,
-                dlt_anchor_id=cert.dlt_anchor_id,
+                dlt_anchor_id=anchor_id,
                 status=cert.status,
                 facility_id=record.facility_id if record else None,
                 period_start=record.period_start if record else None,
@@ -68,12 +75,18 @@ def list_certificates(
 )
 def get_certificate(certificate_id: UUID, db: Session = Depends(get_db)):
     """Retrieve digital certificate by certificate UUID."""
+    from app.models.dlt_anchor import DLTAnchor
     treatment_repo = TreatmentRepository(db)
     cert = treatment_repo.get_certificate(certificate_id)
     if not cert:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Certificate {certificate_id} not found")
 
     record = treatment_repo.get_by_id(cert.record_id)
+    anchor_id = cert.dlt_anchor_id
+    if not anchor_id:
+        anchor = db.query(DLTAnchor).filter(DLTAnchor.certificate_id == cert.certificate_id).first()
+        if anchor:
+            anchor_id = anchor.anchor_id
 
     return CertificateResponse(
         certificate_id=cert.certificate_id,
@@ -84,7 +97,7 @@ def get_certificate(certificate_id: UUID, db: Session = Depends(get_db)):
         compliance_summary=cert.compliance_summary,
         canonical_hash=cert.canonical_hash,
         signature_id=cert.signature_id,
-        dlt_anchor_id=cert.dlt_anchor_id,
+        dlt_anchor_id=anchor_id,
         status=cert.status,
         facility_id=record.facility_id if record else None,
         period_start=record.period_start if record else None,
@@ -103,12 +116,18 @@ def get_certificate(certificate_id: UUID, db: Session = Depends(get_db)):
 )
 def get_certificate_by_record(record_id: UUID, db: Session = Depends(get_db)):
     """Retrieve digital certificate associated with a treatment record."""
+    from app.models.dlt_anchor import DLTAnchor
     treatment_repo = TreatmentRepository(db)
     cert = treatment_repo.get_certificate_by_record_id(record_id)
     if not cert:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"No certificate found for record {record_id}")
 
     record = treatment_repo.get_by_id(cert.record_id)
+    anchor_id = cert.dlt_anchor_id
+    if not anchor_id:
+        anchor = db.query(DLTAnchor).filter(DLTAnchor.certificate_id == cert.certificate_id).first()
+        if anchor:
+            anchor_id = anchor.anchor_id
 
     return CertificateResponse(
         certificate_id=cert.certificate_id,
@@ -119,7 +138,7 @@ def get_certificate_by_record(record_id: UUID, db: Session = Depends(get_db)):
         compliance_summary=cert.compliance_summary,
         canonical_hash=cert.canonical_hash,
         signature_id=cert.signature_id,
-        dlt_anchor_id=cert.dlt_anchor_id,
+        dlt_anchor_id=anchor_id,
         status=cert.status,
         facility_id=record.facility_id if record else None,
         period_start=record.period_start if record else None,

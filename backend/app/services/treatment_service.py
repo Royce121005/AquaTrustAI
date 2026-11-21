@@ -437,6 +437,7 @@ class TreatmentService:
             created_at=utc_now(),
         )
         treatment_repo.add_dlt_anchor(dlt_anchor)
+        certificate.dlt_anchor_id = anchor_id
 
         # 8. Freeze Record State
         record.record_state = "finalized"

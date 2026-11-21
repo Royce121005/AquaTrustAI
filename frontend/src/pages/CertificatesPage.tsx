@@ -3,16 +3,18 @@ import { useQuery } from '@tanstack/react-query';
 import { Link, useSearchParams } from 'react-router-dom';
 import { listCertificatesApi } from '../api/certificates';
 import { listFacilitiesApi } from '../api/facilities';
+import { useAuth } from '../context/AuthContext';
 import { LoadingState, ErrorState, EmptyState } from '../components/common/States';
 import { StatusBadge, ComplianceStatusBadge } from '../components/common/Badges';
-import { Award, Filter, RefreshCw, Shield, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Award, Filter, RefreshCw, Shield, ChevronLeft, ChevronRight, FileText } from 'lucide-react';
 
 const PAGE_SIZE = 25;
 
 export const CertificatesPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
+  const { selectedFacilityId } = useAuth();
 
-  const facilityId = searchParams.get('facility_id') || '';
+  const facilityId = searchParams.get('facility_id') || selectedFacilityId || '';
   const statusFilter = searchParams.get('status') || '';
   const page = parseInt(searchParams.get('page') || '0', 10);
 
@@ -113,7 +115,7 @@ export const CertificatesPage: React.FC = () => {
             className="scada-select"
           >
             <option value="">All Statuses</option>
-            <option value="active">active</option>
+            <option value="valid">valid (active)</option>
             <option value="superseded">superseded</option>
             <option value="revoked">revoked</option>
           </select>
@@ -143,7 +145,16 @@ export const CertificatesPage: React.FC = () => {
         ) : !certsQuery.data || certsQuery.data.length === 0 ? (
           <EmptyState
             title="No Certificates Found"
-            message="No digital certificates have been issued yet. Certificates are issued upon successful treatment window finalization."
+            message="No digital certificates match the selected criteria. Digital certificates are issued upon treatment window finalization."
+            action={
+              <Link
+                to="/treatment-records"
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-cyan-600 hover:bg-cyan-500 text-white rounded-lg text-xs font-semibold shadow-sm transition-colors font-mono cursor-pointer"
+              >
+                <FileText className="w-3.5 h-3.5" />
+                View Treatment Records
+              </Link>
+            }
           />
         ) : (
           <div className="overflow-x-auto">

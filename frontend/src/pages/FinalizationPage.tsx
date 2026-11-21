@@ -10,14 +10,14 @@ import { Stamp, CheckCircle2 } from 'lucide-react';
 export const FinalizationPage: React.FC = () => {
   const [searchParams] = useSearchParams();
   const queryClient = useQueryClient();
-  const { user } = useAuth();
+  const { user, selectedFacilityId } = useAuth();
 
-  const defaultFacility = searchParams.get('facility_id') || user?.facility_id || 'FAC-CPCB-001';
+  const defaultFacility = searchParams.get('facility_id') || selectedFacilityId || user?.facility_id || '';
 
   // State inputs for finalization payload
   const [facilityId, setFacilityId] = useState<string>(defaultFacility);
-  const [periodStart, setPeriodStart] = useState<string>('2026-10-01T00:00:00Z');
-  const [periodEnd, setPeriodEnd] = useState<string>('2026-10-01T23:59:59Z');
+  const [periodStart, setPeriodStart] = useState<string>('2026-11-20T12:00:00Z');
+  const [periodEnd, setPeriodEnd] = useState<string>('2026-11-20T18:00:00Z');
   const [keyId, setKeyId] = useState<string>('key-ecdsa-p256-01');
 
   const [finalizedRecord, setFinalizedRecord] = useState<any>(null);

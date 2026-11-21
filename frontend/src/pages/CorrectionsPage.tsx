@@ -2,15 +2,18 @@ import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate, Link } from 'react-router-dom';
 import { listTreatmentRecordsApi } from '../api/treatmentRecords';
-import { GitCommit, Search, ArrowRight, Layers, ShieldCheck } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
+import { EmptyState } from '../components/common/States';
+import { GitCommit, Search, ArrowRight, Layers, ShieldCheck, FileText } from 'lucide-react';
 
 export const CorrectionsPage: React.FC = () => {
   const [recordIdInput, setRecordIdInput] = useState<string>('');
   const navigate = useNavigate();
+  const { selectedFacilityId } = useAuth();
 
   const { data: treatmentRecords, isLoading } = useQuery({
-    queryKey: ['treatment-records', { limit: 20 }],
-    queryFn: () => listTreatmentRecordsApi({ limit: 20 }),
+    queryKey: ['treatment-records', { facility_id: selectedFacilityId, limit: 20 }],
+    queryFn: () => listTreatmentRecordsApi({ facility_id: selectedFacilityId || undefined, limit: 20 }),
   });
 
   const handleGo = (e: React.FormEvent) => {
@@ -96,9 +99,9 @@ export const CorrectionsPage: React.FC = () => {
                       v{r.record_version}
                     </span>
                     <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                      r.record_state === 'FINALIZED'
+                      r.record_state?.toUpperCase() === 'FINALIZED'
                         ? 'bg-emerald-50 dark:bg-[#10B981]/10 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-[#10B981]/30'
-                        : r.record_state === 'SUPERSEDED'
+                        : r.record_state?.toUpperCase()?.includes('SUPERSEDED')
                         ? 'bg-amber-50 dark:bg-[#F59E0B]/10 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-[#F59E0B]/30'
                         : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700'
                     }`}>
@@ -119,6 +122,23 @@ export const CorrectionsPage: React.FC = () => {
                 </Link>
               </div>
             ))}
+            {treatmentRecords?.length === 0 && (
+              <div className="p-8">
+                <EmptyState
+                  title="No Lineage Candidates Found"
+                  message="No treatment records are currently available for lineage audit under this selection."
+                  action={
+                    <Link
+                      to="/treatment-records"
+                      className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-cyan-600 hover:bg-cyan-500 text-white rounded-lg text-xs font-semibold shadow-sm transition-colors font-mono cursor-pointer"
+                    >
+                      <FileText className="w-3.5 h-3.5" />
+                      View Treatment Records
+                    </Link>
+                  }
+                />
+              </div>
+            )}
           </div>
         )}
       </div>
