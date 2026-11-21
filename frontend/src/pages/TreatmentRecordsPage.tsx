@@ -17,9 +17,9 @@ const PAGE_SIZE = 25;
 
 export const TreatmentRecordsPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const { user } = useAuth();
+  const { user, selectedFacilityId } = useAuth();
 
-  const facilityId = searchParams.get('facility_id') || '';
+  const facilityId = searchParams.get('facility_id') || selectedFacilityId || '';
   const recordState = searchParams.get('record_state') || '';
   const complianceStatus = searchParams.get('compliance_status') || '';
   const page = parseInt(searchParams.get('page') || '0', 10);

@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 from decimal import Decimal
 from typing import Optional, List, Dict, Any
 from uuid import UUID, uuid4
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
 from sqlalchemy import select, func, desc
 
@@ -119,14 +119,46 @@ def get_anomaly_report(reading_id: UUID, db: Session = Depends(get_db)):
     summary="Get anomaly detection summary metrics",
     dependencies=[Depends(get_current_user_claims)],
 )
-def get_anomaly_metrics(db: Session = Depends(get_db)):
+def get_anomaly_metrics(
+    facility_id: Optional[str] = Query(None, description="Optional facility UUID to filter anomaly metrics"),
+    db: Session = Depends(get_db),
+):
     """Summary metrics supporting frontend insights dashboard."""
     engine = AnomalyService.get_engine()
-    total = db.scalar(select(func.count()).select_from(AnomalyResult)) or 0
-    anomalies = db.scalar(select(func.count()).select_from(AnomalyResult).where(AnomalyResult.anomaly_status == "anomalous")) or 0
-    rate = (float(anomalies) / float(total) * 100.0) if total > 0 else 0.0
+    
+    parsed_uuid = None
+    if facility_id:
+        try:
+            parsed_uuid = UUID(facility_id) if isinstance(facility_id, str) else facility_id
+        except (ValueError, AttributeError):
+            pass
 
-    recent_stmt = select(AnomalyResult).where(AnomalyResult.anomaly_status == "anomalous").order_by(desc(AnomalyResult.inference_at)).limit(10)
+    if parsed_uuid:
+        total = db.scalar(
+            select(func.count())
+            .select_from(AnomalyResult)
+            .join(Reading, AnomalyResult.reading_id == Reading.reading_id)
+            .where(Reading.facility_id == parsed_uuid)
+        ) or 0
+        anomalies = db.scalar(
+            select(func.count())
+            .select_from(AnomalyResult)
+            .join(Reading, AnomalyResult.reading_id == Reading.reading_id)
+            .where(Reading.facility_id == parsed_uuid, AnomalyResult.anomaly_status == "anomalous")
+        ) or 0
+        recent_stmt = (
+            select(AnomalyResult)
+            .join(Reading, AnomalyResult.reading_id == Reading.reading_id)
+            .where(Reading.facility_id == parsed_uuid, AnomalyResult.anomaly_status == "anomalous")
+            .order_by(desc(AnomalyResult.inference_at))
+            .limit(10)
+        )
+    else:
+        total = db.scalar(select(func.count()).select_from(AnomalyResult)) or 0
+        anomalies = db.scalar(select(func.count()).select_from(AnomalyResult).where(AnomalyResult.anomaly_status == "anomalous")) or 0
+        recent_stmt = select(AnomalyResult).where(AnomalyResult.anomaly_status == "anomalous").order_by(desc(AnomalyResult.inference_at)).limit(10)
+
+    rate = (float(anomalies) / float(total) * 100.0) if total > 0 else 0.0
     recent_rows = list(db.scalars(recent_stmt).all())
     events = [
         {

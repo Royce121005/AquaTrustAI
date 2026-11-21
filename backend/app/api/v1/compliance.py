@@ -2,9 +2,9 @@
 
 from datetime import datetime, timezone
 from decimal import Decimal
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 from uuid import UUID, uuid4
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
 from sqlalchemy import select, func, desc
 
@@ -148,14 +148,51 @@ def evaluate_compliance(payload: ComplianceEvaluateRequest, db: Session = Depend
     summary="Get environmental compliance summary metrics",
     dependencies=[Depends(get_current_user_claims)],
 )
-def get_compliance_summary(db: Session = Depends(get_db)):
+def get_compliance_summary(
+    facility_id: Optional[str] = Query(None, description="Optional facility UUID to filter compliance summary"),
+    db: Session = Depends(get_db),
+):
     """Compliance summary supporting frontend compliance.js."""
-    total = db.scalar(select(func.count()).select_from(ComplianceResult)) or 0
-    compliant = db.scalar(select(func.count()).select_from(ComplianceResult).where(ComplianceResult.compliance_status == "compliant")) or 0
-    non_compliant = db.scalar(select(func.count()).select_from(ComplianceResult).where(ComplianceResult.compliance_status == "non_compliant")) or 0
-    rate = (float(compliant) / float(total) * 100.0) if total > 0 else 100.0
+    parsed_uuid = None
+    if facility_id:
+        try:
+            parsed_uuid = UUID(facility_id) if isinstance(facility_id, str) else facility_id
+        except (ValueError, AttributeError):
+            pass
 
-    recent_stmt = select(ComplianceResult).order_by(desc(ComplianceResult.evaluated_at)).limit(10)
+    if parsed_uuid:
+        total = db.scalar(
+            select(func.count())
+            .select_from(ComplianceResult)
+            .join(TreatmentRecord, ComplianceResult.treatment_record_id == TreatmentRecord.record_id)
+            .where(TreatmentRecord.facility_id == parsed_uuid)
+        ) or 0
+        compliant = db.scalar(
+            select(func.count())
+            .select_from(ComplianceResult)
+            .join(TreatmentRecord, ComplianceResult.treatment_record_id == TreatmentRecord.record_id)
+            .where(TreatmentRecord.facility_id == parsed_uuid, ComplianceResult.compliance_status == "compliant")
+        ) or 0
+        non_compliant = db.scalar(
+            select(func.count())
+            .select_from(ComplianceResult)
+            .join(TreatmentRecord, ComplianceResult.treatment_record_id == TreatmentRecord.record_id)
+            .where(TreatmentRecord.facility_id == parsed_uuid, ComplianceResult.compliance_status == "non_compliant")
+        ) or 0
+        recent_stmt = (
+            select(ComplianceResult)
+            .join(TreatmentRecord, ComplianceResult.treatment_record_id == TreatmentRecord.record_id)
+            .where(TreatmentRecord.facility_id == parsed_uuid)
+            .order_by(desc(ComplianceResult.evaluated_at))
+            .limit(10)
+        )
+    else:
+        total = db.scalar(select(func.count()).select_from(ComplianceResult)) or 0
+        compliant = db.scalar(select(func.count()).select_from(ComplianceResult).where(ComplianceResult.compliance_status == "compliant")) or 0
+        non_compliant = db.scalar(select(func.count()).select_from(ComplianceResult).where(ComplianceResult.compliance_status == "non_compliant")) or 0
+        recent_stmt = select(ComplianceResult).order_by(desc(ComplianceResult.evaluated_at)).limit(10)
+
+    rate = (float(compliant) / float(total) * 100.0) if total > 0 else 100.0
     recent_rows = list(db.scalars(recent_stmt).all())
     events = [
         {

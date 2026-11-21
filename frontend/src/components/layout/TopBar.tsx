@@ -41,11 +41,13 @@ export const TopBar: React.FC = () => {
         const match = facilities.find(
           (f) =>
             f.facility_id === selectedFacilityId ||
-            f.facility_name.toLowerCase().includes('delhi') ||
+            f.facility_name.toLowerCase().includes('bharwara') ||
             f.facility_name.toLowerCase().includes('cpcb')
         );
         if (match) {
           setSelectedFacilityId(match.facility_id);
+        } else {
+          setSelectedFacilityId(facilities[0].facility_id);
         }
       }
     }

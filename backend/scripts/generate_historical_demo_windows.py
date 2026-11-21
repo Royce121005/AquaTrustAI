@@ -39,8 +39,8 @@ from app.services.compliance_service import ComplianceService
 
 # Target Facility UUIDs
 BHARWARA_ID = uuid.UUID("085a9719-c9d0-4562-b4d7-bc389dec12b3")
-JAJMAU_ID = uuid.UUID("13000000-0000-0000-0000-000000000014")
-DINAPUR_ID = uuid.UUID("14000000-0000-0000-0000-000000000032")
+JAJMAU_ID = uuid.UUID("b0472180-b63f-5e57-867a-ad85b9c3216e")
+DINAPUR_ID = uuid.UUID("542c32b2-b170-56d8-805b-9a311f998daa")
 
 PARAMS_CONFIG = [
     {"parameter": "BOD", "unit": "mg/L"},

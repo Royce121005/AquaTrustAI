@@ -1,13 +1,31 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { getComplianceRulesApi, getComplianceSummaryApi, evaluateComplianceApi } from '../api/compliance';
 import { listTreatmentRecordsApi } from '../api/treatmentRecords';
+import { listFacilitiesApi } from '../api/facilities';
+import { useAuth } from '../context/AuthContext';
 import { LoadingState, ErrorState, EmptyState } from '../components/common/States';
 import { ComplianceStatusBadge } from '../components/common/Badges';
-import { Scale, RefreshCw, CheckCircle, XCircle, Play } from 'lucide-react';
+import { Scale, RefreshCw, CheckCircle, XCircle, Play, Building2 } from 'lucide-react';
 
 export const CompliancePage: React.FC = () => {
   const [selectedRecordId, setSelectedRecordId] = useState<string>('');
+  const { selectedFacilityId } = useAuth();
+
+  const { data: facilities } = useQuery({
+    queryKey: ['facilities'],
+    queryFn: listFacilitiesApi,
+    staleTime: 60000,
+  });
+
+  const matchedFacility = facilities?.find(
+    (f) => f.facility_id === selectedFacilityId || (selectedFacilityId && f.facility_name?.includes(selectedFacilityId))
+  );
+  const effectiveFacilityId = matchedFacility
+    ? matchedFacility.facility_id
+    : selectedFacilityId && /^[0-9a-fA-F-]{36}$/.test(selectedFacilityId)
+    ? selectedFacilityId
+    : undefined;
 
   const rulesQuery = useQuery({
     queryKey: ['compliance-rules'],
@@ -15,18 +33,29 @@ export const CompliancePage: React.FC = () => {
   });
 
   const summaryQuery = useQuery({
-    queryKey: ['compliance-summary'],
-    queryFn: getComplianceSummaryApi,
+    queryKey: ['compliance-summary', effectiveFacilityId],
+    queryFn: () => getComplianceSummaryApi(effectiveFacilityId),
     refetchInterval: 30000,
   });
 
   const recordsQuery = useQuery({
-    queryKey: ['treatment-records', { limit: 20 }],
-    queryFn: () => listTreatmentRecordsApi({ limit: 20 }),
+    queryKey: ['treatment-records', { facility_id: effectiveFacilityId, limit: 50 }],
+    queryFn: () => listTreatmentRecordsApi({ facility_id: effectiveFacilityId, limit: 50 }),
   });
+
+  useEffect(() => {
+    if (recordsQuery.data && recordsQuery.data.length > 0) {
+      setSelectedRecordId(recordsQuery.data[0].record_id);
+    } else {
+      setSelectedRecordId('');
+    }
+  }, [recordsQuery.data]);
 
   const evalMutation = useMutation({
     mutationFn: (recId: string) => evaluateComplianceApi(recId),
+    onSuccess: () => {
+      summaryQuery.refetch();
+    },
   });
 
   const handleEvaluate = (e: React.FormEvent) => {
@@ -44,6 +73,19 @@ export const CompliancePage: React.FC = () => {
             <Scale className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
             CPCB Environmental Discharge Standards Compliance
           </h1>
+          <div className="flex items-center gap-2 mt-1.5">
+            <span className="text-xs text-slate-500 dark:text-slate-400 font-mono">Active Scope:</span>
+            {matchedFacility ? (
+              <span className="text-xs font-mono px-2 py-0.5 rounded bg-cyan-50 dark:bg-cyan-950/40 text-cyan-700 dark:text-cyan-300 border border-cyan-200 dark:border-cyan-800 flex items-center gap-1.5 font-medium">
+                <Building2 className="w-3.5 h-3.5 text-cyan-600 dark:text-cyan-400" />
+                {matchedFacility.facility_name} ({matchedFacility.capacity ? `${matchedFacility.capacity} ${matchedFacility.capacity_unit}` : matchedFacility.facility_type})
+              </span>
+            ) : (
+              <span className="text-xs font-mono px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+                All Facilities (Fleetwide)
+              </span>
+            )}
+          </div>
         </div>
         <div className="flex items-center gap-2">
           <button

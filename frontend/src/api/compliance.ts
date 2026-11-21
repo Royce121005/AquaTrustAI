@@ -18,8 +18,9 @@ export async function evaluateComplianceApi(treatmentRecordId: string): Promise<
   });
 }
 
-export async function getComplianceSummaryApi(): Promise<ComplianceSummaryResponse> {
-  return apiClient<ComplianceSummaryResponse>('/compliance/summary', {
+export async function getComplianceSummaryApi(facilityId?: string): Promise<ComplianceSummaryResponse> {
+  const query = facilityId ? `?facility_id=${encodeURIComponent(facilityId)}` : '';
+  return apiClient<ComplianceSummaryResponse>(`/compliance/summary${query}`, {
     method: 'GET',
   });
 }

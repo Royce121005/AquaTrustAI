@@ -22,7 +22,7 @@ export const SystemStatusPage: React.FC = () => {
 
   const anomalyQuery = useQuery({
     queryKey: ['anomaly-metrics'],
-    queryFn: getAnomalyMetricsApi,
+    queryFn: () => getAnomalyMetricsApi(),
     refetchInterval: 30000,
   });
 

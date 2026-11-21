@@ -2,17 +2,36 @@ import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { getAnomalyMetricsApi } from '../api/anomalies';
+import { listFacilitiesApi } from '../api/facilities';
+import { useAuth } from '../context/AuthContext';
 import { LoadingState, ErrorState, EmptyState } from '../components/common/States';
 import { AnomalyStatusBadge } from '../components/common/Badges';
-import { AlertTriangle, RefreshCw } from 'lucide-react';
+import { AlertTriangle, RefreshCw, Building2, Play } from 'lucide-react';
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, ReferenceLine } from 'recharts';
 import { useChartTheme } from '../hooks/useChartTheme';
 
 export const AnomaliesPage: React.FC = () => {
   const chartTheme = useChartTheme();
+  const { selectedFacilityId, setSelectedFacilityId } = useAuth();
+
+  const { data: facilities } = useQuery({
+    queryKey: ['facilities'],
+    queryFn: listFacilitiesApi,
+    staleTime: 60000,
+  });
+
+  const matchedFacility = facilities?.find(
+    (f) => f.facility_id === selectedFacilityId || (selectedFacilityId && f.facility_name?.includes(selectedFacilityId))
+  );
+  const effectiveFacilityId = matchedFacility
+    ? matchedFacility.facility_id
+    : selectedFacilityId && /^[0-9a-fA-F-]{36}$/.test(selectedFacilityId)
+    ? selectedFacilityId
+    : undefined;
+
   const metricsQuery = useQuery({
-    queryKey: ['anomaly-metrics'],
-    queryFn: getAnomalyMetricsApi,
+    queryKey: ['anomaly-metrics', effectiveFacilityId],
+    queryFn: () => getAnomalyMetricsApi(effectiveFacilityId),
     refetchInterval: 20000,
   });
 
@@ -38,6 +57,19 @@ export const AnomaliesPage: React.FC = () => {
             <AlertTriangle className="w-5 h-5 text-rose-500 dark:text-rose-400" />
             AI Anomaly Detection Engine (Isolation Forest)
           </h1>
+          <div className="flex items-center gap-2 mt-1.5">
+            <span className="text-xs text-slate-500 dark:text-slate-400 font-mono">Active Scope:</span>
+            {matchedFacility ? (
+              <span className="text-xs font-mono px-2 py-0.5 rounded bg-cyan-50 dark:bg-cyan-950/40 text-cyan-700 dark:text-cyan-300 border border-cyan-200 dark:border-cyan-800 flex items-center gap-1.5 font-medium">
+                <Building2 className="w-3.5 h-3.5 text-cyan-600 dark:text-cyan-400" />
+                {matchedFacility.facility_name} ({matchedFacility.capacity ? `${matchedFacility.capacity} ${matchedFacility.capacity_unit}` : matchedFacility.facility_type})
+              </span>
+            ) : (
+              <span className="text-xs font-mono px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+                All Facilities (Fleetwide)
+              </span>
+            )}
+          </div>
         </div>
         <div className="flex items-center gap-2">
           <button

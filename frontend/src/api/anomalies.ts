@@ -14,8 +14,9 @@ export async function getAnomalyReportApi(readingId: string): Promise<AnomalyRes
   });
 }
 
-export async function getAnomalyMetricsApi(): Promise<AnomalyMetricsSummary> {
-  return apiClient<AnomalyMetricsSummary>('/anomalies/metrics', {
+export async function getAnomalyMetricsApi(facilityId?: string): Promise<AnomalyMetricsSummary> {
+  const query = facilityId ? `?facility_id=${encodeURIComponent(facilityId)}` : '';
+  return apiClient<AnomalyMetricsSummary>(`/anomalies/metrics${query}`, {
     method: 'GET',
   });
 }

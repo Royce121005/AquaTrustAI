@@ -1,6 +1,7 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useSearchParams, Link } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import { listReadingsApi } from '../api/readings';
 import { listFacilitiesApi } from '../api/facilities';
 import { LoadingState, ErrorState, EmptyState } from '../components/common/States';
@@ -12,7 +13,8 @@ const PAGE_SIZE = 50;
 export const TelemetryPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const facilityId = searchParams.get('facility_id') || '';
+  const { selectedFacilityId } = useAuth();
+  const facilityId = searchParams.get('facility_id') || selectedFacilityId || '';
   const parameter = searchParams.get('parameter') || '';
   const qualityStatus = searchParams.get('quality_status') || '';
   const page = parseInt(searchParams.get('page') || '0', 10);

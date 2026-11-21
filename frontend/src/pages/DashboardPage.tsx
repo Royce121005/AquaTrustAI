@@ -69,7 +69,7 @@ export const DashboardPage: React.FC = () => {
       const match = facilitiesQuery.data.find(
         (f) =>
           f.facility_id === selectedFacilityId ||
-          f.facility_name.toLowerCase().includes('delhi') ||
+          f.facility_name.toLowerCase().includes('bharwara') ||
           f.facility_name.toLowerCase().includes('cpcb')
       );
       if (match) return match.facility_id;
@@ -78,14 +78,14 @@ export const DashboardPage: React.FC = () => {
   }, [selectedFacilityId, facilitiesQuery.data]);
 
   const anomaliesQuery = useQuery({
-    queryKey: ['anomaly-metrics'],
-    queryFn: getAnomalyMetricsApi,
+    queryKey: ['anomaly-metrics', effectiveFacilityUuid],
+    queryFn: () => getAnomalyMetricsApi(effectiveFacilityUuid),
     refetchInterval: 30000,
   });
 
   const complianceQuery = useQuery({
-    queryKey: ['compliance-summary'],
-    queryFn: getComplianceSummaryApi,
+    queryKey: ['compliance-summary', effectiveFacilityUuid],
+    queryFn: () => getComplianceSummaryApi(effectiveFacilityUuid),
     refetchInterval: 30000,
   });
 
@@ -96,8 +96,8 @@ export const DashboardPage: React.FC = () => {
   });
 
   const recordsQuery = useQuery({
-    queryKey: ['treatment-records', { limit: 6 }],
-    queryFn: () => listTreatmentRecordsApi({ limit: 6 }),
+    queryKey: ['treatment-records', { facility_id: effectiveFacilityUuid, limit: 6 }],
+    queryFn: () => listTreatmentRecordsApi({ facility_id: effectiveFacilityUuid, limit: 6 }),
     refetchInterval: 30000,
   });
 
