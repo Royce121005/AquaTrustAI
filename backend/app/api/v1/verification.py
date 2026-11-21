@@ -188,13 +188,19 @@ def verify_proof(payload: VerifyProofRequest, db: Session = Depends(get_db)):
                 if "".join(db_key.public_key.split()) == "".join(payload.public_key_pem.split()):
                     key_trusted = True
             elif payload.key_id == "key-ecdsa-p256-01":
+                env = (os.getenv("ENVIRONMENT") or os.getenv("APP_ENV") or "").lower()
+                is_prod = env in ("production", "prod")
+                if not is_prod:
+                    _, default_pub = generate_key_pair("key-ecdsa-p256-01", deterministic=True)
+                    if "".join(default_pub.split()) == "".join(payload.public_key_pem.split()):
+                        key_trusted = True
+        else:
+            env = (os.getenv("ENVIRONMENT") or os.getenv("APP_ENV") or "").lower()
+            is_prod = env in ("production", "prod")
+            if not is_prod:
                 _, default_pub = generate_key_pair("key-ecdsa-p256-01", deterministic=True)
                 if "".join(default_pub.split()) == "".join(payload.public_key_pem.split()):
                     key_trusted = True
-        else:
-            _, default_pub = generate_key_pair("key-ecdsa-p256-01", deterministic=True)
-            if "".join(default_pub.split()) == "".join(payload.public_key_pem.split()):
-                key_trusted = True
 
         if not key_trusted:
             verdict = "INVALID"

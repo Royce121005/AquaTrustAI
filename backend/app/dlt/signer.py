@@ -144,7 +144,9 @@ class SoftwareSigningProvider(BaseSigningProvider):
             if len(self._private_keys) == 1 and self.default_key_id in self._private_keys:
                 private_pem = self._private_keys[self.default_key_id]
             else:
-                priv, pub = generate_key_pair(key_id, deterministic=True)
+                env = (os.getenv("ENVIRONMENT") or os.getenv("APP_ENV") or "").lower()
+                is_prod = env in ("production", "prod")
+                priv, pub = generate_key_pair(key_id, deterministic=not is_prod)
                 self.register_key_pair(key_id, priv, pub)
                 private_pem = priv
 
@@ -157,7 +159,9 @@ class SoftwareSigningProvider(BaseSigningProvider):
             elif len(self._public_keys) == 1 and self.default_key_id in self._public_keys:
                 return self._public_keys[self.default_key_id]
             else:
-                priv, pub = generate_key_pair(key_id, deterministic=True)
+                env = (os.getenv("ENVIRONMENT") or os.getenv("APP_ENV") or "").lower()
+                is_prod = env in ("production", "prod")
+                priv, pub = generate_key_pair(key_id, deterministic=not is_prod)
                 self.register_key_pair(key_id, priv, pub)
         return self._public_keys[key_id]
 

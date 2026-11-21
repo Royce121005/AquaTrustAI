@@ -43,7 +43,7 @@ class TreatmentService:
         treatment_repo = TreatmentRepository(db)
         signing_key = treatment_repo.get_signing_key(key_id)
 
-        # 1. Resolve private key from cache, env, file, or deterministic generator
+        # 1. Resolve private key from cache, env, file, or secure generator
         if cls._cached_private_key is None:
             env_pem = os.getenv("DLT_SIGNING_PRIVATE_KEY_PEM")
             key_file_path = os.getenv("DLT_SIGNING_PRIVATE_KEY_PATH") or os.getenv("DLT_SIGNING_KEY_FILE")
@@ -58,11 +58,34 @@ class TreatmentService:
                     with open(key_file_path, "r", encoding="utf-8") as f:
                         cls._cached_private_key = f.read().strip()
                 except Exception:
-                    priv_pem, _ = generate_key_pair(key_id, deterministic=True)
-                    cls._cached_private_key = priv_pem
-            else:
-                priv_pem, _ = generate_key_pair(key_id, deterministic=True)
+                    pass
+
+            if not cls._cached_private_key:
+                # Persistent local file fallback across container recycles
+                import tempfile
+                persist_path = os.path.join(tempfile.gettempdir(), f"aquatrust_dlt_{key_id}.pem")
+                if os.path.isfile(persist_path):
+                    try:
+                        with open(persist_path, "r", encoding="utf-8") as f:
+                            content = f.read().strip()
+                            if content:
+                                cls._cached_private_key = content
+                    except Exception:
+                        pass
+
+            if not cls._cached_private_key:
+                env = (os.getenv("ENVIRONMENT") or os.getenv("APP_ENV") or "").lower()
+                is_prod = env in ("production", "prod")
+                # When running in production without explicit DLT_SIGNING_PRIVATE_KEY_PEM, use non-deterministic CSPRNG generation
+                priv_pem, _ = generate_key_pair(key_id, deterministic=not is_prod)
                 cls._cached_private_key = priv_pem
+                try:
+                    import tempfile
+                    persist_path = os.path.join(tempfile.gettempdir(), f"aquatrust_dlt_{key_id}.pem")
+                    with open(persist_path, "w", encoding="utf-8") as f:
+                        f.write(priv_pem)
+                except Exception:
+                    pass
 
         # 2. If signing_key does not exist in DB, register it cleanly
         if not signing_key:

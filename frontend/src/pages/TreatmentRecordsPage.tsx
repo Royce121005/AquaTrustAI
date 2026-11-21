@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link, useSearchParams } from 'react-router-dom';
-import { listTreatmentRecordsApi } from '../api/treatmentRecords';
+import { listTreatmentRecordsApi, seedTreatmentRecordsApi } from '../api/treatmentRecords';
 import { listFacilitiesApi } from '../api/facilities';
 import { useAuth } from '../context/AuthContext';
 import { LoadingState, ErrorState, EmptyState } from '../components/common/States';
@@ -11,13 +11,15 @@ import {
   AnomalyStatusBadge,
   ComplianceStatusBadge,
 } from '../components/common/Badges';
-import { FileText, Filter, RefreshCw, Stamp, Shield, ChevronLeft, ChevronRight } from 'lucide-react';
+import { FileText, Filter, RefreshCw, Stamp, Shield, ChevronLeft, ChevronRight, Sparkles, CheckCircle2 } from 'lucide-react';
 
 const PAGE_SIZE = 25;
 
 export const TreatmentRecordsPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const { user, selectedFacilityId } = useAuth();
+  const [isSeeding, setIsSeeding] = useState(false);
+  const [seedNotice, setSeedNotice] = useState<string | null>(null);
 
   const facilityId = searchParams.get('facility_id') || selectedFacilityId || '';
   const recordState = searchParams.get('record_state') || '';
@@ -78,8 +80,37 @@ export const TreatmentRecordsPage: React.FC = () => {
 
   const isOperatorOrAdmin = user?.role === 'operator' || user?.role === 'admin';
 
+  const handleAutoSeed = async () => {
+    setIsSeeding(true);
+    setSeedNotice(null);
+    try {
+      const res = await seedTreatmentRecordsApi();
+      setSeedNotice(res.message || `Treatment records processed successfully (${res.seeded_count} newly seeded).`);
+      await recordsQuery.refetch();
+    } catch (err: unknown) {
+      setSeedNotice('Failed to seed records: ' + (err instanceof Error ? err.message : String(err)));
+    } finally {
+      setIsSeeding(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
+      {seedNotice && (
+        <div className="p-3 bg-cyan-50 dark:bg-cyan-950/40 border border-cyan-200 dark:border-cyan-800/60 rounded-lg flex items-center justify-between text-xs font-mono text-cyan-800 dark:text-cyan-200">
+          <div className="flex items-center gap-2">
+            <CheckCircle2 className="w-4 h-4 text-cyan-600 dark:text-cyan-400 shrink-0" />
+            <span>{seedNotice}</span>
+          </div>
+          <button
+            onClick={() => setSeedNotice(null)}
+            className="text-cyan-600 hover:text-cyan-800 dark:text-cyan-400 dark:hover:text-cyan-200 cursor-pointer font-bold px-1"
+          >
+            ×
+          </button>
+        </div>
+      )}
+
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200 dark:border-[#1F293D]">
         <div>
           <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white font-mono flex items-center gap-2.5">
@@ -89,13 +120,24 @@ export const TreatmentRecordsPage: React.FC = () => {
         </div>
         <div className="flex items-center gap-2 shrink-0">
           {isOperatorOrAdmin && (
-            <Link
-              to="/finalization"
-              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-cyan-600 hover:bg-cyan-500 text-white rounded-lg text-xs font-semibold shadow-sm transition-colors font-mono cursor-pointer"
-            >
-              <Stamp className="w-3.5 h-3.5" />
-              Finalize Time Window
-            </Link>
+            <>
+              <button
+                onClick={handleAutoSeed}
+                disabled={isSeeding}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white rounded-lg text-xs font-semibold shadow-sm transition-colors font-mono cursor-pointer"
+                title="Automatically generate, aggregate, and finalize treatment records for all STPs"
+              >
+                <Sparkles className={`w-3.5 h-3.5 ${isSeeding ? 'animate-spin' : ''}`} />
+                {isSeeding ? 'Seeding Records...' : 'Seed Records'}
+              </button>
+              <Link
+                to="/finalization"
+                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-cyan-600 hover:bg-cyan-500 text-white rounded-lg text-xs font-semibold shadow-sm transition-colors font-mono cursor-pointer"
+              >
+                <Stamp className="w-3.5 h-3.5" />
+                Finalize Time Window
+              </Link>
+            </>
           )}
           <button
             onClick={() => recordsQuery.refetch()}
@@ -183,7 +225,19 @@ export const TreatmentRecordsPage: React.FC = () => {
         ) : !recordsQuery.data || recordsQuery.data.length === 0 ? (
           <EmptyState
             title="No Treatment Records"
-            message="No treatment records match the criteria."
+            message="No treatment records match the criteria. You can automatically aggregate and finalize authentic cryptographic records across all registered STPs."
+            action={
+              isOperatorOrAdmin && (
+                <button
+                  onClick={handleAutoSeed}
+                  disabled={isSeeding}
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-cyan-600 hover:bg-cyan-500 disabled:opacity-50 text-white rounded-lg text-xs font-semibold shadow-sm transition-colors font-mono cursor-pointer"
+                >
+                  <Sparkles className={`w-4 h-4 ${isSeeding ? 'animate-spin' : ''}`} />
+                  {isSeeding ? 'Seeding & Finalizing Records...' : '⚡ Seed & Finalize Treatment Records'}
+                </button>
+              )
+            }
           />
         ) : (
           <div className="overflow-x-auto">

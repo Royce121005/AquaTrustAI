@@ -30,3 +30,9 @@ export async function finalizeTreatmentRecordApi(
     body: JSON.stringify(payload),
   });
 }
+
+export async function seedTreatmentRecordsApi(): Promise<{ status: string; seeded_count: number; message: string }> {
+  return apiClient('/treatment-records/seed-defaults', {
+    method: 'POST',
+  });
+}
